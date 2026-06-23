@@ -26,7 +26,8 @@ class Auction
         DateTimeImmutable $endDate,
         AuctionStatus $status = AuctionStatus::ACTIVE,
         ?int $currentWinnerUserId = null,
-        ?int $winnerUserId = null
+        ?int $winnerUserId = null,
+        ?float $currentPrice = null 
     ) {
         $this->validateProductId($productId);
         $this->validatePrice($startingPrice);
@@ -35,7 +36,10 @@ class Auction
         $this->id = $id;
         $this->productId = $productId;
         $this->startingPrice = $startingPrice;
-        $this->currentPrice = $startingPrice;
+        
+        //Si viene de la BD usamos el currentPrice, si es nueva, usamos el startingPrice
+        $this->currentPrice = $currentPrice ?? $startingPrice; 
+        
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->status = $status;
@@ -43,25 +47,19 @@ class Auction
         $this->winnerUserId = $winnerUserId;
     }
 
-    // =========================
-    // VALIDACIONES
-    // =========================
+    //VALIDACIONES
 
     private function validateProductId(int $productId): void
     {
         if ($productId <= 0) {
-            throw new InvalidArgumentException(
-                'El producto es obligatorio.'
-            );
+            throw new InvalidArgumentException('El producto es obligatorio.');
         }
     }
 
     private function validatePrice(float $price): void
     {
         if ($price <= 0) {
-            throw new InvalidArgumentException(
-                'El precio debe ser mayor a cero.'
-            );
+            throw new InvalidArgumentException('El precio debe ser mayor a cero.');
         }
     }
 
@@ -70,36 +68,29 @@ class Auction
         DateTimeImmutable $endDate
     ): void {
         if ($endDate <= $startDate) {
-            throw new InvalidArgumentException(
-                'La fecha de finalización debe ser posterior a la fecha de inicio.'
-            );
+            throw new InvalidArgumentException('La fecha de finalización debe ser posterior a la de inicio.');
         }
     }
 
-    // =========================
-    // REGLAS DE NEGOCIO
-    // =========================
+    //REGLAS DE NEGOCIO
 
-    public function registerBid(
-        int $userId,
-        float $amount
-    ): void {
+    public function registerBid(int $userId, float $amount): void
+    {
         if (!$this->isActive()) {
-            throw new InvalidArgumentException(
-                'La subasta no está activa.'
-            );
+            throw new InvalidArgumentException('La subasta no está activa.');
         }
 
         if ($userId <= 0) {
-            throw new InvalidArgumentException(
-                'El usuario es inválido.'
-            );
+            throw new InvalidArgumentException('El usuario es inválido.');
+        }
+
+        //Evitamos que el usuario que va ganando vuelva a pujar
+        if ($userId === $this->currentWinnerUserId) {
+            throw new InvalidArgumentException('Ya eres el ganador actual de esta subasta.');
         }
 
         if ($amount <= $this->currentPrice) {
-            throw new InvalidArgumentException(
-                'La oferta debe ser mayor a la actual.'
-            );
+            throw new InvalidArgumentException("La oferta debe ser mayor a la actual (\${$this->currentPrice}).");
         }
 
         $this->currentPrice = $amount;
@@ -108,18 +99,22 @@ class Auction
 
     public function finish(): void
     {
+        if (!$this->isActive()) {
+            throw new InvalidArgumentException('Solo se puede finalizar una subasta que está activa.');
+        }
         $this->status = AuctionStatus::FINISHED;
         $this->winnerUserId = $this->currentWinnerUserId;
     }
 
     public function cancel(): void
     {
+        if (!$this->isActive()) {
+            throw new InvalidArgumentException('Solo se puede cancelar una subasta que está activa.');
+        }
         $this->status = AuctionStatus::CANCELLED;
     }
 
-    // =========================
-    // CONSULTAS
-    // =========================
+    //CONSULTAS
 
     public function isActive(): bool
     {
@@ -141,52 +136,15 @@ class Auction
         return $this->winnerUserId !== null;
     }
 
-    // =========================
-    // GETTERS
-    // =========================
+    //GETTERS
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getProductId(): int
-    {
-        return $this->productId;
-    }
-
-    public function getStartingPrice(): float
-    {
-        return $this->startingPrice;
-    }
-
-    public function getCurrentPrice(): float
-    {
-        return $this->currentPrice;
-    }
-
-    public function getStartDate(): DateTimeImmutable
-    {
-        return $this->startDate;
-    }
-
-    public function getEndDate(): DateTimeImmutable
-    {
-        return $this->endDate;
-    }
-
-    public function getStatus(): AuctionStatus
-    {
-        return $this->status;
-    }
-
-    public function getCurrentWinnerUserId(): ?int
-    {
-        return $this->currentWinnerUserId;
-    }
-
-    public function getWinnerUserId(): ?int
-    {
-        return $this->winnerUserId;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getProductId(): int { return $this->productId; }
+    public function getStartingPrice(): float { return $this->startingPrice; }
+    public function getCurrentPrice(): float { return $this->currentPrice; }
+    public function getStartDate(): DateTimeImmutable { return $this->startDate; }
+    public function getEndDate(): DateTimeImmutable { return $this->endDate; }
+    public function getStatus(): AuctionStatus { return $this->status; }
+    public function getCurrentWinnerUserId(): ?int { return $this->currentWinnerUserId; }
+    public function getWinnerUserId(): ?int { return $this->winnerUserId; }
 }

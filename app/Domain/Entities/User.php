@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Entitis;
+namespace App\Domain\Entities;
 
 use App\Domain\Enum\RoleType;
 use InvalidArgumentException;
@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 
 class User{
-    private int $id;
+    private ?int $id;
     private string $name;
     private string $lastname;
     private string $email;
@@ -16,24 +16,24 @@ class User{
     private string $phone;
     private RoleType $role;
 
-    public function _construct(
+    public function __construct(
         ?int $id,
-        string $firstName,
+        string $name,
         string $lastName,
         string $email,
         string $password,
         string $phone,
         RoleType $role
     ){
-        validateFirstName($firstName);
-        validateLastName($lastName);
-        validateEmail($email);
-        validatePassword($password);
-        validatePhone($phone);
+        $this->validateFirstName($name);
+        $this->validateLastName($lastName);
+        $this->validateEmail($email);
+        $this->validatePassword($password);
+        $this->validatePhone($phone);
 
 
         $this->id=$id;
-        $this->firstName=$firstName;
+        $this->firstName=$name;
         $this->lastName=$lastName;
         $this->email=$email;
         $this->password=$password;
@@ -45,12 +45,12 @@ class User{
 
     //VALIDACIONES
 
-    private function validateFirstName(string $firstName):void{
-        if(empty(trim($firstName))){
+    private function validateFirstName(string $name):void{
+        if(empty(trim($name))){
             throw new InvalidArgumentException('El nombre no puede estar vacío');
         }
         
-        if(strlen($firstName)>100){
+        if(strlen($name)>100){
             throw new InvalidArgumentException('El nombre no puede tener más de 100 caracteres');
         }
 
@@ -110,11 +110,12 @@ class User{
         $this->phone=$phone;
     }
 
+    /*
     public function changeAddress(string $address):void{
         $this->validateAddress($address);
         $this->address=$address;
     }
-
+    */
     public function changeRole(RoleType $role):void{
         $this->role=$role;
     }
@@ -125,8 +126,8 @@ class User{
         return $this->id;
     }
 
-    public function getFirstName():string{
-        return $this->firstName;
+    public function getName():string{
+        return $this->name;
     }
 
     public function getLastName():string{
@@ -134,7 +135,7 @@ class User{
     }
 
     public function getFullName():string{
-        return "{this->firstName} {this->lastName}";
+        return "{$this->name} {$this->lastName}";
     }
 
     public function getEmail(): string
@@ -152,10 +153,12 @@ class User{
         return $this->phone;
     }
 
+    /*
     public function getAddress(): string
     {
         return $this->address;
     }
+    */
 
     public function getRole(): RoleType
     {
