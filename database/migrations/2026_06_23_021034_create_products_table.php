@@ -27,10 +27,6 @@ return new class extends Migration
 
             $table->string('sale_type',20)->default('direct');
             $table->string('status', 20)->default('available');
-
-
-
-
             $table->timestamps();
         });
     }

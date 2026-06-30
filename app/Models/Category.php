@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    //
+    //Para permitir que guarde todo, no protege ninguna columna
     protected $guarded = [];
 }

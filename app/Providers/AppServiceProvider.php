@@ -14,6 +14,12 @@ use App\Application\Abstractions\Category\IGetCategoriesUseCase;
 use App\Application\Abstractions\Category\IGetCategoryByIdUseCase;
 use App\Application\Abstractions\Category\ISaveCategoryUseCase;
 use App\Application\Abstractions\Category\IUpdateCategoryUseCase;
+use App\Application\Abstractions\Product\IDeleteProductUseCase;
+use App\Application\Abstractions\Product\IGetAllProductsUseCase;
+use App\Application\Abstractions\Product\IGetProductByIdUseCase;
+use App\Application\Abstractions\Product\IGetProductsByCategoryUseCase;
+use App\Application\Abstractions\Product\ISaveProductUseCase;
+use App\Application\Abstractions\Product\IUpdateProductUseCase;
 use App\Application\UseCases\Category\DeleteCategoryUseCase;
 //Importamos los casos de uso y los repositorios
 use App\Data\Repositories\CategoryRepository; 
@@ -21,6 +27,14 @@ use App\Application\UseCases\Category\GetCategoriesUseCase;
 use App\Application\UseCases\Category\GetCategoryByIdUseCase;
 use App\Application\UseCases\Category\SaveCategoryUseCase;
 use App\Application\UseCases\Category\UpdateCategoryUseCase;
+use App\Application\UseCases\Product\DeleteProductUseCase;
+use App\Application\UseCases\Product\GetAllProductsUseCase;
+use App\Application\UseCases\Product\GetProductByIdUseCase;
+use App\Application\UseCases\Product\GetProductsByCategoryUseCase;
+use App\Application\UseCases\Product\SaveProductUseCase;
+use App\Application\UseCases\Product\UpdateProductUseCase;
+use App\Data\Repositories\ProductRepository;
+use App\Domain\Abstractions\IProductRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -66,6 +80,37 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
         IGetCategoriesByParentIdUseCase::class, 
         GetCategoriesByParentIdUseCase::class);
+
+        $this->app->bind(
+            IProductRepository::class, 
+            ProductRepository::class);
+
+        // 2. Le decimos a Laravel: "Cuando el controlador pida ISaveProductUseCase, dale el SaveProductUseCase"
+        $this->app->bind(
+            ISaveProductUseCase::class, 
+            SaveProductUseCase::class);
+
+        $this->app->bind(
+            IGetProductByIdUseCase::class,
+            GetProductByIdUseCase::class
+        );
+
+        $this->app->bind(
+            IUpdateProductUseCase::class,
+            UpdateProductUseCase::class
+        );
+        $this->app->bind(
+            IDeleteProductUseCase::class,
+            DeleteProductUseCase::class
+        );
+        $this->app->bind(
+            IGetAllProductsUseCase::class,
+            GetAllProductsUseCase::class
+        );
+        $this->app->bind(
+            IGetProductsByCategoryUseCase::class,
+            GetProductsByCategoryUseCase::class
+        );
 
     }
 

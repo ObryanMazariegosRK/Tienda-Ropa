@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Application\Abstractions\Category\IGetCategoriesUseCase;
 use App\Application\Abstractions\Category\ISaveCategoryUseCase;
 use App\Application\Abstractions\Category\IUpdateCategoryUseCase;
-use App\Application\Abstractions\Category\IDeleteCategoryUseCase;         // <-- NUEVA
-use App\Application\Abstractions\Category\IGetCategoryByIdUseCase;       // <-- NUEVA
+use App\Application\Abstractions\Category\IDeleteCategoryUseCase;         
+use App\Application\Abstractions\Category\IGetCategoryByIdUseCase;    
 use App\Application\Abstractions\Category\IGetCategoriesByParentIdUseCase;
 use App\Application\DTOs\Category\SaveCategoryDTO;
 use App\Application\DTOs\Category\UpdateCategoryDTO;
