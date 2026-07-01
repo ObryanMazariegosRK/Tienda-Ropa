@@ -1,0 +1,531 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+html{
+    font-size: 10px;
+}
+:root{
+    --primary-color: #D17A55;
+    --white-color: #EAEAEA;
+    --black-color: #101010;
+    --text-color: #303030;
+    --bg-color: #F9F6F3;
+}
+body{
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+section{
+    margin-top: 4rem;
+}
+p{
+    font-size: 1.6rem;
+}
+img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* 1. ACTUALIZAMOS EL HEADER PARA ACOMODAR EL MENÚ */
+/* ==========================================================================
+   💻 ESTILOS GENERALES Y COMPUTADORA (Fila arriba logo, fila abajo menú)
+   ========================================================================== */
+header {
+    /* 1. CAMBIAMOS ABSOLUTE POR STICKY */
+    position: sticky; 
+    top: 0; /* Le indica que se pegue justo en el borde superior al hacer scroll */
+    
+    /* 2. LE DAMOS UN FONDO SÓLIDO PARA QUE NO SE MEZCLE CON LAS FOTOS */
+    background-color: var(--bg-color); /* Usamos el color de fondo de tu página */
+    
+    /* 3. AGREGAMOS UNA SOMBRA SUAVE (Opcional, pero se ve muy elegante) */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    /* Lo demás se queda igual */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; 
+    padding: 3rem 6rem 1.5rem 6rem;
+    z-index: 100;
+}
+
+/* 2. ESTILOS DEL MENÚ PRINCIPAL */
+.main-nav {
+    display: flex;
+    justify-content: center; /* Centra las categorías horizontalmente en PC */
+    width: 100%;
+}
+
+.nav-categories {
+    display: flex;
+    gap: 4rem; /* Espaciado elegante entre categorías principales */
+    list-style: none;
+}
+
+.nav-item {
+    position: relative; /* Vital para que el submenú se posicione debajo de esta palabra */
+    padding: 1rem 0; /* Aumentamos el área sensible al ratón */
+}
+
+.nav-item > a {
+    text-decoration: none;
+    color: var(--black-color); /* Cambia a --white-color si tu imagen de fondo es oscura */
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 3. ESTILOS DEL SUBMENÚ (OCULTO POR DEFECTO) */
+.dropdown-menu {
+    position: absolute;
+    top: 100%; /* Lo coloca justo debajo de la categoría */
+    left: 50%;
+    transform: translateX(-50%); /* Lo centra perfectamente con la palabra padre */
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 180px;
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    /* Efecto de ocultación animable */
+    opacity: 0;
+    visibility: hidden;
+    margin-top: 15px; /* Lo empuja un poco hacia abajo para el efecto */
+    transition: all 0.3s ease;
+}
+
+.dropdown-menu li {
+    list-style: none;
+    text-align: center;
+}
+
+.dropdown-menu li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1.3rem;
+    display: block;
+    padding: 0.5rem 2rem;
+    transition: color 0.3s ease;
+}
+
+.dropdown-menu li a:hover {
+    color: var(--primary-color); /* Cambia de color al pasar el cursor */
+}
+
+/* EFECTO HOVER: SOLO PARA PANTALLAS DE COMPUTADORA */
+@media (min-width: 769px) {
+    .nav-item:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        margin-top: 0;
+    }
+}
+.container-logo{
+    display: flex;
+    align-items: center;
+}
+
+/*Estilo para el nombre de la tienda*/
+.store-title {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: var(--black-color);
+    text-decoration: none;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+/*BANNER*/
+.hero-section{
+    width: 100%;
+    height: 100vh; /* Ocupa el 100% de la altura de la pantalla */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Evita que el video se salga de los bordes */
+    background-color: #f4f4f4; /* Color de fondo mientras carga */
+}
+/* Esta clase se aplicará tanto a la etiqueta <img> como a <video> */
+.hero-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Asegura que no se deforme y cubra todo el espacio */
+    z-index: 1; /* Lo pone por debajo del menú (que tiene z-index: 100) */
+}
+.loading-banner {
+    z-index: 2;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+/*FIN BANNER*/
+
+.gallery-section{
+    padding: 4rem;
+}
+.gallery-section ul{
+    display: flex;
+    justify-content: center;
+    gap: 6rem;
+}
+.gallery-section ul li{
+    list-style: none;
+    font-size: 1.6rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.gallery-section ul li.active{
+    color: var(--black-color);
+}
+.gallery-container{
+    margin-top: 4rem;
+}
+.gallery-layout{
+    display: grid;
+    grid-template-columns: 1.5fr 1.2fr 1.5fr;
+    grid-template-rows: repeat(2, 45rem);
+    align-items: center;
+    gap: 2rem;
+}
+.gallery-text{
+    max-width: 70%;
+    margin-inline: auto;
+}
+.gallery-subtitle{
+    font-size: 1.6rem;
+}
+.gallery-description{
+    font-size: 1.4rem;
+    margin-top: 2rem;
+    line-height: 1.5;
+}
+.gallery-last-image{
+    grid-area: 2/1/3/3;
+}
+.link-default{
+    display: block;
+    margin-top: 2rem;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+.products-section{
+    padding-bottom: 5rem;
+}
+.products-section h2{
+    font-size: 2rem;
+    text-align: center;
+}
+.products-container {
+    max-width: 110rem;
+    margin-inline: auto;
+    /* Cambiamos flex por grid para crear la cuadrícula */
+    display: grid;
+    /* Crea columnas automáticas de mínimo 220px, ideal para 4 productos por fila en PC */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 30px;
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+.product {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer; /* Cambia el cursor a una manito */
+}
+
+.product-image-container {
+    position: relative;
+    width: 100%;
+    /* aspect-ratio 3/4 fuerza a que la imagen sea vertical/alargada */
+    aspect-ratio: 3/4; 
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.product-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Transición suave para el cambio de imagen */
+    transition: opacity 0.4s ease; 
+}
+
+/* Posiciona la segunda imagen exactamente encima de la primera, pero invisible */
+.img-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0; 
+}
+
+/* Al pasar el mouse, oculta la primera imagen... */
+.product:hover .img-default {
+    opacity: 0; 
+}
+
+/* ... y muestra la segunda imagen */
+.product:hover .img-hover {
+    opacity: 1; 
+}
+/* ---------------------------------- */
+
+.product h3 {
+    font-size: 1.4rem;
+    text-align: center;
+    text-transform: uppercase; 
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.product-price {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+.story-section{
+    padding: 4rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+.story-container{
+    flex-basis: calc(35% - 1rem);
+    flex-shrink: 0;
+    background-color: #d5d7d7;
+    height: 40rem;
+    align-content: center;
+}
+.story-container-text{
+    width: 70%;
+    margin-inline: auto;
+}
+.story-container-text h3{
+    font-size: 1.6rem;
+}
+.story-container-text p{
+    margin-top: 2rem;
+    line-height: 1.5;
+}
+.story-container-image{
+    flex-basis: calc(65% - 1rem);
+    flex-shrink: 0;
+    height: 40rem;
+}
+.subscriber-section{
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+    padding-bottom: 2rem;
+}
+.subscriber-section p{
+    font-size: 1.4rem;
+}
+.container-input{
+    position: relative;
+}
+.container-input input{
+    height: 3.5rem;
+    padding-left: 1.5rem;
+    width: 35rem;
+    outline: none;
+    border: 1px solid #999;
+}
+.container-input button{
+    position: absolute;
+    right: 0;
+    height: 3.5rem;
+    padding-inline: 1.5rem;
+    border: none;
+    background-color: var(--black-color);
+    color: var(--white-color);
+    cursor: pointer;
+}
+.container-input p{
+    display: none;
+    position: absolute;
+    top: 4rem;
+    color: var(--primary-color);
+}
+footer{
+    margin-top: 4rem;
+    border-top: 1px solid #999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4rem;
+}
+.footer-logo{
+    width: 5rem;
+}
+.container-copyright p{
+    font-size: 1.4rem;
+}
+.footer-nav ul{
+    display: flex;
+    gap: 2rem;
+}
+.footer-nav ul li{
+    list-style: none;
+}
+.footer-nav ul li a{
+    font-size: 1.6rem;
+    text-decoration: none;
+    color: var(--black-color);
+} 
+
+
+/* ESTILOS PARA LOS ÍCONOS DE LA DERECHA */
+.header-icons {
+    position: absolute;
+    right: 0; /* Empuja el contenedor de íconos al extremo derecho de la pantalla */
+    display: flex;
+    align-items: center;
+    gap: 1.8rem;
+}
+
+/* Fila Superior */
+.header-top {
+    display: flex;
+    justify-content: center; /* Centra el logo de forma matemática */
+    align-items: center;
+    position: relative; /* Base indispensable para mover los íconos a la derecha */
+    width: 100%;
+}
+
+.mobile-menu-btn {
+    display: none; /* Oculto por defecto en computadoras */
+}
+
+.icon-link {
+    color: var(--black-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.icon-link:hover {
+    color: var(--primary-color);
+    transform: scale(1.15);
+}
+
+
+
+/* --- ESTILOS BASE DEL BOTÓN HAMBURGUESA --- */
+.mobile-menu-btn {
+    display: none; /* Oculto en computadora */
+    cursor: pointer;
+    color: var(--black-color);
+}
+
+/* =========================================
+   📱 MEDIA QUERIES PARA CELULARES
+   ========================================= */
+@media (max-width: 768px) {
+    header {
+        padding: 0; /* Dejamos que el padding interno lo controle la fila superior */
+        gap: 0;
+    }
+
+    .header-top {
+        justify-content: space-between; /* Hamburguesa izquierda, Íconos derecha */
+        padding: 1.5rem 2rem;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+        cursor: pointer;
+        color: var(--black-color);
+    }
+
+    /* Centrado absoluto del logo en pantallas móviles */
+    .container-logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .store-title {
+        font-size: 1.8rem;
+        letter-spacing: 2px;
+    }
+
+    .header-icons {
+        position: static; /* Rompe el posicionamiento absoluto de PC para fluir a la derecha */
+        gap: 1.2rem;
+    }
+
+    /* Panel de Menú Móvil Desplegable */
+    .main-nav {
+        position: absolute;
+        top: 100%; /* Abre exactamente debajo de la barra */
+        left: -100%;
+        width: 100%;
+        background-color: #fff;
+        transition: left 0.3s ease;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+        justify-content: flex-start; /* Cancela el centrado de PC */
+    }
+
+    .main-nav.active {
+        left: 0;
+    }
+
+    .nav-categories {
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+    }
+
+    .nav-item {
+        width: 100%;
+        border-bottom: 1px solid #eee;
+    }
+
+    .nav-item > a {
+        display: block;
+        padding: 1.5rem 2rem;
+        font-size: 1.2rem;
+    }
+
+    /* Acordeón de subcategorías en móvil */
+    .dropdown-menu {
+        position: static;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+        display: none;
+        width: 100%;
+        box-shadow: none;
+        background-color: #f9f6f3;
+        padding: 0;
+    }
+
+    .dropdown-menu li a {
+        text-align: left;
+        padding: 1.2rem 4rem;
+        font-size: 1.1rem;
+    }
+
+    .nav-item.open .dropdown-menu {
+        display: flex;
+    }
+}
