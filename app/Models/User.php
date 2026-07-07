@@ -2,31 +2,54 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use App\Domain\Enum\RoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    //Sirve para crear varios registros falsos pero realistas en la base de datos, son datos de prueba.
+    //Notifiable permite usar el sistema nativo de Laravel para correos
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    use HasApiTokens;
+
+    //Indicamos explícitamente que se conecte con la tabla users de mysql
+    protected $table = 'users';
+
+    //Los campos que permitiremos llenar de manera masiva (fillable=rellenable)
+    protected $fillable = [
+        'name',
+        'last_name',  
+        'email',
+        'password',
+        'phone',     
+        'role',   
+        'email_verified_at',       
+        'verification_code',           
+        'verification_code_expires_at',   
+    ];
+
+    //Ocultamos campos sensibles para que no se muestren si imprimimos el modelo
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'verification_code',
+    ];
+
+    //Transformamos los datos para que php los utilice con casts=repartos
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        //Para tratarlo como fecha
+        'verification_code_expires_at' => 'datetime',
+        /**
+         * En teoria, el password ya viene encriptado desde el caso de uso,
+         * pero lo ponemos por si acaso
+         */
+        'password' => 'hashed',
+        //Convertimos el string de la DB en tu Enum de Dominio
+        'role' => RoleType::class,
+    ];
 }

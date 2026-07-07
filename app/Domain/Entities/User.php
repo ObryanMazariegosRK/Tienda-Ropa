@@ -4,17 +4,19 @@ namespace App\Domain\Entities;
 
 use App\Domain\Enum\RoleType;
 use InvalidArgumentException;
-
-
+use PhpParser\Node\Expr\NullsafeMethodCall;
 
 class User{
     private ?int $id;
     private string $name;
-    private string $lastname;
+    private string $lastName;
     private string $email;
     private string $password;
     private string $phone;
     private RoleType $role;
+    private ?\DateTimeImmutable $emailVerifiedAt;
+    private ?string $verificationCode;
+    private ?\DateTimeImmutable $verificationCodeExpiresAt;
 
     public function __construct(
         ?int $id,
@@ -23,7 +25,10 @@ class User{
         string $email,
         string $password,
         string $phone,
-        RoleType $role
+        RoleType $role,
+        ?\DateTimeImmutable $emailVerifiedAt= null,
+        ?string $verificationCode=null,
+        ?\DateTimeImmutable $verificationCodeExpiresAt=null
     ){
         $this->validateFirstName($name);
         $this->validateLastName($lastName);
@@ -33,12 +38,16 @@ class User{
 
 
         $this->id=$id;
-        $this->firstName=$name;
+        $this->name=$name;
         $this->lastName=$lastName;
         $this->email=$email;
         $this->password=$password;
         $this->phone=$phone;
         $this->role=$role;
+
+        $this->emailVerifiedAt = $emailVerifiedAt;
+        $this->verificationCode = $verificationCode;
+        $this->verificationCodeExpiresAt = $verificationCodeExpiresAt;
 
     }
 
@@ -93,34 +102,74 @@ class User{
         }
     }
 
-    /*
-    private function validateAddress(string $address):void{
 
-        if(empty(trim($address))){
-            throw new InvalidArgumentException('La dirección no puede estar vacia');
-        }
 
-        if(strlen($address)>255){
-            throw new InvalidArgumentException('La dirección no puede tener más de 255 caracteres');
-        }
-    }*/
 
     public function changePhone(string $phone):void{
         $this->validatePhone($phone);
         $this->phone=$phone;
     }
 
-    /*
-    public function changeAddress(string $address):void{
-        $this->validateAddress($address);
-        $this->address=$address;
+    public function changePassword(string $newPassword): void
+    {
+        $this->validatePassword($newPassword);
+        $this->password = $newPassword;
+        //limpiamos (eliminamos xd) el codigo de la db
+        $this->verificationCode=null;
+        $this->verificationCodeExpiresAt=null;
     }
-    */
+
     public function changeRole(RoleType $role):void{
         $this->role=$role;
     }
 
-        //GETTERS
+    //Para saber si el usuario ya esta verificado
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerifiedAt !== null;
+    }
+
+    //Comprobar si el código que envió el usuario es correcto y no ha caducado
+    public function isVerificationCodeValid(string $code, \DateTimeImmutable $now): bool
+    {
+        //Si no hay código activo guardado en el usuario
+        if ($this->verificationCode === null || $this->verificationCodeExpiresAt === null) {
+            return false;
+        }
+
+        //Si el código no coincide exactamente
+        if ($this->verificationCode !== $code) {
+            return false;
+        }
+
+        //Si la fecha/hora actual superó a la fecha de expiración
+        if ($now > $this->verificationCodeExpiresAt) {
+            return false;
+        }
+
+        return true;
+    }
+
+    //Acción para marcar la cuenta como verificada
+    public function markEmailAsVerified(\DateTimeImmutable $verifiedAt): void
+    {
+        $this->emailVerifiedAt = $verifiedAt;
+        
+        //Destruimos el código por seguridad para que no se pueda reusar
+        $this->verificationCode = null;
+        $this->verificationCodeExpiresAt = null;
+    }
+
+    //Acción para generar/asignar un nuevo código (por si pide que se lo reenviemos)
+    public function assignNewVerificationCode(string $code, \DateTimeImmutable $expiresAt): void
+    {
+        $this->verificationCode = $code;
+        $this->verificationCodeExpiresAt = $expiresAt;
+    }
+
+
+
+    //GETTERS
 
     public function getId():?int{
         return $this->id;
@@ -165,22 +214,8 @@ class User{
         return $this->role;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public function getEmailVerifiedAt(): ?\DateTimeImmutable { return $this->emailVerifiedAt; }
+    public function getVerificationCode(): ?string { return $this->verificationCode; }
+    public function getVerificationCodeExpiresAt(): ?\DateTimeImmutable { return $this->verificationCodeExpiresAt; }
 
 }

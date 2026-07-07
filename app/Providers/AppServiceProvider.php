@@ -20,6 +20,13 @@ use App\Application\Abstractions\Product\IGetProductByIdUseCase;
 use App\Application\Abstractions\Product\IGetProductsByCategoryUseCase;
 use App\Application\Abstractions\Product\ISaveProductUseCase;
 use App\Application\Abstractions\Product\IUpdateProductUseCase;
+use App\Application\Abstractions\User\IForgotPasswordUseCase;
+use App\Application\Abstractions\User\IGetProfileUseCase;
+use App\Application\Abstractions\User\ILoginUserUseCase;
+use App\Application\Abstractions\User\IRegisterUserUseCase;
+use App\Application\Abstractions\User\IResendVerificationCodeUseCase;
+use App\Application\Abstractions\User\IResetPasswordUseCase;
+use App\Application\Abstractions\User\IVerifyEmailUseCase;
 use App\Application\UseCases\Category\DeleteCategoryUseCase;
 //Importamos los casos de uso y los repositorios
 use App\Data\Repositories\CategoryRepository; 
@@ -33,8 +40,22 @@ use App\Application\UseCases\Product\GetProductByIdUseCase;
 use App\Application\UseCases\Product\GetProductsByCategoryUseCase;
 use App\Application\UseCases\Product\SaveProductUseCase;
 use App\Application\UseCases\Product\UpdateProductUseCase;
+use App\Application\UseCases\User\ForgotPasswordUseCase;
+use App\Application\UseCases\User\GetProfileUseCase;
+use App\Application\UseCases\User\LoginUserUseCase;
+use App\Application\UseCases\User\RegisterUserUseCase;
+use App\Application\UseCases\User\ResendVerificationCodeUseCase;
+use App\Application\UseCases\User\ResetPasswordUseCase;
+use App\Application\UseCases\User\VerifyEmailUseCase;
 use App\Data\Repositories\ProductRepository;
+use App\Data\Repositories\UserRepository;
 use App\Domain\Abstractions\IProductRepository;
+use App\Domain\Abstractions\User\IEmailService;
+use App\Domain\Abstractions\User\IPasswordHasher;
+use App\Domain\Abstractions\User\IUserRepository;
+use App\Http\Controllers\AuthController\GetProfileController;
+use App\Infraestructure\Services\LaravelEmailService;
+use App\Infraestructure\Services\LaravelPasswordHasher;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -85,7 +106,7 @@ class AppServiceProvider extends ServiceProvider
             IProductRepository::class, 
             ProductRepository::class);
 
-        // 2. Le decimos a Laravel: "Cuando el controlador pida ISaveProductUseCase, dale el SaveProductUseCase"
+
         $this->app->bind(
             ISaveProductUseCase::class, 
             SaveProductUseCase::class);
@@ -110,6 +131,57 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             IGetProductsByCategoryUseCase::class,
             GetProductsByCategoryUseCase::class
+        );
+
+        //AUTH
+        $this->app->bind(
+            IRegisterUserUseCase::class, 
+            RegisterUserUseCase::class
+        );
+
+        $this->app->bind(
+            IUserRepository::class, 
+            UserRepository::class
+        );
+
+        $this->app->bind(
+            IPasswordHasher::class,
+            LaravelPasswordHasher::class
+        );
+        
+        $this->app->bind(
+            IEmailService::class,
+            LaravelEmailService::class
+        );
+
+        $this->app->bind(
+            ILoginUserUseCase::class,
+            LoginUserUseCase::class
+        );
+
+        $this->app->bind(
+            IGetProfileUseCase::class,
+            GetProfileUseCase::class
+        );
+
+        $this->app->bind(
+            IVerifyEmailUseCase::class, 
+            VerifyEmailUseCase::class
+        );
+
+        $this->app->bind(
+            IResendVerificationCodeUseCase::class, 
+            ResendVerificationCodeUseCase::class
+        );
+
+        $this->app->bind(
+            IForgotPasswordUseCase::class,
+            ForgotPasswordUseCase::class
+        );
+
+        $this->app->bind(
+            IResetPasswordUseCase::class,
+            ResetPasswordUseCase::class
         );
 
     }
