@@ -37,6 +37,8 @@ class ProductModel extends Model{
         'sale_type'=> ProductSaleType::class,
         'status'=> ProductStatus::class,
     ];
+
+
     
     /**
      * Añadimos la relacion de un producto pertenece a una categoria
@@ -44,6 +46,15 @@ class ProductModel extends Model{
     public function category(): BelongsTo{
         return $this->belongsTo(Category::class, 'category_id');
     }
+ 
+
+    public function images()
+    {
+        //Esto le dice a Laravel que busque en la tabla de imágenes usando product_id
+        //La relacion es de uno a muchos, un producto tiene muchas imágenes
+        return $this->hasMany(ProductImageModel::class, 'product_id'); 
+    }
+
 
 
 }

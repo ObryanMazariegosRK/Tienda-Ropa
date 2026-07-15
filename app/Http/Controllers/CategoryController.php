@@ -13,6 +13,7 @@ use App\Application\DTOs\Category\UpdateCategoryDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
@@ -55,7 +56,7 @@ class CategoryController extends Controller
         return response()->json($categoryDTO, 201);
     }
 
-    public function update(StoreCategoryRequest $request, int $id): JsonResponse
+    public function update(UpdateCategoryRequest $request, int $id): JsonResponse
     {
         //Armamos el DTO con los datos que vienen en el JSON
         $dto = new UpdateCategoryDTO(

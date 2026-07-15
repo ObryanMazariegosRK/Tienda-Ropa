@@ -1,0 +1,32 @@
+### 1 Obtener todos los productos (Get All)
+GET http://localhost:8000/api/products
+Accept: application/json
+
+### 2 Crear un nuevo producto (Sin imágenes)
+POST http://localhost:8000/api/products
+Content-Type: application/json
+Accept: application/json
+
+{
+    "categoryId": 1,
+    "name": "Pantalon",
+    "description": "simplemente pro xd",
+    "price": 200.50,
+    "saleType": "direct",
+    "status": "available"
+}
+
+### 3 obtener todas las categorias 
+GET http://localhost:8000/api/categories
+
+### 4 obtener todas las subcategorias en base a la categoria xd
+GET http://localhost:8000/api/categories/parent/3
+
+### 5 obtener todos los productos
+GET http://localhost:8000/api/products
+
+### 6 obtener filtrar los productos
+GET http://localhost:8000/api/categories/1/products
+
+### 7 para eliminar los productos
+DELETE http://localhost:8000/api/products/1

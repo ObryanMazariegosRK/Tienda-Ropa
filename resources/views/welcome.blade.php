@@ -188,14 +188,14 @@
                     
                     const token = localStorage.getItem('auth_token');
 
-                    // Si hay un token, le avisamos a la API que lo destruya
+                    //Si hay un token, le avisamos a la API que lo destruya
                     if (token) {
                         try {
                             await fetch('/api/logout', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
-                                    'Authorization': 'Bearer ' + token // ¡Le mostramos la pulsera VIP para que la rompa!
+                                    'Authorization': 'Bearer ' + token //Le mostramos la pulsera VIP por asi decirlo para que la rompa
                                 }
                             });
                         } catch (error) {
@@ -203,10 +203,10 @@
                         }
                     }
                     
-                    // Eliminamos la "pulsera VIP" del navegador
+                    //Eliminamos la "pulsera VIP" del navegador
                     localStorage.removeItem('auth_token');
                     
-                    // Recargamos la página para que vuelva a la vista de visitante normal
+                    //Recargamos la página para que vuelva a la vista de visitante normal
                     window.location.reload();
                 });
             }

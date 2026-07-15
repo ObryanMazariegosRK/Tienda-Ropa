@@ -18,6 +18,7 @@ use App\Application\Abstractions\Product\IDeleteProductUseCase;
 use App\Application\Abstractions\Product\IGetAllProductsUseCase;
 use App\Application\Abstractions\Product\IGetProductByIdUseCase;
 use App\Application\Abstractions\Product\IGetProductsByCategoryUseCase;
+use App\Application\Abstractions\Product\IImageStorageService;
 use App\Application\Abstractions\Product\ISaveProductUseCase;
 use App\Application\Abstractions\Product\IUpdateProductUseCase;
 use App\Application\Abstractions\User\IForgotPasswordUseCase;
@@ -56,6 +57,7 @@ use App\Domain\Abstractions\User\IUserRepository;
 use App\Http\Controllers\AuthController\GetProfileController;
 use App\Infraestructure\Services\LaravelEmailService;
 use App\Infraestructure\Services\LaravelPasswordHasher;
+use App\Infraestructure\Services\LaravelImageStorageService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -183,6 +185,14 @@ class AppServiceProvider extends ServiceProvider
             IResetPasswordUseCase::class,
             ResetPasswordUseCase::class
         );
+
+        
+        $this->app->bind(IImageStorageService::class, 
+        LaravelImageStorageService::class
+        );
+        
+        $this->app->bind(IProductRepository::class, 
+        ProductRepository::class);
 
     }
 

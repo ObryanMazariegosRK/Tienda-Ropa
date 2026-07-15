@@ -12,6 +12,8 @@ class UpdateProductDTO
         public readonly float $price,
         public readonly ?float $offerPrice,
         public readonly string $saleType,
-        public readonly string $status
+        public readonly string $status,
+        public readonly ?array $newImages = [],
+        public readonly ?array $deletedImageIds = []
     ) {}
 }

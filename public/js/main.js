@@ -102,11 +102,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 productsContainer.innerHTML = ""; 
 
                 //Recorremos cada producto que viene de la base de datos
+                // Recorremos cada producto que viene de la base de datos
                 result.data.forEach(product => {
-                    //Creamos el diseño HTML para cada producto usando Template Literals 
+                    
+                    // Verificamos si el producto tiene el array 'images' y si trae al menos una foto.
+                    // Si sí tiene, usamos la primera foto (índice [0]).
+                    // Si no tiene, usamos una imagen genérica para que el diseño no se rompa.
+                    const portada = (product.images && product.images.length > 0) 
+                        ? product.images[0] 
+                        : '/image/ImagenNoDefinida.png'; 
+
+                    // Creamos el diseño HTML para cada producto usando Template Literals 
+                    // 2. Creamos el diseño inyectando la variable 'portada'
                     const productHtml = `
                         <div class="product" data-id="${product.id}">
-                            <img src="/image/product-1.png" alt="${product.name}">
+                            <img src="${portada}" alt="${product.name}">
                             <h3>${product.name}</h3>
                             <p class="product-price">$${product.price}</p>
                         </div>

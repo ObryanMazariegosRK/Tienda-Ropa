@@ -19,6 +19,8 @@ class GetAllProductsUseCase implements IGetAllProductsUseCase
 
         //Mapeamos cada entidad Product a un ProductDTO
         return array_map(function ($product) {
+            //Extraemos solo las URLs de las imágenes del producto
+
             return new ProductDTO(
                 id: $product->getId(),
                 categoryId: $product->getCategoryId(),
@@ -28,7 +30,13 @@ class GetAllProductsUseCase implements IGetAllProductsUseCase
                 price: $product->getPrice(),
                 offerPrice: $product->getOfferPrice(),
                 saleType: $product->getSaleType()->value,
-                status: $product->getStatus()->value
+                status: $product->getStatus()->value,
+                images: array_map(function ($image) {
+                    return [
+                        'id' => $image->getId(),
+                        'url' => $image->getImageUrl()
+                    ];
+                }, $product->getImages())
             );
         }, $products);
     }

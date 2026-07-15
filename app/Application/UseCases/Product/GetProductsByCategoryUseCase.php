@@ -28,7 +28,13 @@ class GetProductsByCategoryUseCase implements IGetProductsByCategoryUseCase
                 price: $product->getPrice(),
                 offerPrice: $product->getOfferPrice(),
                 saleType: $product->getSaleType()->value,
-                status: $product->getStatus()->value
+                status: $product->getStatus()->value,
+                images: array_map(function ($image) {
+                    return [
+                        'id' => $image->getId(),
+                        'url' => $image->getImageUrl() // Usamos 'url' para que calce perfecto con tu JS
+                    ];
+                }, $product->getImages())
             );
         }, $products);
     }

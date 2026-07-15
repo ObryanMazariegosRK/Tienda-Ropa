@@ -14,6 +14,7 @@ use App\Application\DTOs\Product\UpdateProductDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use Exception;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -39,7 +40,10 @@ class ProductController extends Controller{
                 price: (float) $request->validated('price'),
                 offerPrice: $request->validated('offerPrice') !== null ? (float) $request->validated('offerPrice') : null,
                 saleType: $request->validated('saleType'),
-                status: $request->validated('status')
+                status: $request->validated('status'),
+                
+                //Extraemos las imágenes. Si no hay, mandamos array vacío
+                images: $request->file('images', []) 
             );
 
                    
@@ -94,22 +98,33 @@ class ProductController extends Controller{
 
     }
 
-    public function update(StoreProductRequest $request, int $id): JsonResponse
+    public function update(UpdateProductRequest $request, int $id): JsonResponse
     {
         try {
-            //Armamos el DTO de entrada 
+            // Extraemos los arreglos de imágenes del request
+            $newImages = $request->file('new_images', []);
+            
+            // Asegurarnos de que los IDs a eliminar sean un arreglo de enteros
+            $deletedImages = array_map('intval', $request->input('deleted_images', []));
+
+            // 2. Armamos el DTO de entrada (Con casteos explícitos)
             $dto = new UpdateProductDTO(
-                id: $id,
-                categoryId: $request->validated('categoryId'),
+                id: (int) $id,
+                categoryId: (int) $request->validated('categoryId'),
                 name: $request->validated('name'),
                 description: $request->validated('description'),
-                price: $request->validated('price'),
-                offerPrice: $request->validated('offerPrice'),
+                price: (float) $request->validated('price'),
+                // Validamos si viene nulo para no intentar castear un null a float
+                offerPrice: $request->validated('offerPrice') !== null ? (float) $request->validated('offerPrice') : null,
                 saleType: $request->validated('saleType'),
-                status: $request->validated('status')
+                status: $request->validated('status'),
+                
+                // Pasamos los nuevos arreglos al DTO
+                newImages: $newImages,
+                deletedImageIds: $deletedImages
             );
 
-            //Ejecutamos el caso de uso
+            // 3. Ejecutamos el caso de uso
             $productDTO = $this->updateProductUseCase->execute($dto);
             
             return response()->json([
@@ -119,14 +134,12 @@ class ProductController extends Controller{
             ], 200);
 
         } catch (NotFoundHttpException $e) {
-            //Si no lo encuentra
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 404);
 
         } catch (\Exception $e) {
-            //Para cualquier otro error
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al intentar actualizar el producto.',
