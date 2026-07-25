@@ -219,7 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem('admin_auth_token')}`
             },
             body: JSON.stringify(payload)
         })
@@ -333,11 +334,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //MOTOR DE ACTUALIZACIÓN
     function sendUpdateRequest(id, payload) {
-        fetch(`${API_URL}/${id}`, { 
-            method: "PUT", 
+        fetch(`${API_URL}/${id}`, {
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem('admin_auth_token')}`
             },
             body: JSON.stringify(payload)
         })

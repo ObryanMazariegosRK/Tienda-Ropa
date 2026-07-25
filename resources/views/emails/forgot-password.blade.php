@@ -44,7 +44,11 @@
                                 <div id="errorMessage" class="alert d-none mt-3" role="alert"></div>
                             </form>
                             
-                            <p class="text-center mt-4"><a href="/login"><span class="fa fa-arrow-left"></span> Volver al inicio de sesión</a></p>
+                            <p class="text-center mt-4" id="backToLoginWrap">
+                                <a href="/login" id="backToLoginLink"><span class="fa fa-arrow-left"></span> Volver al inicio de sesión</a>
+                            </p>
+                        
+                        
                         </div>
                     </div>
                 </div>
@@ -59,6 +63,14 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Detectamos si venimos del panel de admin, y lo recordamos
+        // por si se pierde el parámetro en algún salto de página
+        const urlParams = new URLSearchParams(window.location.search);
+        const origin = urlParams.get('origin') || sessionStorage.getItem('password_reset_origin') || '';
+        if (origin) {
+            sessionStorage.setItem('password_reset_origin', origin);
+        }
+        document.getElementById('backToLoginLink').href = origin === 'admin' ? '/admin/login' : '/login';
         const forgotPasswordForm = document.getElementById('forgotPasswordForm');
         const errorMessage = document.getElementById('errorMessage');
         const submitBtn = document.getElementById('submitBtn');
@@ -95,10 +107,10 @@
                 errorMessage.classList.remove('d-none');
 
                 // Redirigir a la vista de cambiar contraseña, pasando el correo por la URL
-                setTimeout(() => { 
-                    window.location.href = `/cambiar-password?email=${encodeURIComponent(email)}`; 
+                setTimeout(() => {
+                    const originParam = origin ? `&origin=${origin}` : '';
+                    window.location.href = `/cambiar-password?email=${encodeURIComponent(email)}${originParam}`;
                 }, 1500);
-
             } catch (error) {
                 errorMessage.textContent = error.message;
                 errorMessage.className = "alert alert-danger mt-3";

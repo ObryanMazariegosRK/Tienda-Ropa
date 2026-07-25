@@ -9,6 +9,13 @@
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="/admin/css/styles.css" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+    <!--Para ocultar el contenido antes de validar si es admin o no-->
+    <style>
+        body:not(.admin-auth-verified) #layoutSidenav { display: none; }
+    </style>
+    <script src="/admin/js/admin-auth.js"></script>
+    
 </head>
 <body class="sb-nav-fixed">
     
@@ -16,6 +23,13 @@
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <a class="navbar-brand ps-3" href="{{ route('dashboard') }}">Moda Admin</a>
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+
+        <div class="ms-auto d-flex align-items-center gap-3 pe-3">
+            <span id="admin-user-name" class="text-white"></span>
+            <button type="button" class="btn btn-sm btn-outline-light" onclick="adminLogout()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </div>
     </nav>
 
     <div id="layoutSidenav">
@@ -60,6 +74,16 @@
                                 <!-- 3. ENLACE A LAS CATEGORÍAS -->
                                 <a class="nav-link {{ request()->routeIs('categorias.index') ? 'active' : '' }}" href="{{ route('categorias.index') }}">
                                     Categorías
+                                </a>
+
+                                <!-- 4 ENLACE A LOS BANNERS (aun no funciona)-->
+                                <a class="nav-link {{ request()->routeIs('banners.index') ? 'active' : '' }}" href="{{ route('banners.index') }}">
+                                    Banners
+                                </a>
+                                <!--Para los pedidos pa-->
+                                <a class="nav-link {{ request()->routeIs('pedidos.index') ? 'active' : '' }}" href="{{ route('pedidos.index') }}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-receipt"></i></div>
+                                    Pedidos
                                 </a>
                             </nav>
                         </div>

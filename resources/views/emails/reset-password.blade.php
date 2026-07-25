@@ -84,6 +84,10 @@
             document.getElementById('email').value = emailFromUrl;
         }
 
+        //URL primero, sessionStorage como respaldo
+        const origin = urlParams.get('origin') || sessionStorage.getItem('password_reset_origin') || '';
+        const loginUrl = origin === 'admin' ? '/admin/login' : '/login';
+
         const resetPasswordForm = document.getElementById('resetPasswordForm');
         const errorMessage = document.getElementById('errorMessage');
         const submitBtn = document.getElementById('submitBtn');
@@ -135,8 +139,9 @@
                 errorMessage.className = "alert alert-success mt-3";
                 errorMessage.classList.remove('d-none');
 
-                setTimeout(() => { 
-                    window.location.href = '/login'; 
+                setTimeout(() => {
+                    sessionStorage.removeItem('password_reset_origin'); // limpiamos, ya cumplió su propósito
+                    window.location.href = loginUrl;
                 }, 2000);
 
             } catch (error) {

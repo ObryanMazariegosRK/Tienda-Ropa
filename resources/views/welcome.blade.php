@@ -21,9 +21,22 @@
                 </svg>
             </div>
 
+            <!--
             <div class="container-logo">
-                <a href="/" class="store-title">SENDRE</a>
+                <a href="/" class="store-title">TECPÁN</a>
+            </div>-->
+
+            <div class="container-logo">
+                <a href="/" class="store-title" aria-label="TECPÁN — Inicio">
+                    <img
+                    src="{{ asset('Auth/images/LogoTiendaRopa.png') }}"
+                    alt="TECPÁN"
+                    class="store-logo"
+                    >
+                </a>
             </div>
+
+
 
             <div class="header-icons">
                 <div id="auth-container">
@@ -38,86 +51,54 @@
                     </a>
                 </div>
 
-                <a href="/cart" class="icon-link" title="Ver Carrito">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-shopping-bag">
+                <button type="button" class="icon-link" id="cart-icon-btn" title="Ver Carrito" style="position: relative; background: none; border: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6.331 8h11.339a2 2 0 0 1 1.977 2.304l-1.255 8.152a3 3 0 0 1 -2.966 2.544h-6.852a3 3 0 0 1 -2.965 -2.544l-1.255 -8.152a2 2 0 0 1 1.977 -2.304z" /><path d="M9 11v-5a3 3 0 0 1 6 0v5" />
+                    </svg>
+                    <span id="cart-count-badge" class="cart-count-badge" style="display: none;">0</span>
+                </button> 
+                
+                
+                <a href="/mis-pedidos" class="icon-link" title="Mis Pedidos">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M9 5H7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                        <path d="M9 12l.01 0" />
+                        <path d="M13 12l2 0" />
+                        <path d="M9 16l.01 0" />
+                        <path d="M13 16l2 0" />
                     </svg>
                 </a>
             </div>
+
+
+
         </div>
 
         <nav class="main-nav" id="main-nav">
+            <!-- Corregido el ID de navCategoriesContainer para que coincida con el JS -->
             <ul class="nav-categories" id="nav-categories">
-                </ul>
+                <li class="nav-item"><a href="#">Cargando categorías...</a></li>
+            </ul>
         </nav>
     </header>
 
-
-
-
     <main>
         <!--BANNER-->
-        <<section class="hero-section" id="hero-banner-container">
+        <section class="hero-section" id="hero-banner-container">
             <div class="loading-banner">Cargando campaña...</div>
         </section>
-        
-        <section class="gallery-section">
-            <ul class="gallery-lists">
-                <li data-category="men">HOMBRES</li>
-                <li data-category="minimal" class="active">COLECCIÓN MINIMALISTA</li>
-                <li data-category="women">MUJERES</li>
-            </ul>
-            <div class="gallery-container">
-                <div class="gallery-layout" data-category="men" id="layout-1">
-                    <div class="gallery-text gallery-first-text">
-                        <h3 class="gallery-subtitle">Ropa Para Hombre</h3>
-                        <p class="gallery-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, exercitationem error labore eveniet, at nulla reiciendis nesciunt inventore deleniti corrupti, saepe dignissimos unde! Error reprehenderit deserunt, similique illo numquam quas!</p>
-                        <a href="#" class="link-default">VER COLECCIÓN</a>
-                    </div>
-                    <img src="{{ asset('image/collection-1.jpg') }}" alt="Colección 1">
-                    <img src="{{ asset('image/collection-2.jpg') }}" alt="Colección 2">
-                    <img src="{{ asset('image/collection-3.jpg') }}" alt="Colección 3" class="gallery-last-image">
-                    <div class="gallery-text gallery-last-text">
-                        <h3 class="gallery-subtitle">¿Por Qué Minimalista?</h3>
-                        <p class="gallery-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, exercitationem error labore eveniet, at nulla reiciendis nesciunt inventore deleniti corrupti, saepe dignissimos unde! Error reprehenderit deserunt, similique illo numquam quas!</p>
-                        <a href="#" class="link-default">LEER LA HISTORIA</a>
-                    </div>
-                </div>
-                <div class="gallery-layout" data-category="minimal" id="layout-2">
-                    <div class="gallery-text gallery-first-text">
-                        <h3 class="gallery-subtitle">La Colección</h3>
-                        <p class="gallery-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, exercitationem error labore eveniet, at nulla reiciendis nesciunt inventore deleniti corrupti, saepe dignissimos unde! Error reprehenderit deserunt, similique illo numquam quas!</p>
-                        <a href="#" class="link-default">VER COLECCIÓN</a>
-                    </div>
-                    <img src="{{ asset('image/collection-1.jpg') }}" alt="Colección 1">
-                    <img src="{{ asset('image/collection-2.jpg') }}" alt="Colección 2">
-                    <img src="{{ asset('image/collection-3.jpg') }}" alt="Colección 3" class="gallery-last-image">
-                    <div class="gallery-text gallery-last-text">
-                        <h3 class="gallery-subtitle">¿Por Qué Minimalista?</h3>
-                        <p class="gallery-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, exercitationem error labore eveniet, at nulla reiciendis nesciunt inventore deleniti corrupti, saepe dignissimos unde! Error reprehenderit deserunt, similique illo numquam quas!</p>
-                        <a href="#" class="link-default">LEER LA HISTORIA</a>
-                    </div>
-                </div>
-                <div class="gallery-layout" data-category="women" id="layout-3">
-                    <div class="gallery-text gallery-first-text">
-                        <h3 class="gallery-subtitle">Ropa Para Mujeres</h3>
-                        <p class="gallery-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, exercitationem error labore eveniet, at nulla reiciendis nesciunt inventore deleniti corrupti, saepe dignissimos unde! Error reprehenderit deserunt, similique illo numquam quas!</p>
-                        <a href="#" class="link-default">VER COLECCIÓN</a>
-                    </div>
-                    <img src="{{ asset('image/collection-1.jpg') }}" alt="Colección 1">
-                    <img src="{{ asset('image/collection-2.jpg') }}" alt="Colección 2">
-                    <img src="{{ asset('image/collection-3.jpg') }}" alt="Colección 3" class="gallery-last-image">
-                    <div class="gallery-text gallery-last-text">
-                        <h3 class="gallery-subtitle">¿Por Qué Minimalista?</h3>
-                        <p class="gallery-description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Officiis, exercitationem error labore eveniet, at nulla reiciendis nesciunt inventore deleniti corrupti, saepe dignissimos unde! Error reprehenderit deserunt, similique illo numquam quas!</p>
-                        <a href="#" class="link-default">LEER LA HISTORIA</a>
-                    </div>
-                </div>
-            </div>
-        </section>
+
+        <div class="secondary-nav">
+            <a href="/" class="secondary-nav-link">Tienda Principal</a>
+            <a href="/ofertas" class="secondary-nav-link">Rebajas</a>
+            <a href="/subastas" class="secondary-nav-link">Subastas</a>
+        </div>
+
         
         <section class="products-section">
-            <h2>PRODUCTOS DESTACADOS</h2>
+
             <div class="products-container" id="products-container">
                 <p class="loading-text" style="text-align: center; width: 100%;">Cargando catálogo...</p>
             </div>
@@ -126,91 +107,135 @@
         <section class="story-section">
             <div class="story-container">
                 <div class="story-container-text">
-                    <h3>Nuestra Historia</h3>
+                    <h3>Quienes somos</h3>
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. In necessitatibus natus ab officia commodi sunt molestias nostrum saepe quod veritatis repellendus similique perferendis impedit, animi, earum veniam provident nihil numquam.</p>
                 </div>
             </div>
             <div class="story-container-image">
-                <img src="{{ asset('image/story-image.jpg') }}" alt="Nuestra historia" class="story-image">
+                <img src="{{ asset('image/ImagenLocal.jpg') }}" alt="Nuestra historia" class="story-image">
             </div>
         </section>
         
-        <section class="subscriber-section">
-            <p>Suscribete y mantente al día con nuestros últimos productos</p>
-            <div class="container-input">
-                <input type="email" placeholder="ejemplo@gmail.com" class="subscriber-input">
-                <button class="subscriber-btn">ENVIAR</button>
-                <p class="subscriber-thanks">¡Gracias por suscribirte!</p>
-            </div>
-        </section>
+        
     </main>
     
-    <footer>
-        <div class="container-copyright">
-            <div class="footer-logo">
-                <img src="{{ asset('image/logo.png') }}" alt="Logo Tienda">
+
+    <footer class="store-footer">
+        <div class="store-footer-main">
+            <!-- Marca -->
+            <div class="footer-brand">
+                <a href="/" class="footer-logo-link" aria-label="Amerishop — Inicio">
+                    <img
+                        src="{{ asset('Auth/images/LogoTiendaRopa.png') }}"
+                        alt="Amerishop"
+                        class="footer-store-logo"
+                    >
+                </a>
+
+                <p class="footer-brand-text">
+                    © 2026 Amerishop. Todos los derechos reservados.
+                </p>
             </div>
-            <p>Sendre |. Todos los derechos reservados</p>
-        </div>
-        <nav class="footer-nav">
+
+            <!-- Contacto -->
+            <section class="footer-contact" aria-labelledby="footer-contact-title">
+                <h3 id="footer-contact-title">Contáctanos</h3>
+
+                <ul class="footer-contact-list">
+                    <li>
+                        <span class="footer-contact-icon" aria-hidden="true">
+                            <!-- Ubicación -->
+                            
+
+                    </span>
+                    <span>Tecpán, Chimaltenango,<br>Guatemala</span>
+                </li>
+
+                <li>
+                    <span class="footer-contact-icon" aria-hidden="true">
+                        <!-- Correo -->
+                        
+
+                    </span>
+                    <a href="mailto:amerishop@gmail.com">amerishop@gmail.com</a>
+                </li>
+
+                <li>
+                    <span class="footer-contact-icon" aria-hidden="true">
+                        <!-- Horario -->
+                        
+
+                    </span>
+                    <span>
+                        Lun–Vie: 8:00 AM – 6:00 PM<br>
+                        Sáb: 9:00 AM – 2:00 PM
+                    </span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Navegación -->
+        <nav class="footer-links" aria-label="Enlaces del pie de página">
+            <h3>Explora</h3>
             <ul>
-                <li><a href="#">Inicio</a></li>
-                <li><a href="#">Colección</a></li>
-                <li><a href="#">Destacados</a></li>
-                <li><a href="#">Contacto</a></li>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/ofertas">Ofertas</a></li>
+                <li><a href="/subastas">Subastas</a></li>
+                <li><a href="/mis-pedidos">Mis pedidos</a></li>
             </ul>
         </nav>
-    </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            //Buscamos el contenedor del botón y verificamos si hay un token guardado
-            const authContainer = document.getElementById('auth-container');
-            const token = localStorage.getItem('auth_token');
+        <!-- Redes -->
+        <section class="footer-social" aria-labelledby="footer-social-title">
+            <h3 id="footer-social-title">Síguenos</h3>
 
-            //Si el token existe, el usuario está logueado
-            if (token) {
-                //Reemplazamos el botón de "Login" por un botón de "Cerrar Sesión"
-                authContainer.innerHTML = `
-                    <a href="#" id="logoutBtn" class="icon-link" title="Cerrar Sesión" style="color: #dc3545;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-logout">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
-                        <path d="M9 12h12l-3 -3" />
-                        <path d="M18 15l3 -3" />
-                        </svg>
-                    </a>
-                `;
+            <a
+                href="https://www.instagram.com/amerishopgt502/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="instagram-link"
+                aria-label="Visitar Instagram de Amerishop"
+            >
+                _
 
-                //Le damos funcionalidad al nuevo botón de "Cerrar Sesión"
-                document.getElementById('logoutBtn').addEventListener('click', async function(e) {
-                    e.preventDefault(); // Evita que el enlace salte hacia arriba
-                    
-                    const token = localStorage.getItem('auth_token');
+                <span>@amerishopgt502</span>
+            </a>
+        </section>
+    </div>
 
-                    //Si hay un token, le avisamos a la API que lo destruya
-                    if (token) {
-                        try {
-                            await fetch('/api/logout', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Authorization': 'Bearer ' + token //Le mostramos la pulsera VIP por asi decirlo para que la rompa
-                                }
-                            });
-                        } catch (error) {
-                            console.error('Error de red al cerrar sesión en el servidor:', error);
-                        }
-                    }
-                    
-                    //Eliminamos la "pulsera VIP" del navegador
-                    localStorage.removeItem('auth_token');
-                    
-                    //Recargamos la página para que vuelva a la vista de visitante normal
-                    window.location.reload();
-                });
-            }
-        });
-    </script>
+
+
+
+
+    <!-- Fondo oscuro semitransparente -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Panel lateral del carrito -->
+    <aside class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-header">
+            <h2 id="cart-drawer-title">Su carrito</h2>
+            <button class="cart-drawer-close" id="cart-drawer-close" aria-label="Cerrar carrito">&times;</button>
+        </div>
+
+        <div class="cart-drawer-items" id="cart-drawer-items">
+            <p class="loading-text">Cargando...</p>
+        </div>
+
+        <div class="cart-drawer-footer" id="cart-drawer-footer">
+            <!-- Se llena dinámicamente por JS -->
+        </div>
+    </aside>
+
+    <!--Para las direcciones-->
+    <!-- Overlay + modal de checkout -->
+    <div class="checkout-overlay" id="checkout-overlay"></div>
+    <div class="checkout-modal" id="checkout-modal">
+        <button class="checkout-modal-close" id="checkout-modal-close" aria-label="Cerrar">&times;</button>
+        <div id="checkout-modal-content"></div>
+    </div>
+
+
+
+
 </body>
-</html>
+</html>    

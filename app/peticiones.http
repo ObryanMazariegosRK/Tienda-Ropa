@@ -30,3 +30,58 @@ GET http://localhost:8000/api/categories/1/products
 
 ### 7 para eliminar los productos
 DELETE http://localhost:8000/api/products/1
+
+
+@baseUrl = http://localhost:8000
+
+### ==========================================
+### PRUEBA 1 — Sin token (debe rechazar con 401)
+### ==========================================
+PATCH {{baseUrl}}/api/orders/1/status
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "confirmed"
+}
+
+### ==========================================
+### LOGIN — Cliente normal (customer)
+### Copia el "token" de la respuesta y pégalo en @customerToken abajo
+### ==========================================
+POST {{baseUrl}}/api/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "Admin@gmail.com",
+  "password": "12345678"
+}
+
+### ==========================================
+### LOGIN — Administrador
+### Copia el "token" de la respuesta y pégalo en @adminToken abajo
+### ==========================================
+POST {{baseUrl}}/api/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "Admin@gmail.com",
+  "password": "12345678"
+}
+
+### ==========================================
+### PRUEBA 3 — Token de admin (debe permitir, 200 OK)
+### ==========================================
+@adminToken = 31|EG0aHu959szRaFv7nUvV0j3jlsPzRJO2cfsXQhMD111d9137
+
+PATCH {{baseUrl}}/api/orders/2/status
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": "confirmed"
+}
+

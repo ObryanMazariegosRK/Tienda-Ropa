@@ -1,5 +1,6 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 
 // ==========================================
@@ -11,9 +12,9 @@ Route::get('/', function () {
 });
 
 // Cuando alguien visite /login, muestra el archivo login.blade.php
-Route::view('/login', 'login')->name('login');
-Route::view('/register', 'register')->name('register');
-Route::view('/verify', 'verify')->name('verify');
+Route::view('/login', 'autenticacion.login')->name('login');
+Route::view('/register', 'autenticacion.register')->name('register');
+Route::view('/verify', 'autenticacion.verify')->name('verify');
 
 Route::get('/recuperar-password', function () {
     return view('emails.forgot-password'); 
@@ -23,6 +24,10 @@ Route::get('/cambiar-password', function () {
     return view('emails.reset-password'); 
 });
 
+// ==========================================
+// AUTENTICACIÓN DEL ADMINISTRADOR
+// ==========================================
+Route::view('/admin/login', 'admin.login')->name('admin.login');
 
 // ==========================================
 // RUTAS DEL PANEL DE ADMINISTRACIÓN
@@ -41,3 +46,17 @@ Route::view('/admin/productos/catalogo', 'admin.productos.catalogo')->name('prod
 // 4. Módulo de Productos (Formulario para crear un producto)
 // URL: misitio.com/admin/productos/crear
 Route::view('/admin/productos/crear', 'admin.productos.index')->name('productos.index');
+
+
+//Para la tiendaaaaaa
+Route::view('/ofertas', 'ofertas');
+
+
+//Para el banner
+Route::get('/admin/banners', function () {
+    return view('admin.banners.index');
+})->name('banners.index');
+
+//Para las ordenes 
+Route::view('/mis-pedidos', 'orders');
+Route::view('/admin/pedidos', 'admin.pedidos.index')->name('pedidos.index');

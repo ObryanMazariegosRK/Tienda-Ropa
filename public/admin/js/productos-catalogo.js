@@ -178,11 +178,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     window.eliminarProducto = function(id, nombre) {
         if(confirm(`¿Estás completamente seguro de eliminar el producto "${nombre}"?\nEsta acción no se puede deshacer.`)) {
-            fetch(`/api/products/${id}`, { method: 'DELETE' })
+            fetch(`/api/products/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('admin_auth_token')}`
+                }
+            })
                 .then(response => {
                     if(response.ok) {
                         alert("Producto eliminado exitosamente");
-                        window.refrescarGridConFiltrosActuales(); 
+                        window.refrescarGridConFiltrosActuales();
                     }
                 })
                 .catch(err => console.error("Error eliminando:", err));
@@ -213,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!parentId) {
             editSubcategorySelect.innerHTML = '<option value="">Selecciona una categoría primero</option>';
             editSubcategorySelect.disabled = true;
+            editSubcategorySelect.required = false;
             return;
         }
 
@@ -224,22 +230,28 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(data => {
                 const subcategories = Array.isArray(data) ? data : (data.data || []);
                 if (subcategories.length > 0) {
-                    editSubcategorySelect.innerHTML = '<option value="">Ninguna (Opcional)</option>';
+                    editSubcategorySelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
                     subcategories.filter(c => c.isActive).forEach(sub => {
                         editSubcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
                     });
                     editSubcategorySelect.disabled = false;
+                    editSubcategorySelect.required = true; // 👈 el padre SÍ tiene hijas: obligar
 
-                    // Si mandamos un ID pre-seleccionado, lo aplicamos una vez cargado
                     if (subcategoryIdASeleccionar) {
                         editSubcategorySelect.value = subcategoryIdASeleccionar;
                     }
                 } else {
                     editSubcategorySelect.innerHTML = '<option value="">Sin subcategorías disponibles</option>';
+                    editSubcategorySelect.required = false; // 👈 el padre NO tiene hijas: opcional
                 }
             })
             .catch(err => console.error("Error cargando subcategorías", err));
     };
+    
+
+
+
+
 
     // Cuando se cambia el padre en el modal, cargar hijos
     editCategorySelect.addEventListener("change", (e) => {
@@ -378,9 +390,20 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formEditarProducto").addEventListener("submit", function(e) {
         e.preventDefault(); 
         const form = e.target;
+
+        // Si el padre tiene subcategorías cargadas pero no se eligió ninguna, detenemos el guardado
+        const tieneSubcategoriasDisponibles = editSubcategorySelect.options.length > 1 && !editSubcategorySelect.disabled;
+        if (tieneSubcategoriasDisponibles && !editSubcategorySelect.value) {
+            alert("Esta categoría tiene subcategorías. Por favor selecciona una antes de guardar.");
+            return;
+        }
+
+        const categoriaFinal = editSubcategorySelect.value || editCategorySelect.value;
+
         const formData = new FormData(form);
         formData.append('_method', 'PUT');
         formData.delete('new_images[]');
+        formData.set('categoryId', categoriaFinal); // 👈 ahora sí, después de crear formData
 
         const archivosFinales = editSelectedFiles.filter(f => f !== null);
         archivosFinales.forEach(file => formData.append('new_images[]', file));
@@ -389,14 +412,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const productId = document.getElementById("edit_product_id").value;
         const btnGuardar = form.querySelector("button[type='submit']");
         const textoOriginal = btnGuardar.innerHTML;
+        
+
 
         btnGuardar.disabled = true;
         btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
         fetch(`/api/products/${productId}`, {
-            method: 'POST', 
+            method: 'POST',
             body: formData,
-            headers: { 'Accept': 'application/json' }
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('admin_auth_token')}`
+            }
         })
         .then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(res => {

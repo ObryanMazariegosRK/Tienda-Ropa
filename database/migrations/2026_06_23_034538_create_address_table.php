@@ -11,26 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('addresses', function (Blueprint $table) {
-            $table->id();
-            
-            $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
-         
-            $table->string('label', 50);          
-            $table->string('address_line', 255);   
-            $table->boolean('is_default')->default(false);
-            
-            $table->timestamps(); 
+        Schema::table('addresses', function (Blueprint $table) {
+            // Quitamos el modelo estructurado viejo (nunca se llegó a usar)
+            $table->dropColumn(['street', 'city', 'state', 'postal_code', 'country']);
+
+            // Agregamos el modelo simple que usa la entidad Address actual
+            $table->string('label', 50)->after('user_id');
+            $table->string('address_line', 500)->after('label');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('address');
+        Schema::table('addresses', function (Blueprint $table) {
+            $table->dropColumn(['label', 'address_line']);
+
+            $table->string('street')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('country')->nullable();
+        });
     }
 };

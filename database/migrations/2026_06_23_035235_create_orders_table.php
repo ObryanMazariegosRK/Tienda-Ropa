@@ -16,10 +16,10 @@ return new class extends Migration
             
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
             $table->foreignId('address_id')->constrained('addresses')->restrictOnDelete();
-          
+            //Para guardar la direccion en la orden en caso de que cambie despues no cambiara en la orden
             $table->string('shipping_address', 500); 
             $table->decimal('total', 10, 2);
-            $table->string('status', 30)->default('received'); 
+            $table->string('status', 30)->default('pending_payment'); 
             
             // Esto creará las columnas created_at y updated_at
             $table->timestamps(); 

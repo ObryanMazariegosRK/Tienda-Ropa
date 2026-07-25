@@ -16,7 +16,7 @@ class GetProductByIdUseCase implements IGetProductByIdUseCase{
 
     public function execute(int $id): ?ProductDTO{
 
-        $product=$this->productRepository-> findById($id);
+        $product = $this->productRepository->findById($id);
 
         if(!$product){
             return null;
@@ -31,7 +31,13 @@ class GetProductByIdUseCase implements IGetProductByIdUseCase{
             price: $product->getPrice(),
             offerPrice: $product->getOfferPrice(),
             saleType: $product->getSaleType()->value,
-            status: $product->getStatus()->value
+            status: $product->getStatus()->value,
+            images: array_map(function ($image) {
+                return [
+                    'id' => $image->getId(),
+                    'url' => $image->getImageUrl()
+                ];
+            }, $product->getImages())
         );
     }
 }

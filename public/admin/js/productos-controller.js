@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!parentId) {
             subcategorySelect.innerHTML = '<option value="">Selecciona una categoría primero</option>';
             subcategorySelect.disabled = true;
+            subcategorySelect.required = false;
             return;
         }
 
@@ -45,18 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 const subcategories = Array.isArray(data) ? data : (data.data || []);
                 
                 if (subcategories.length > 0) {
-                    subcategorySelect.innerHTML = '<option value="">Ninguna (Opcional)</option>';
+                    subcategorySelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
                     subcategories.filter(c => c.isActive).forEach(sub => {
                         subcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
                     });
                     subcategorySelect.disabled = false;
+                    subcategorySelect.required = true; // 👈 el padre SÍ tiene hijas: obligar
                 } else {
                     subcategorySelect.innerHTML = '<option value="">Sin subcategorías disponibles</option>';
+                    subcategorySelect.disabled = true; // 👈 se queda deshabilitado, no hay nada que elegir
+                    subcategorySelect.required = false;
                 }
             })
             .catch(err => {
                 console.error("Error cargando subcategorías", err);
                 subcategorySelect.innerHTML = '<option value="">Error de carga</option>';
+                subcategorySelect.required = false;
             });
     });
 
@@ -119,6 +124,13 @@ document.addEventListener("DOMContentLoaded", () => {
     productForm.addEventListener("submit", (e) => {
         e.preventDefault();
 
+        // Si el padre tiene subcategorías cargadas pero no se eligió ninguna, detenemos el guardado
+        const tieneSubcategoriasDisponibles = subcategorySelect.options.length > 1 && !subcategorySelect.disabled;
+        if (tieneSubcategoriasDisponibles && !subcategorySelect.value) {
+            alert("Esta categoría tiene subcategorías. Por favor selecciona una antes de crear el producto.");
+            return;
+        }
+
         const formData = new FormData();
         
         //Si seleccionó subcategoría, enviamos esa. Si no, enviamos el padre.
@@ -152,8 +164,9 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(PRODUCT_API_URL, {
             method: "POST",
             body: formData,
-            headers: { 
-                "Accept": "application/json" 
+            headers: {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem('admin_auth_token')}`
             }
         })
         .then(async res => {

@@ -35,7 +35,7 @@ class Order {
         $this->shippingAddress = $shippingAddress;
         $this->total = $total;
         //Asignación por defecto
-        $this->status = $status ?? OrderStatus::RECEIVED; 
+        $this->status = $status ?? OrderStatus::PENDING_PAYMENT; 
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
     }
 
