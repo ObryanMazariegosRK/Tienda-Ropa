@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Abstractions\Product\IDeleteProductUseCase;
 use App\Application\Abstractions\Product\IGetAllProductsUseCase;
+use App\Application\Abstractions\Product\IGetPaginatedProductsUseCase;
 use App\Application\Abstractions\Product\IGetProductByIdUseCase;
 use App\Application\Abstractions\Product\IGetProductsByCategoryUseCase;
 use App\Application\Abstractions\Product\ISaveProductUseCase;
@@ -11,6 +12,7 @@ use App\Application\Abstractions\Product\IUpdateProductUseCase;
 use App\Application\DTOs\Product\ProductDTO;
 use App\Application\DTOs\Product\SaveProductDTO;
 use App\Application\DTOs\Product\UpdateProductDTO;
+use App\Domain\Exceptions\BusinessRuleException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
@@ -26,13 +28,13 @@ class ProductController extends Controller{
         private IUpdateProductUseCase $updateProductUseCase,
         private IDeleteProductUseCase $deleteProductUseCase,
         private IGetAllProductsUseCase $getAllProductsUseCase,
-        private IGetProductsByCategoryUseCase $getProductsByCategoryUseCase
+        private IGetProductsByCategoryUseCase $getProductsByCategoryUseCase,
+        private IGetPaginatedProductsUseCase $getPaginatedProductsUseCase
     ){}
 
     public function store(StoreProductRequest $request): JsonResponse{
 
         try {
-            //Transformamos los datos validados del Request al DTO de entrada
             $dto = new SaveProductDTO(
                 categoryId: (int) $request->validated('categoryId'),
                 name: $request->validated('name'),
@@ -41,17 +43,18 @@ class ProductController extends Controller{
                 offerPrice: $request->validated('offerPrice') !== null ? (float) $request->validated('offerPrice') : null,
                 saleType: $request->validated('saleType'),
                 status: $request->validated('status'),
-                
-                //Extraemos las imágenes. Si no hay, mandamos array vacío
-                images: $request->file('images', []) 
+                images: $request->file('images', []),
+
+                // Solo llegan valores reales cuando saleType === 'auction';
+                // en cualquier otro caso, validated() devuelve null y el DTO ya los acepta como opcionales
+                auctionDurationAmount: $request->validated('auctionDurationAmount') !== null ? (int) $request->validated('auctionDurationAmount') : null,
+                auctionDurationUnit: $request->validated('auctionDurationUnit'),
+                auctionMinIncrement: $request->validated('auctionMinIncrement') !== null ? (float) $request->validated('auctionMinIncrement') : null,
+                cost: (float) $request->validated('cost'),
             );
 
-                   
-
-            //Ejecutamos el Caso de Uso pasando el DTO
             $productDTO = $this->saveProductUseCase->execute($dto);
 
-            //Devolvemos una respuesta estándar en formato JSON con estado 201 
             return response()->json([
                 'success' => true,
                 'message' => 'Producto creado exitosamente.',
@@ -59,15 +62,15 @@ class ProductController extends Controller{
             ], 201);
 
         } catch (Exception $e) {
-            //Si algo falla 
             return response()->json([
                 'success' => false,
                 'message' => 'No se pudo crear el producto.',
                 'error' => $e->getMessage()
             ], 400);
         }
-
     }
+
+
 
     //Para obtener un producto por su Id
     public function show(int $id): JsonResponse
@@ -121,7 +124,8 @@ class ProductController extends Controller{
                 
                 // Pasamos los nuevos arreglos al DTO
                 newImages: $newImages,
-                deletedImageIds: $deletedImages
+                deletedImageIds: $deletedImages,
+                cost: $request->validated('cost') !== null ? (float) $request->validated('cost') : null,
             );
 
             // 3. Ejecutamos el caso de uso
@@ -139,7 +143,16 @@ class ProductController extends Controller{
                 'message' => $e->getMessage()
             ], 404);
 
-        } catch (\Exception $e) {
+        }
+        catch (BusinessRuleException $e) {
+            // Regla de negocio: el usuario hizo algo no permitido, no es un error del servidor
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+
+        }
+        catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al intentar actualizar el producto.',
@@ -153,7 +166,6 @@ class ProductController extends Controller{
     public function destroy(int $id): JsonResponse
     {
         try {
-            
             $this->deleteProductUseCase->execute($id);
 
             return response()->json([
@@ -162,31 +174,60 @@ class ProductController extends Controller{
             ], 200);
 
         } catch (NotFoundHttpException $e) {
-            //Si el producto no existe
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 404);
 
+        } catch (BusinessRuleException $e) {
+            // Regla de negocio: el usuario hizo algo no permitido, no es un error del servidor
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+
         } catch (\Exception $e) {
-            //Cualquier otro error 
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error al intentar eliminar el producto.',
                 'error' => $e->getMessage()
             ], 500);
         }
-    } 
+    }
 
-    public function index(): JsonResponse
+    //public function index(): JsonResponse
+    //{
+        //try {
+            //Obtenemos el array de DTOs
+            //$products = $this->getAllProductsUseCase->execute();
+
+            //return response()->json([
+              //  'success' => true,
+                //'data' => $products
+            //], 200);
+
+        //} catch (\Exception $e) {
+        //    return response()->json([
+        //        'success' => false,
+        //        'message' => 'Ocurrió un error al obtener el catálogo de productos.',
+         //       'error' => $e->getMessage()
+         //   ], 500);
+       // }
+   // }
+
+    public function index(Request $request): JsonResponse
     {
         try {
-            //Obtenemos el array de DTOs
-            $products = $this->getAllProductsUseCase->execute();
+            $page = max(1, (int) $request->query('page', 1));
+            $perPage = (int) $request->query('per_page', 24);
+            $onOffer = filter_var($request->query('on_offer', false), FILTER_VALIDATE_BOOLEAN);
+
+            $result = $this->getPaginatedProductsUseCase->execute($page, $perPage, 'available', null, 'direct', $onOffer);
 
             return response()->json([
                 'success' => true,
-                'data' => $products
+                'data' => $result['data'],
+                'meta' => $result['meta'],
             ], 200);
 
         } catch (\Exception $e) {
@@ -214,6 +255,25 @@ class ProductController extends Controller{
                 'message' => 'Ocurrió un error al obtener los productos de esta categoría.',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function onAuction(Request $request): JsonResponse
+    {
+        try {
+            $page = max(1, (int) $request->query('page', 1));
+            $perPage = (int) $request->query('per_page', 24);
+
+            $result = $this->getPaginatedProductsUseCase->execute($page, $perPage, 'available', null, 'auction');
+
+            return response()->json([
+                'success' => true,
+                'data' => $result['data'],
+                'meta' => $result['meta'],
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
     

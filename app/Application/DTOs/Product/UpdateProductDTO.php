@@ -14,6 +14,7 @@ class UpdateProductDTO
         public readonly string $saleType,
         public readonly string $status,
         public readonly ?array $newImages = [],
-        public readonly ?array $deletedImageIds = []
+        public readonly ?array $deletedImageIds = [],
+        public readonly ?float $cost = null,
     ) {}
 }

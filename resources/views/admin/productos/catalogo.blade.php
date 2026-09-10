@@ -3,6 +3,57 @@
 @section('title', 'Catálogo de Productos')
 
 @section('content')
+    <style>
+        #modalEditarProducto .modal-title i {
+            color: var(--ad-warning);
+        }
+
+        #editAuctionInfo {
+            border-radius: 12px !important;
+            background-color: var(--ad-green-soft) !important;
+            border-color: rgba(22, 163, 74, 0.25) !important;
+        }
+        #editAuctionInfo p.fw-bold {
+            color: var(--ad-green-dark);
+        }
+
+        #edit_images_preview {
+            padding: 0.8rem;
+            background-color: var(--ad-divider);
+            border-radius: 10px;
+        }
+        .edit-image-item {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+            flex-shrink: 0;
+        }
+        .edit-image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .edit-image-item .btn-danger {
+            width: 2.2rem;
+            height: 2.2rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .edit-image-item {
+                width: 84px;
+                height: 84px;
+            }
+        }
+    </style>
     <h1 class="mt-4">Catálogo de Productos</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
@@ -10,31 +61,45 @@
     </ol>
 
     <!-- PANEL DE FILTROS -->
-    <div class="card mb-4 shadow-sm border-0 bg-light">
+    <div class="card mb-4 shadow-sm border-0 bg-light" id="filtersPanel">
         <div class="card-body">
-            <div class="row align-items-end">
-                <div class="col-md-4 mb-2 mb-md-0">
+            <div class="row align-items-end g-2">
+
+                <div class="col-4">
+                    <label class="form-label fw-bold text-secondary">Estado</label>
+                    <select id="filterStatus" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="available">Disponible</option>
+                        <option value="reserved">Reservado</option>
+                        <option value="disabled">Desactivado</option>
+                    </select>
+                </div>
+                <div class="col-4">
                     <label for="filterCategory" class="form-label fw-bold text-secondary">Categoría Principal</label>
                     <select id="filterCategory" class="form-select border-primary">
                         <option value="">Todas las categorías...</option>
-                        <!-- Se llenará con JS -->
                     </select>
                 </div>
-                <div class="col-md-4 mb-2 mb-md-0">
+                <div class="col-4">
                     <label for="filterSubcategory" class="form-label fw-bold text-secondary">Subcategoría</label>
                     <select id="filterSubcategory" class="form-select border-primary" disabled>
                         <option value="">Selecciona una categoría primero...</option>
-                        <!-- Se llenará con JS -->
                     </select>
                 </div>
+
+            </div>
+            <!--
                 <div class="col-md-4 text-md-end">
-                    <!-- Botón para ir a crear un producto -->
+                    Botón para ir a crear un producto 
                     <a href="{{ route('productos.index') }}" class="btn btn-success">
                         <i class="fas fa-plus me-1"></i> Agregar Producto
                     </a>
-                </div>
-            </div>
+                </div>   
+            -->
+
         </div>
+
+        
     </div>
 
     <!-- CUADRÍCULA DE PRODUCTOS (GRID) -->
@@ -73,6 +138,7 @@
         -->
         
     </div>
+    <nav class="pagination admin-pagination" id="adminPagination" aria-label="Paginación del catálogo"></nav>
 
     <!-- Modal para Editar Producto -->
     <div class="modal fade" id="modalEditarProducto" tabindex="-1" aria-labelledby="modalEditarProductoLabel" aria-hidden="true">
@@ -114,17 +180,63 @@
 
                   
                         <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Costo (Q)</label>
+                                <input type="number" step="0.01" class="form-control currency-input" id="edit_cost" name="cost" required>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label">Precio (Q)</label>
-                                <!-- 💡 Agregada la clase currency-input -->
                                 <input type="number" step="0.01" class="form-control currency-input" id="edit_price" name="price" required>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="editOfferPriceWrapper">
                                 <label class="form-label">Precio Oferta (Q)</label>
-                                <!-- 💡 Agregada la clase currency-input -->
                                 <input type="number" step="0.01" class="form-control currency-input" id="edit_offer_price" name="offerPrice">
+                                <div class="form-text">Opcional (al ingresar un precio, aparecerá en la sección de ofertas)</div>
                             </div>
+
                         </div>
+
+
+                        <!-- Panel de subasta: solo visible cuando el producto es de tipo subasta -->
+                        <div id="editAuctionInfo" class="row mb-3 border rounded p-3 bg-light d-none">
+
+                            
+                            <div class="col-md-4">
+                                <p class="mb-1 text-muted small">Precio actual</p>
+                                <p class="fw-bold fs-5" id="editAuctionCurrentPrice">—</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 text-muted small">Pujas registradas</p>
+                                <p class="fw-bold fs-5" id="editAuctionBidCount">—</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1 text-muted small">Estado</p>
+                                <p class="fw-bold fs-5" id="editAuctionStatus">—</p>
+                            </div>
+                            
+                            <div class="col-12" id="auctionEndedNotice" style="display:none;">
+                                <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2 mb-2">
+                                    <span id="auctionEndedNoticeText"></span>
+                                    <button type="button" class="btn btn-sm btn-warning fw-bold" onclick="window.location.reload()">
+                                        <i class="fas fa-sync-alt me-1"></i> Recargar página
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mt-2">
+                                <label class="form-label">Extender / cambiar fecha de finalización</label>
+                                <input type="datetime-local" id="editAuctionEndDate" class="form-control">
+                            </div>
+                            <div class="col-md-6 mt-2 d-flex align-items-end">
+                                <button type="button" id="saveAuctionDurationBtn" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-clock me-1"></i> Actualizar duración
+                                </button>
+                            </div>
+                            <div id="editAuctionDurationError" class="alert alert-danger d-none mt-2"></div>
+                        </div>
+
+
+
 
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>

@@ -24,7 +24,11 @@ interface IProductRepository{
      * @return Product[]
      */
     public function findAll(): array;
+    
+    public function updateStatus(int $id, string $status): void;
+    public function updateSaleType(int $id, string $saleType): void;
 
+    public function paginate(int $page, int $perPage, ?string $status = null, ?int $categoryId = null, ?string $saleType = null, bool $onlyOffers = false): array;
     /**
      * @return Product[]
      */
@@ -32,8 +36,9 @@ interface IProductRepository{
 
     public function findImagesByIds(array $imageIds): array;
     public function deleteImages(array $imageIds): void;
+    public function updateCost(int $id, ?float $cost): void;
 
-    
+    public function archive(int $id, string $slugActual): void;
 
 
 }

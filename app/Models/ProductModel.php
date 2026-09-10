@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Domain\Enum\ProductSaleType;
 use App\Domain\Enum\ProductStatus;
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,12 @@ class ProductModel extends Model{
     //Indicamos explícitamente que se conecte con la tabla products de mysql
     protected $table='products';
 
+    //para indicarle cual factori debe de usar
+    protected static function newFactory()
+    {
+        return ProductFactory::new();
+    }
+
     //Los campos que permitiremos llenar de manera masiva (fillable=rellenable)
     protected $fillable =[
         'category_id',
@@ -24,6 +31,7 @@ class ProductModel extends Model{
         'description',
         'price',
         'offer_price',
+        'cost',        
         'sale_type',
         'status',
     ];
@@ -33,7 +41,9 @@ class ProductModel extends Model{
     protected $casts=[
         'price'=>'float',
         'offer_price'=>'float',
+        'cost'=>'float',
         //convertimos el string de la DB en un Enum de Dominio
+        
         'sale_type'=> ProductSaleType::class,
         'status'=> ProductStatus::class,
     ];

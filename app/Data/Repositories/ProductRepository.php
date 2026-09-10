@@ -5,8 +5,10 @@ namespace App\Data\Repositories;
 use App\Domain\Abstractions\IProductRepository;
 use App\Domain\Entities\Product;
 use App\Domain\Entities\ProductImage;
+use App\Domain\Enum\ProductStatus;
 use App\Models\ProductImageModel;
 use App\Models\ProductModel;
+use App\Models\Category;
 use Override;
 
 class ProductRepository implements IProductRepository{
@@ -22,6 +24,7 @@ class ProductRepository implements IProductRepository{
         $model->slug = $product->getSlug();
         $model->price = $product->getPrice();
         $model->offer_price = $product->getOfferPrice();
+        $model->cost = $product->getCost();
 
         //Gracisas a los casts podemos pasar los Enum directamente
         $model->sale_type=$product->getSaleType();
@@ -54,6 +57,7 @@ class ProductRepository implements IProductRepository{
         $model->description = $product->getDescription();
         $model->slug = $product->getSlug();
         $model->price = $product->getPrice();
+        $model->cost = $product->getCost(); 
         $model->offer_price = $product->getOfferPrice();
         $model->sale_type = $product->getSaleType();
         $model->status = $product->getStatus();
@@ -85,7 +89,9 @@ class ProductRepository implements IProductRepository{
     //Para obtener todos los productos
     public function findAll():array{
         //Colección, es como un array pero con poderes xd
-        $models=ProductModel::with('images')->get();
+       $models=ProductModel::with('images')
+        ->whereNotIn('status', [ProductStatus::DELETED->value, ProductStatus::SOLD->value])
+        ->get();
 
        //mapeamos el array para convertirlos en entidades Product
        //(fn($model)=>) es una funcion flecha, el $model representa cada 
@@ -94,10 +100,66 @@ class ProductRepository implements IProductRepository{
 
     }
 
+    public function paginate(
+        int $page,
+        int $perPage,
+        ?string $status = null,
+        ?int $categoryId = null,
+        ?string $saleType = null,
+        bool $onlyOffers = false
+    ): array 
+    {
+        $query = ProductModel::with('images')
+            ->whereNotIn('status', [ProductStatus::DELETED->value, ProductStatus::SOLD->value])
+            ->orderBy('created_at', 'desc');
+
+        if ($status !== null) {
+            $query->where('status', $status);
+        }
+
+        if ($categoryId !== null) {
+            // Incluimos la categoría elegida + todas sus subcategorías hijas.
+            // Así, elegir un padre trae todo lo suyo y lo de sus hijos; elegir
+            // una subcategoría (que no tiene hijos) filtra solo por ella misma.
+            $idsSubcategorias = Category::where('parent_category_id', $categoryId)
+                ->pluck('id')
+                ->toArray();
+
+            $idsAincluir = array_merge([$categoryId], $idsSubcategorias);
+            $query->whereIn('category_id', $idsAincluir);
+        }
+
+        if ($saleType !== null) {
+            $query->where('sale_type', $saleType);
+        }
+
+        if ($onlyOffers) {
+            $query->whereNotNull('offer_price')
+                ->whereColumn('offer_price', '<', 'price');
+        }
+
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+
+        $items = collect($paginator->items())
+            ->map(fn($model) => $this->mapToDomain($model))
+            ->toArray();
+
+        return [
+            'items' => $items,
+            'total' => $paginator->total(),
+            'currentPage' => $paginator->currentPage(),
+            'perPage' => $paginator->perPage(),
+            'lastPage' => $paginator->lastPage(),
+        ];
+    }
+
     //Para obtener los productos por categoria
     public function findByCategoryId(int $categoryId): array
     {
-        $models=ProductModel::where('category_id', $categoryId)->with('images')->get();
+        $models=ProductModel::where('category_id', $categoryId)
+            ->whereNotIn('status', [ProductStatus::DELETED->value, ProductStatus::SOLD->value])
+            ->with('images')
+            ->get();
 
         //mapeamos el array que vamos a devolver
         return $models->map(fn($model)=>$this->mapToDomain($model))->toArray();
@@ -160,7 +222,8 @@ class ProductRepository implements IProductRepository{
             $model->offer_price !==null?(float) $model->offer_price: null,
             //Convertidos previamente a Enum en el archivo model
             $model->sale_type,
-            $model->status
+            $model->status,
+            $model->cost !== null ? (float) $model->cost : null
         );
 
         //Mapeamos las imágenes que ya vienen cargadas en el modelo de Eloquent
@@ -176,6 +239,30 @@ class ProductRepository implements IProductRepository{
         $product->setImages($domainImages);
 
         return $product;
+    }
+
+    //Para actualizar el estado del producto
+    public function updateStatus(int $id, string $status): void
+    {
+        ProductModel::where('id', $id)->update(['status' => $status]);
+    }
+
+    public function updateSaleType(int $id, string $saleType): void
+    {
+        ProductModel::where('id', $id)->update(['sale_type' => $saleType]);
+    }
+
+    public function updateCost(int $id, ?float $cost): void
+    {
+        ProductModel::where('id', $id)->update(['cost' => $cost]);
+    }
+
+    public function archive(int $id, string $slugActual): void
+    {
+        ProductModel::where('id', $id)->update([
+            'status' => ProductStatus::DELETED->value,
+            'slug' => $slugActual . '-deleted-' . $id,
+        ]);
     }
 
 

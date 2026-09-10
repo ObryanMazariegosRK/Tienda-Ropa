@@ -5,40 +5,49 @@ namespace App\Application\UseCases\Product;
 use App\Application\Abstractions\Product\IImageStorageService;
 use App\Application\Abstractions\Product\ISaveProductUseCase;
 use App\Application\DTOs\Product\ProductDTO;
+use App\Application\DTOs\Product\AdminProductDTO;
 use App\Application\DTOs\Product\SaveProductDTO;
 use App\Domain\Abstractions\IProductRepository;
+use App\Domain\Abstractions\IAuctionRepository;
 use App\Domain\Entities\Product;
 use App\Domain\Entities\ProductImage;
+use App\Domain\Entities\Auction;
 use App\Domain\Enum\ProductSaleType;
 use App\Domain\Enum\ProductStatus;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use DateTimeImmutable;
 use Exception;
-//Importamos Str para poder generar el slug
-use Illuminate\Support\Str; 
 
-class SaveProductUseCase implements ISaveProductUseCase 
+class SaveProductUseCase implements ISaveProductUseCase
 {
     public function __construct(
-        private IProductRepository $productRepository, 
-        private IImageStorageService $imageStorageService
+        private IProductRepository $productRepository,
+        private IImageStorageService $imageStorageService,
+        private IAuctionRepository $auctionRepository 
     ) {}
 
-    public function execute(SaveProductDTO $dto): ProductDTO
+    public function execute(SaveProductDTO $dto): AdminProductDTO
     {
-        //Validaciones
         $saleTypeEnum = ProductSaleType::tryFrom($dto->saleType);
-        if(!$saleTypeEnum){
+        if (!$saleTypeEnum) {
             throw new Exception("El tipo de venta proporcionado no es válido");
         }
 
         $statusEnum = ProductStatus::tryFrom($dto->status);
-        if(!$statusEnum){
+        if (!$statusEnum) {
             throw new Exception("El estado del producto no es válido");
         }
-       
-        //Generar Slug
+
+        // Validamos los datos de subasta ANTES de tocar la base de datos
+        if ($saleTypeEnum === ProductSaleType::AUCTION) {
+            if (!$dto->auctionDurationAmount || !$dto->auctionDurationUnit) {
+                throw new Exception('Debes indicar la duración de la subasta.');
+            }
+        }
+
         $slugGenerado = Str::slug($dto->name);
 
-        //Construir la Entidad Principal 
         $product = new Product(
             id: null,
             categoryId: $dto->categoryId,
@@ -48,51 +57,63 @@ class SaveProductUseCase implements ISaveProductUseCase
             price: $dto->price,
             offerPrice: $dto->offerPrice,
             saleType: $saleTypeEnum,
-            status: $statusEnum
-        ); 
+            status: $statusEnum,
+            cost: $dto->cost
+        );
 
-        //GUARDAMOS PRIMERO (Para obtener el ID de la base de datos)
-        //$savedProduct ya vendra con el ID asignado por MySQL
-        $savedProduct = $this->productRepository->save($product);
+        [$savedProduct, $imagesResponse] = DB::transaction(function () use ($dto, $product, $saleTypeEnum) {
+            $savedProduct = $this->productRepository->save($product);
 
-        //Inicializamos la variable
-        $imagesResponse = null; 
+            $imagesResponse = null;
+            if (!empty($dto->images)) {
+                $imagePaths = $this->imageStorageService->storeMultiple($dto->images, 'products');
 
-        //Procesamos las imagenes basicamente creamos las entidades de ProductImage para guardarlos en la db xd
-        if (!empty($dto->images)) {
-            $imagePaths = $this->imageStorageService->storeMultiple($dto->images, 'products');
+                $productImageEntities = [];
+                foreach ($imagePaths as $path) {
+                    $productImageEntities[] = new ProductImage(
+                        id: null,
+                        productId: $savedProduct->getId(),
+                        imageUrl: $path
+                    );
+                }
 
-            //linea para depurar
-            //dd('Archivos recibidos:', $dto->images, 'Rutas generadas:', $imagePaths);
+                $savedProduct->setImages($productImageEntities);
+                $imagenesGuardadas = $this->productRepository->saveImagesForProduct($savedProduct);
 
-            $productImageEntities = [];
-            foreach ($imagePaths as $path) {
-                $productImageEntities[] = new ProductImage(
-                    id: null, 
-                    //una vez la db ya nos haya dado el id
-                    productId: $savedProduct->getId(), 
-                    imageUrl: $path
+                $imagesResponse = [];
+                foreach ($imagenesGuardadas as $imgEntity) {
+                    $imagesResponse[] = [
+                        'id' => $imgEntity->getId(),
+                        'url' => $imgEntity->getImageUrl()
+                    ];
+                }
+            }
+
+            // Si el producto es de subasta, creamos la subasta asociada en el mismo paso
+            if ($saleTypeEnum === ProductSaleType::AUCTION) {
+                $startDate = new DateTimeImmutable();
+                $endDate = match ($dto->auctionDurationUnit) {
+                    'hours' => $startDate->modify("+{$dto->auctionDurationAmount} hours"),
+                    'days'  => $startDate->modify("+{$dto->auctionDurationAmount} days"),
+                    'weeks' => $startDate->modify("+{$dto->auctionDurationAmount} weeks"),
+                };
+
+                $auction = new Auction(
+                    id: null,
+                    productId: $savedProduct->getId(),
+                    startingPrice: $dto->price,
+                    startDate: $startDate,
+                    endDate: $endDate,
+                    minIncrement: $dto->auctionMinIncrement ?? 10.00
                 );
+
+                $this->auctionRepository->create($auction);
             }
 
-            //Asignamos las imágenes al producto guardado
-            $savedProduct->setImages($productImageEntities);
+            return [$savedProduct, $imagesResponse];
+        });
 
-            //Actualizamos el producto para insertar sus imágenes y recibimos las entidades con ID
-            $imagenesGuardadas = $this->productRepository->saveImagesForProduct($savedProduct);
-
-            //Armamos el diccionario para que nos retorne el id y la url
-            $imagesResponse = [];
-            foreach ($imagenesGuardadas as $imgEntity) {
-                $imagesResponse[] = [
-                    'id' => $imgEntity->getId(),
-                    'url' => $imgEntity->getImageUrl()
-                ];
-            }
-        }
-
-        //Retornamos el DTO
-        return new ProductDTO(
+        return new AdminProductDTO(
             id: $savedProduct->getId(),
             categoryId: $savedProduct->getCategoryId(),
             name: $savedProduct->getName(),
@@ -100,10 +121,10 @@ class SaveProductUseCase implements ISaveProductUseCase
             slug: $savedProduct->getSlug(),
             price: $savedProduct->getPrice(),
             offerPrice: $savedProduct->getOfferPrice(),
-            saleType: $savedProduct->getSaleType()->value, 
+            cost: $savedProduct->getCost(),
+            saleType: $savedProduct->getSaleType()->value,
             status: $savedProduct->getStatus()->value,
-            images: $imagesResponse 
+            images: $imagesResponse
         );
-
-    } 
+    }
 }

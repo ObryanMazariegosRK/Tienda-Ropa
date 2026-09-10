@@ -20,6 +20,7 @@ class Product
    //Para el manejo de imagenes por cada producto xd
     /** @var ProductImage[] */
     private array $images = [];
+    private ?float $cost;
 
 
     public function __construct(
@@ -31,9 +32,8 @@ class Product
         float $price,
         ?float $offerPrice,
         ProductSaleType $saleType,
-        ProductStatus $status = ProductStatus::AVAILABLE
-
-
+        ProductStatus $status = ProductStatus::AVAILABLE,
+        ?float $cost = null
     ) {
         $this->validateCategoryId($categoryId);
         $this->validateName($name);
@@ -51,6 +51,7 @@ class Product
         $this->offerPrice = $offerPrice;
         $this->saleType = $saleType;
         $this->status = $status;
+        $this->cost = $cost;
     }
 
     //VALIDACIONES
@@ -237,7 +238,7 @@ class Product
     public function getOfferPrice(): ?float { return $this->offerPrice; }
     public function getSaleType(): ProductSaleType { return $this->saleType; }
     public function getStatus(): ProductStatus { return $this->status; }
-
+    public function getCost(): ?float { return $this->cost; }
     //PARA EL MANEJO DE IMAGENES
     /**
      * @param ProductImage[] $images

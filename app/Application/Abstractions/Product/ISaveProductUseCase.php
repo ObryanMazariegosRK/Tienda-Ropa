@@ -3,9 +3,9 @@
 namespace App\Application\Abstractions\Product;
 
 use App\Application\DTOs\Product\SaveProductDTO;
-use App\Application\DTOs\Product\ProductDTO;
+use App\Application\DTOs\Product\AdminProductDTO;
 
 interface ISaveProductUseCase
 {
-    public function execute(SaveProductDTO $dto): ProductDTO;
+    public function execute(SaveProductDTO $dto): AdminProductDTO;
 }
