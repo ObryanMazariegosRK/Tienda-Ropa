@@ -13,4 +13,6 @@ interface IOrderDetailRepository
      * Cada elemento: ['detail' => OrderDetail, 'productName' => string, 'productImage' => ?string]
      */
     public function findByOrderIdWithProductInfo(int $orderId): array;
+
+    public function existsInActiveOrder(int $productId): bool;
 }

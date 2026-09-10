@@ -15,9 +15,9 @@ class ListAllOrdersUseCase implements IListAllOrdersUseCase
         private IOrderDetailRepository $orderDetailRepository
     ) {}
 
-    public function execute(?string $status = null): array
+    public function execute(?string $status = null, ?string $grupo = null): array
     {
-        $orders = $this->orderRepository->findAll($status);
+        $orders = $this->orderRepository->findAll($status, $grupo);
 
         return array_map(function ($order) {
             $rows = $this->orderDetailRepository->findByOrderIdWithProductInfo($order->getId());
@@ -37,7 +37,8 @@ class ListAllOrdersUseCase implements IListAllOrdersUseCase
                 total: $order->getTotal(),
                 shippingAddress: $order->getShippingAddress(),
                 createdAt: $order->getCreatedAt()->format('Y-m-d H:i:s'),
-                items: $items
+                items: $items,
+                confirmedAt: $order->getConfirmedAt()?->format('Y-m-d H:i:s'),
             );
         }, $orders);
     }

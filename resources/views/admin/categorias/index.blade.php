@@ -3,6 +3,33 @@
 @section('title', 'Gestión de Categorías')
 
 @section('content')
+
+    <style>
+    @media (max-width: 767.98px) {
+        /* Le gana ancho extra a la tabla sin tocar el layout compartido del admin */
+        .table-responsive {
+            margin: 0 -0.6rem;
+            width: calc(100% + 1.2rem);
+        }
+        .card-body {
+            padding: 0.9rem 0.7rem;
+        }
+
+        /* Ocultamos Descripción (se ve completa al Editar) para que ID / Categoría / Estado quepan sin scroll */
+        #categoriesTableBody td:nth-child(3),
+        .table thead th:nth-child(3) {
+            display: none;
+        }
+
+        .table {
+            font-size: 0.82rem;
+        }
+        .table td,
+        .table th {
+            padding: 0.6rem 0.4rem;
+        }
+    }
+    </style>
     <h1 class="mt-4">Módulo de Categorías</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item active">Organiza el catálogo de tu tienda</li>
@@ -21,12 +48,11 @@
                             <label for="name" class="form-label">Nombre</label>
                             <input type="text" class="form-control" id="name" required placeholder="Ej: Caballeros, Camisas...">
                         </div>
+
+                        <input type="hidden" id="description" value="">
+
                         <div class="mb-3">
-                            <label for="description" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="description" rows="2" placeholder="Breve descripción..."></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="parentCategoryId" class="form-label">¿Depende de otra categoría?</label>
+                            <label for="parentCategoryId" class="form-label">¿Pertenece a otra categoria?</label>
                             <select class="form-select" id="parentCategoryId">
                                 <option value="" selected>Ninguna (Es una Categoría Padre)</option>
                             </select>
@@ -54,10 +80,8 @@
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width: 10%">ID</th>
-                                    <th style="width: 40%">Categoría Padre</th>
-                                    <th style="width: 35%">Descripción</th>
-                                    <th style="width: 15%">Estado</th>
+                                    <th style="width: 70%">Categoría Padre</th>
+                                    <th style="width: 30%">Estado</th>
                                 </tr>
                             </thead>
                             <tbody id="categoriesTableBody">
@@ -79,20 +103,15 @@
                 </div>
                 <div class="modal-body">
                     <form id="editCategoryForm">
-                        <input type="hidden" id="edit-id"> 
-                        
+                        <input type="hidden" id="edit-id">
+
                         <div class="mb-3">
                             <label for="edit-name" class="form-label">Nombre</label>
                             <input type="text" class="form-control" id="edit-name" required>
                         </div>
 
-                        <!-- NUEVO: Campo para la descripción -->
-                        <div class="mb-3">
-                            <label for="edit-description" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="edit-description" rows="3"></textarea>
-                        </div>
+                        <input type="hidden" id="edit-description" value="">
 
-                        <!-- NUEVO: Selector de categoría padre -->
                         <div class="mb-3">
                             <label for="edit-parentCategoryId" class="form-label">Categoría Padre</label>
                             <select class="form-select" id="edit-parentCategoryId">
@@ -100,7 +119,6 @@
                             </select>
                         </div>
 
-                        <!-- NUEVO: Switch para estado Activo/Inactivo -->
                         <div class="mb-4 form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="edit-isActive" role="switch">
                             <label class="form-check-label" for="edit-isActive">Categoría Activa</label>
@@ -115,6 +133,6 @@
 @endsection
 
 @push('scripts')
-    <!-- Tu JavaScript vive en la carpeta public, y lo llamamos así -->
+    
     <script src="/admin/js/categorias-controller.js"></script>
 @endpush

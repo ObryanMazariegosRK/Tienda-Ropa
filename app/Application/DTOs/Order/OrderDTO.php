@@ -10,6 +10,7 @@ class OrderDTO
         public readonly float $total,
         public readonly string $shippingAddress,
         public readonly string $createdAt,
-        public readonly array $items // OrderDetailDTO[]
+        public readonly array $items, // OrderDetailDTO[]
+        public readonly ?string $confirmedAt = null    
     ) {}
 }

@@ -9,20 +9,22 @@ use App\Domain\Enum\OrderStatus;
 class Order {
     private ?int $id;
     private int $userId;
-    private int $addressId;
+    private ?int $addressId;
     private string $shippingAddress;
     private float $total;
     private OrderStatus $status;
     private DateTimeImmutable $createdAt; 
+    private ?DateTimeImmutable $confirmedAt;
 
     public function __construct(
         ?int $id,
         int $userId,
-        int $addressId,
+        ?int $addressId,
         string $shippingAddress,
         float $total,
         ?OrderStatus $status = null, 
-        ?DateTimeImmutable $createdAt = null 
+        ?DateTimeImmutable $createdAt = null,
+        ?DateTimeImmutable $confirmedAt = null 
     ) {
         $this->validateUserId($userId);
         $this->validateAddressId($addressId);
@@ -37,6 +39,7 @@ class Order {
         //Asignación por defecto
         $this->status = $status ?? OrderStatus::PENDING_PAYMENT; 
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->confirmedAt = $confirmedAt;
     }
 
     //VALIDACIONES
@@ -47,8 +50,8 @@ class Order {
         }
     }
 
-    private function validateAddressId(int $addressId): void {
-        if ($addressId <= 0) {
+    private function validateAddressId(?int $addressId): void {
+        if ($addressId !== null && $addressId <= 0) {
             throw new InvalidArgumentException('El identificador de dirección es inválido');
         }
     }
@@ -115,7 +118,7 @@ class Order {
         return $this->userId;
     }
 
-    public function getAddressId(): int {
+    public function getAddressId(): ?int {
         return $this->addressId;
     }
 
@@ -133,5 +136,8 @@ class Order {
 
     public function getCreatedAt(): DateTimeImmutable { 
         return $this->createdAt;
+    }
+    public function getConfirmedAt(): ?DateTimeImmutable {
+        return $this->confirmedAt;
     }
 }

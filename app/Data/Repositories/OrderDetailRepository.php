@@ -46,4 +46,13 @@ class OrderDetailRepository implements IOrderDetailRepository
             ];
         })->toArray();
     }
+
+    public function existsInActiveOrder(int $productId): bool
+    {
+        return OrderDetailModel::where('product_id', $productId)
+            ->whereHas('order', function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            })
+            ->exists();
+    }
 }

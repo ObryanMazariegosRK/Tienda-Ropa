@@ -28,7 +28,7 @@ class UpdateCategoryRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'min:3', 'max:100'],
-            'description' => ['required', 'string', 'min:5'],
+            'description' => ['nullable', 'string'],
             'isActive' => ['nullable', 'boolean'],
             'parentCategoryId' => [
                 'nullable', 

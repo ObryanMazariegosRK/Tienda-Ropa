@@ -41,37 +41,45 @@ class CategoryController extends Controller
 
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        //Atrapamos los datos del JSON y armamos el DTO
-        $dto = new SaveCategoryDTO(
-            $request->input('name'),               
-            $request->input('description'),        
-            $request->input('parentCategoryId'),
-            //$request->input('slug'),               
-            $request->boolean('isActive', true)    
-        );
+        try {
+            $dto = new SaveCategoryDTO(
+                $request->input('name'),
+                $request->input('description') ?? '',
+                $request->input('parentCategoryId'),
+                $request->boolean('isActive', true)
+            );
 
-        //El pasamos el DTO al caso de uso
-        $categoryDTO = $this->saveCategoryUseCase->execute($dto);
-        //Retornamos la respuesta
-        return response()->json($categoryDTO, 201);
+            $categoryDTO = $this->saveCategoryUseCase->execute($dto);
+            return response()->json($categoryDTO, 201);
+
+        } catch (\App\Domain\Exceptions\BusinessRuleException $e) {
+            return response()->json(['error' => true, 'message' => $e->getMessage()], 422);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => true, 'message' => 'No se pudo crear la categoría.'], 500);
+        }
     }
 
     public function update(UpdateCategoryRequest $request, int $id): JsonResponse
     {
-        //Armamos el DTO con los datos que vienen en el JSON
-        $dto = new UpdateCategoryDTO(
-            $id, //Viene de la URL de la ruta (/api/categories/{id})
-            $request->input('name'),
-            $request->input('description'),
-            $request->input('parentCategoryId'),
-            $request->boolean('isActive', true)
-        );
+        try {
+            $dto = new UpdateCategoryDTO(
+                $id,
+                $request->input('name'),
+                $request->input('description') ?? '',
+                $request->input('parentCategoryId'),
+                $request->boolean('isActive', true)
+            );
 
-        //mandosmos el DTO al caso de uso
-        $categoryDTO = $this->updateCategoryUseCase->execute($dto);
+            $categoryDTO = $this->updateCategoryUseCase->execute($dto);
+            return response()->json($categoryDTO, 200);
 
-        //Retornamos la respuesta
-        return response()->json($categoryDTO, 200);
+        } catch (\App\Domain\Exceptions\BusinessRuleException $e) {
+            return response()->json(['error' => true, 'message' => $e->getMessage()], 422);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => true, 'message' => $e->getMessage()], 404);
+        }
     }
 
     //Para obtener una categoria por su Id
@@ -97,13 +105,18 @@ class CategoryController extends Controller
     {
         try {
             $this->deleteCategoryUseCase->execute($id);
-            
+
             return response()->json([
                 'message' => 'Categoría eliminada correctamente.'
             ], 200);
-            
+
+        } catch (\App\Domain\Exceptions\BusinessRuleException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage()
+            ], 422);
+
         } catch (\Exception $e) {
-            // Hacemos lo mismo para el delete, devolviendo 404 si no existía
             return response()->json([
                 'error' => true,
                 'message' => $e->getMessage()

@@ -37,7 +37,8 @@ class ListMyOrdersUseCase implements IListMyOrdersUseCase
                 total: $order->getTotal(),
                 shippingAddress: $order->getShippingAddress(),
                 createdAt: $order->getCreatedAt()->format('Y-m-d H:i:s'),
-                items: $items
+                items: $items,
+                confirmedAt: $order->getConfirmedAt()?->format('Y-m-d H:i:s'),
             );
         }, $orders);
     }

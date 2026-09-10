@@ -8,8 +8,10 @@ use App\Application\DTOs\Order\OrderDTO;
 use App\Application\DTOs\Order\OrderDetailDTO;
 use App\Domain\Abstractions\ICartRepository;
 use App\Domain\Abstractions\IAddressRepository;
+use App\Domain\Abstractions\IProductRepository;
 use App\Domain\Abstractions\IOrderRepository;
 use App\Domain\Abstractions\IOrderDetailRepository;
+use App\Domain\Enum\ProductStatus;
 use App\Domain\Entities\Order;
 use App\Domain\Entities\OrderDetail;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +26,8 @@ class CheckoutUseCase implements ICheckoutUseCase
         private ICartRepository $cartRepository,
         private IAddressRepository $addressRepository,
         private IOrderRepository $orderRepository,
-        private IOrderDetailRepository $orderDetailRepository
+        private IOrderDetailRepository $orderDetailRepository,
+        private IProductRepository $productRepository
     ) {}
 
     public function execute(int $userId, int $addressId): CheckoutResultDTO
@@ -40,6 +43,15 @@ class CheckoutUseCase implements ICheckoutUseCase
         }
 
         $total = array_sum(array_map(fn($row) => $row['cartItem']->getPriceSnapshot(), $cartRows));
+
+        foreach ($cartRows as $row) {
+            $product = $this->productRepository->findById($row['cartItem']->getProductId());
+            if (!$product || $product->getStatus()->value !== ProductStatus::AVAILABLE->value) {
+                throw new \InvalidArgumentException(
+                    "El producto \"{$row['productName']}\" ya no está disponible. Por favor elimínalo de tu carrito."
+                );
+            }
+        }
 
         // Todo en una transacción: si algo falla, no queremos una orden a medias
         $order = DB::transaction(function () use ($userId, $address, $total, $cartRows) {
@@ -62,6 +74,14 @@ class CheckoutUseCase implements ICheckoutUseCase
                     quantity: 1
                 );
             }, $cartRows);
+
+            foreach ($cartRows as $row) {
+                $this->productRepository->updateStatus(
+                    $row['cartItem']->getProductId(),
+                    ProductStatus::RESERVED->value
+                );
+            }
+
 
             $this->orderDetailRepository->createMany($details);
             $this->cartRepository->clearByUserId($userId);
@@ -88,7 +108,8 @@ class CheckoutUseCase implements ICheckoutUseCase
             total: $order->getTotal(),
             shippingAddress: $order->getShippingAddress(),
             createdAt: $order->getCreatedAt()->format('Y-m-d H:i:s'),
-            items: $itemDTOs
+            items: $itemDTOs,
+            confirmedAt: $order->getConfirmedAt()?->format('Y-m-d H:i:s'),
         );
 
         return new CheckoutResultDTO(
@@ -99,7 +120,8 @@ class CheckoutUseCase implements ICheckoutUseCase
 
     private function buildWhatsappUrl(OrderDTO $order): string
     {
-        $lineas = ["¡Hola! Quiero confirmar mi pedido *#{$order->id}*:", ""];
+        //$lineas = ["¡Hola! Quiero confirmar mi pedido *#{$order->id}*:", ""];
+        $lineas = ["¡Hola! Quiero confirmar mi pedido:", ""];
 
         foreach ($order->items as $item) {
             $lineas[] = "• {$item->productName} — Q" . number_format($item->unitPrice, 2);

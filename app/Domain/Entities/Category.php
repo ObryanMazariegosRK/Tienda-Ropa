@@ -50,12 +50,8 @@ class Category
 
     private function validateDescription(string $description): void 
     {
-        if (empty(trim($description))) {
-            throw new InvalidArgumentException('La descripción es obligatoria.');
-        }
-        
-        if (strlen($description) > 500) {
-            throw new InvalidArgumentException('La descripción no puede ser más de 500 caracteres.');
+        if (strlen($description) > 2000) {
+            throw new InvalidArgumentException('La descripción no puede ser más de 2000 caracteres.');
         }
     }
 

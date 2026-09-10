@@ -59,9 +59,10 @@ class OrderController extends Controller
 
     public function allOrders(Request $request): JsonResponse
     {
-        $status = $request->query('status'); // opcional: ?status=pending_payment
+        $status = $request->query('status');
+        $grupo = $request->query('grupo'); // 'active' | 'history'
 
-        $orders = $this->listAllOrdersUseCase->execute($status);
+        $orders = $this->listAllOrdersUseCase->execute($status, $grupo);
 
         return response()->json(['success' => true, 'data' => $orders], 200);
     }

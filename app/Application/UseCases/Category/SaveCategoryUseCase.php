@@ -8,7 +8,9 @@ use App\Application\DTOs\Category\CategoryDTO;
 use App\Domain\Abstractions\ICategoryRepository;
 use App\Domain\Entities\Category; 
 //Herramienta de Laravel para el slug
-use Illuminate\Support\Str; 
+use Illuminate\Support\Str;
+use App\Domain\Exceptions\BusinessRuleException;
+use Exception; 
 
 class SaveCategoryUseCase implements ISaveCategoryUseCase
 {
@@ -18,25 +20,39 @@ class SaveCategoryUseCase implements ISaveCategoryUseCase
 
     public function execute(SaveCategoryDTO $dto): CategoryDTO
     {
-        //Generamos el slug a partir del nombre que viene en el DTO
-        $slugGenerado = Str::slug($dto->name);
+        // Evitamos dos categorías/subcategorías con el mismo nombre
+        // dentro del mismo nivel (mismo padre, o ambas sin padre).
+        $hermanas = $this->categoryRepository->findByParentId($dto->parentCategoryId);
+        foreach ($hermanas as $hermana) {
+            if (mb_strtolower(trim($hermana->getName())) === mb_strtolower(trim($dto->name))) {
+                throw new BusinessRuleException("Ya existe una categoría llamada \"{$dto->name}\" en este mismo nivel. Usa otro nombre.");
+            }
+        }
 
-        //Fabricamos la Entidad de Dominio 
+        $textoParaSlug = $dto->name;
+
+        if ($dto->parentCategoryId !== null) {
+            $parentCategory = $this->categoryRepository->findById($dto->parentCategoryId);
+            if ($parentCategory) {
+                $textoParaSlug = $parentCategory->getName() . ' ' . $dto->name;
+            }
+        }
+
+        $slugGenerado = Str::slug($textoParaSlug);
+
         $categoryEntity = new Category(
-            null, // El ID es nulo porque es nueva
+            null,
             $dto->name,
             $dto->description,
             $dto->parentCategoryId,
-            $slugGenerado, 
+            $slugGenerado,
             $dto->isActive
         );
 
-        //Mandamos la entidad al repositorio 
         $savedEntity = $this->categoryRepository->save($categoryEntity);
 
-        //Mapeamos la entidad guardada
         return new CategoryDTO(
-            $savedEntity->getId(), 
+            $savedEntity->getId(),
             $savedEntity->getName(),
             $savedEntity->getDescription(),
             $savedEntity->getParentCategoryId(),
@@ -45,3 +61,4 @@ class SaveCategoryUseCase implements ISaveCategoryUseCase
         );
     }
 }
+
