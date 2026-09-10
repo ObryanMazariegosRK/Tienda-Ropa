@@ -69,6 +69,17 @@ services:
     networks:
       - tienda_network
 
+  scheduler:
+    image: tienda-ropa-app   
+    working_dir: /var/www
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - mysql
+    networks:
+      - tienda_network   
+
 networks:
   tienda_network:
     driver: bridge
