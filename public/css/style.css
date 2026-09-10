@@ -8,11 +8,16 @@ html{
     font-size: 10px;
 }
 :root{
-    --primary-color: #D17A55;
-    --white-color: #EAEAEA;
-    --black-color: #101010;
-    --text-color: #303030;
-    --bg-color: #F9F6F3;
+    --primary-color: #39FF14;
+    --secondary-green: #22C55E;
+    --dark-green: #15803D;
+    --white-color: #FFFFFF;
+    --black-color: #121212;
+    --text-color: #2D2D2D;
+    --bg-color: #FAFAFA;
+    --border-color: #D4D4D8;
+    --muted-text-color: #71717A;
+    --card-color: #FFFFFF;
 }
 body{
     background-color: var(--bg-color);
@@ -34,23 +39,21 @@ img{
    💻 ESTILOS GENERALES Y COMPUTADORA (Fila arriba logo, fila abajo menú)
    ========================================================================== */
 header {
-    /* 1. CAMBIAMOS ABSOLUTE POR STICKY */
-    position: sticky; 
-    top: 0; /* Le indica que se pegue justo en el borde superior al hacer scroll */
-    
-    /* 2. LE DAMOS UN FONDO SÓLIDO PARA QUE NO SE MEZCLE CON LAS FOTOS */
-    background-color: var(--bg-color); /* Usamos el color de fondo de tu página */
-    
-    /* 3. AGREGAMOS UNA SOMBRA SUAVE (Opcional, pero se ve muy elegante) */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-
-    /* Lo demás se queda igual */
+    /* Fuente única de verdad para el posicionamiento del header.
+       Si en algún momento quieres probar position: fixed en escritorio,
+       cambia SOLO esta regla (ver nota al final del archivo) en vez de
+       agregar otra regla "header{}" más abajo — así no vuelven a pelear
+       dos declaraciones por la cascada. */
+    position: sticky;
+    top: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 2rem; 
+    gap: 2rem;
     padding: 3rem 6rem 1.5rem 6rem;
-    z-index: 100;
+    z-index: 500;
+    background-color: #0F0F10;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
 }
 
 /* 2. ESTILOS DEL MENÚ PRINCIPAL */
@@ -260,11 +263,15 @@ letter-spacing: 1px;
     font-size: 1.4rem;
 }
 .products-section{
-    padding-bottom: 5rem;
+    padding-bottom: 1rem;
+}
+.products-section + .story-section{
+    margin-top: 1.3rem;
 }
 .products-section h2{
     font-size: 2rem;
     text-align: center;
+    margin: 3rem 0 2.5rem;
 }
 /* NOTA: La cuadrícula responsive de .products-container / #products-container
    está unificada al final de este archivo, junto con sus media queries. */
@@ -335,7 +342,7 @@ letter-spacing: 1px;
 .story-container{
     flex-basis: calc(35% - 1rem);
     flex-shrink: 0;
-    background-color: #d5d7d7;
+    background-color: var(--primary-color);
     height: 40rem;
     align-content: center;
 }
@@ -345,15 +352,43 @@ letter-spacing: 1px;
 }
 .story-container-text h3{
     font-size: 1.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #111111;
 }
 .story-container-text p{
     margin-top: 2rem;
     line-height: 1.5;
+    color: #111111;
 }
 .story-container-image{
     flex-basis: calc(65% - 1rem);
     flex-shrink: 0;
     height: 40rem;
+}
+
+/* Responsivo: en celular el texto se apila arriba de la imagen
+   (el orden ya es correcto en el HTML: texto primero, imagen después) */
+@media (max-width: 768px) {
+    .story-section{
+        flex-direction: column;
+        align-items: stretch;
+        padding: 3rem 2rem;
+        gap: 0;
+    }
+    .story-container{
+        flex-basis: auto;
+        height: auto;
+        padding: 3rem 0;
+    }
+    .story-container-text{
+        width: 100%;
+    }
+    .story-container-image{
+        flex-basis: auto;
+        height: 26rem;
+    }
 }
 .subscriber-section{
     margin-top: 2rem;
@@ -392,32 +427,14 @@ letter-spacing: 1px;
     top: 4rem;
     color: var(--primary-color);
 }
-footer{
-    margin-top: 4rem;
-    border-top: 1px solid #999;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4rem;
-}
-.footer-logo{
-    width: 5rem;
-}
-.container-copyright p{
-    font-size: 1.4rem;
-}
-.footer-nav ul{
-    display: flex;
-    gap: 2rem;
-}
-.footer-nav ul li{
-    list-style: none;
-}
-.footer-nav ul li a{
-    font-size: 1.6rem;
-    text-decoration: none;
-    color: var(--black-color);
-} 
+/* El footer viejo (selector "footer{}" simple + .footer-logo,
+   .container-copyright, .footer-nav) se eliminó de aquí: el
+   bloque "FOOTER AMERISHOP — VERSIÓN FINAL CONSOLIDADA" al final
+   del archivo ya lo reemplaza por completo (usa footer.store-footer
+   y las clases .footer-brand/.footer-contact/.footer-links). Si
+   alguna página vieja todavía usa las clases .footer-logo /
+   .container-copyright / .footer-nav en su HTML, avísame antes de
+   dar esto por cerrado para no dejarla sin estilos. */
 
 
 /* ESTILOS PARA LOS ÍCONOS DE LA DERECHA */
@@ -484,13 +501,10 @@ footer{
         color: var(--black-color);
     }
 
-    /* Centrado absoluto del logo en pantallas móviles */
-    .container-logo {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
+    /* El posicionamiento del logo en móvil (antes absolute+centrado)
+       se resolvió después con un layout de grid en la sección final
+       "AJUSTES MÓVIL: SCROLL DEL BANNER + LOGO ENTRE CONTROLES" —
+       no lo dupliques aquí. */
     .store-title {
         font-size: 1.8rem;
         letter-spacing: 2px;
@@ -613,8 +627,8 @@ footer{
         transform: translateY(-50%);
         background: rgba(255, 255, 255, 0.9);
         border: none;
-        width: 34px;
-        height: 34px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         cursor: pointer;
         display: flex;
@@ -622,14 +636,15 @@ footer{
         justify-content: center;
         color: #111;
         opacity: 0;
-        transition: opacity 0.3s ease, background 0.3s ease, transform 0.2s ease;
+        transition: opacity 0.3s ease;
         z-index: 10;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
+    /*
     .product-carousel-btn:hover {
         background: #ffffff;
         transform: translateY(-50%) scale(1.05);
-    }
+    }*/
     
     .product-carousel-btn.prev {
         left: 15px;
@@ -644,7 +659,7 @@ footer{
        cuando el puntero intenta llegar a la flecha derecha. */
     
     .product-image-wrapper:hover .product-carousel-btn {
-    opacity: 1;
+        opacity: 1;
     }
 
     /* Textos informativos de la tarjeta */
@@ -655,7 +670,7 @@ footer{
         padding: 0.2rem 0;
     }
     .product-title {
-        font-size: 1.05rem;
+        font-size: 1.25rem;
         font-weight: 500;
         color: #222;
         margin: 0;
@@ -666,7 +681,7 @@ footer{
         overflow: hidden;
     }
     .product-price {
-        font-size: 1.1rem;
+        font-size: 1.35rem;
         font-weight: 700;
         color: #000;
         margin: 0;
@@ -963,66 +978,6 @@ footer{
     color: #c0392b;
     font-weight: 600;
     font-size: 1.2rem;
-}
-
-
-
-
-/*PARA OFERTAAAA AHHHHHH*/
-
-.discount-badge {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    background-color: #c0392b;
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 700;
-    padding: 0.4rem 0.8rem;
-    border-radius: 2px;
-    z-index: 6;
-}
-.product-price-offer {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-}
-.product-price-offer .price-current {
-    font-weight: 700;
-    color: #111;
-}
-.product-price-offer .price-original {
-    text-decoration: line-through;
-    color: #999;
-    font-size: 1.2rem;
-}
-.product-price-offer .price-label-offer {
-    color: #c0392b;
-    font-weight: 600;
-    font-size: 1.2rem;
-}
-.secondary-nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #b5c6c9;
-    padding: 1.2rem 0;
-}
-.secondary-nav-link {
-    color: #fff;
-    text-decoration: none;
-    font-size: 1.3rem;
-    letter-spacing: 0.5px;
-    padding: 0 2rem;
-    border-right: 1px solid rgba(255, 255, 255, 0.3);
-    transition: opacity 0.2s ease;
-}
-.secondary-nav-link:last-child {
-    border-right: none;
-}
-.secondary-nav-link:hover {
-    opacity: 0.75;
 }
 
 
@@ -1402,30 +1357,9 @@ footer{
     letter-spacing: 0.5px;
     white-space: nowrap;
 }
-.status-pending_payment {
-    background-color: #fdf3d8;
-    color: #9a7b1a;
-}
-.status-confirmed {
-    background-color: #dbeafe;
-    color: #1d4ed8;
-}
-.status-preparing {
-    background-color: #ede9fe;
-    color: #6d28d9;
-}
-.status-on_route {
-    background-color: #dcfce7;
-    color: #15803d;
-}
-.status-delivered {
-    background-color: #d1fae5;
-    color: #047857;
-}
-.status-cancelled {
-    background-color: #fee2e2;
-    color: #b91c1c;
-}
+/* Los colores de cada .status-* se definen una sola vez, en
+   "ESTADOS DEL PEDIDO" (sección MIS PEDIDOS — ESTILO AMERISHOP),
+   que es la versión final. No los repitas aquí. */
 
 .order-card-items {
     display: flex;
@@ -1505,7 +1439,7 @@ footer{
     position: fixed; inset: 0; background: rgba(0,0,0,0.5);
     opacity: 0; visibility: hidden;
     transition: opacity .3s ease, visibility .3s ease;
-    z-index: 300;
+    z-index: 1000;
 }
 .checkout-overlay.active { opacity: 1; visibility: visible; }
 
@@ -1517,7 +1451,7 @@ footer{
     background: #fff; border-radius: 12px; padding: 2.5rem;
     opacity: 0; visibility: hidden;
     transition: opacity .3s ease, visibility .3s ease, transform .3s ease;
-    z-index: 301;
+    z-index: 1001;
 }
 .checkout-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
 
@@ -1588,34 +1522,10 @@ footer{
 
 /* ==========================================================
    PALETA AMERISHOP — SOLO COLORES
-   Pegar al FINAL de style.css
+   (:root y body ya están consolidados al inicio del archivo)
    ========================================================== */
 
-:root {
-  --primary-color: #39FF14;
-  --secondary-green: #22C55E;
-  --dark-green: #15803D;
-  --white-color: #FFFFFF;
-  --black-color: #121212;
-  --text-color: #2D2D2D;
-  --bg-color: #FAFAFA;
-  --border-color: #D4D4D8;
-  --muted-text-color: #71717A;
-  --card-color: #FFFFFF;
-}
-
-/* Base */
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
 /* Header y navegación */
-header {
-  background-color: #121212;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
-}
-
 .nav-item > a,
 .store-title,
 .icon-link,
@@ -1674,9 +1584,8 @@ header {
   color: #71717A;
 }
 
-.story-container {
-  background-color: #F1F5F9;
-}
+/* El color final de .story-container ya vive en la regla base,
+   junto con el resto de sus estilos responsivos. */
 
 /* Links y acciones principales */
 .link-default,
@@ -1706,25 +1615,11 @@ header {
   background-color: #22C55E;
 }
 
-/* Footer */
-footer {
-  background-color: #121212;
-  border-top-color: #3F3F46;
-  color: #D4D4D8;
-}
-
-.footer-nav ul li a {
-  color: #FFFFFF;
-}
-
-.footer-nav ul li a:hover {
-  color: #39FF14;
-}
-
 /* Tarjetas y galería de producto */
+/*
 .product-title {
   color: #2D2D2D;
-}
+}*/
 
 .product-price,
 .product-price-offer .price-current {
@@ -1745,11 +1640,11 @@ footer {
   color: #121212;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
-
+/*
 .product-carousel-btn:hover {
   background-color: #39FF14;
   color: #111111;
-}
+}*/
 
 .product-quickview-btn {
   background-color: rgba(18, 18, 18, 0.92);
@@ -1801,20 +1696,10 @@ footer {
   background-color: #D4D4D8;
 }
 
-/* Barra secundaria, rebajas y subastas */
-.secondary-nav {
-  background-color: #18181B;
-}
-
-.secondary-nav-link {
-  color: #FFFFFF;
-  border-right-color: #3F3F46;
-}
-
-.secondary-nav-link:hover {
-  color: #39FF14;
-  opacity: 1;
-}
+/* Barra secundaria, rebajas y subastas:
+   el color final de .secondary-nav vive más abajo, junto a
+   "MENÚ DE ESCRITORIO — PALETA AMERISHOP", que es el que de
+   verdad se aplica (no lo dupliques aquí). */
 
 /* Badges de descuentos */
 .discount-badge {
@@ -1890,32 +1775,6 @@ footer {
   color: #71717A;
 }
 
-.status-pending_payment {
-  background-color: #FEF3C7;
-  color: #92400E;
-}
-
-.status-confirmed {
-  background-color: #DBEAFE;
-  color: #1D4ED8;
-}
-
-.status-preparing {
-  background-color: #F1F5F9;
-  color: #3F3F46;
-}
-
-.status-on_route,
-.status-delivered {
-  background-color: #DCFCE7;
-  color: #15803D;
-}
-
-.status-cancelled {
-  background-color: #FEE2E2;
-  color: #B91C1C;
-}
-
 /* Checkout */
 .checkout-modal {
   background-color: #FFFFFF;
@@ -1973,17 +1832,9 @@ footer {
   object-fit: contain;
 }
 
-/* Mantiene el logo proporcionado en celular */
-@media (max-width: 768px) {
-  .store-title {
-    height: 46px;
-  }
-
-  .store-logo {
-    max-width: 210px;
-    height: 46px;
-  }
-}
+/* El tamaño del logo en móvil se define una sola vez, más abajo,
+   en "AJUSTES MÓVIL: SCROLL DEL BANNER + LOGO ENTRE CONTROLES"
+   (esa es la versión final que realmente se aplica). */
 
 
 
@@ -2003,12 +1854,17 @@ footer {
     to { opacity: 1; }
 }
 
-/* Evita desbordamiento horizontal en móviles */
+/* Evita desbordamiento horizontal (en cualquier tamaño de pantalla).
+   Usamos "clip" y no "hidden": overflow-x:hidden fuerza a que el
+   navegador convierta overflow-y en "auto" automáticamente (así lo
+   define la spec de CSS), y eso convierte a <body> en su propio
+   contenedor de scroll — rompiendo el position:sticky del header.
+   "clip" evita el desborde horizontal sin ese efecto secundario. */
 html,
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .ftco-section,
@@ -2213,12 +2069,6 @@ textarea,
    ========================================================== */
 
 @media (min-width: 769px) {
-  /* Header principal */
-  header {
-    background-color: #0F0F10;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
-  }
-
   /* Enlaces de categorías */
   .nav-item > a {
     color: #FFFFFF;
@@ -2370,7 +2220,6 @@ textarea,
 
   body {
     min-height: 100%;
-    overflow-x: clip;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
   }
@@ -2403,16 +2252,10 @@ textarea,
 
 
 /* ==========================================================
-   HEADER: SESIÓN, LOGOUT Y MENÚ FIJO
+   HEADER: SESIÓN Y LOGOUT
+   (el position/z-index/fondo del header ya viven en la regla
+   única "header{}" al inicio del archivo — no lo repitas aquí)
    ========================================================== */
-
-/* Mantiene todo el header —logo, iconos y categorías— visible al hacer scroll */
-header {
-  position: sticky !important;
-  top: 0;
-  z-index: 500;
-  background-color: #0F0F10;
-}
 
 /* Texto "Hola, NombreUsuario" */
 .user-greeting {
@@ -2463,22 +2306,33 @@ button.icon-link:hover {
   border-radius: 4px;
 }
 
-/*MANTENER EL HEADER FIJO EN LA VISTA ESCRITORIO*/
-/* Header fijo en computadora 
+/* ==========================================================
+   ALTERNATIVA: header con position:fixed SOLO en escritorio
+   ----------------------------------------------------------
+   Descomenta este bloque y cambia "position: sticky" por
+   "position: fixed" en la regla única de arriba SOLO dentro de
+   este media query si de verdad necesitas que el header salga
+   del flujo normal en escritorio. OJO: con fixed el header deja
+   de ocupar espacio, así que hay que compensarlo con
+   body{padding-top:...}, y ese valor se rompe cada vez que la
+   altura real del header cambia (menú abierto, banner de oferta,
+   etc). Con "sticky" (como está configurado arriba) el header ya
+   se queda fijo al hacer scroll sin ese problema, así que solo
+   actives esto si tienes una razón concreta para necesitar fixed.
+
 @media (min-width: 769px) {
   header {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     right: 0;
     left: 0;
-    z-index: 500;
   }
 
   body {
     padding-top: 132px;
   }
 }
-  */
+*/
 
 
 
@@ -2492,30 +2346,35 @@ button.icon-link:hover {
     max-width: 1320px;
     margin: 0 auto;
     padding: 4rem 3rem 7rem;
-    background-color: #0F1115;
-    color: #F5F5F5;
+    background-color: #F8FAFC;
+    color: #18181B;
 }
 
-/* Si tu página de pedidos no tiene fondo oscuro global */
 body:has(.orders-section) {
-    background-color: #0F1115;
+    background-color: #F8FAFC;
 }
 
 /* Volver */
 .orders-back-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 1rem;
     margin-bottom: 2.8rem;
-    color: #B3B8C5;
-    font-size: 1.35rem;
+    color: #52525B;
+    font-size: clamp(1.5rem, 1.2vw + 1rem, 1.8rem);
     font-weight: 600;
     text-decoration: none;
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
+.orders-back-arrow {
+    font-size: 2.4rem;
+    line-height: 1;
+    font-weight: 400;
+}
+
 .orders-back-link:hover {
-    color: #39FF14;
+    color: #15803D;
     opacity: 1;
     transform: translateX(-3px);
 }
@@ -2534,16 +2393,16 @@ body:has(.orders-section) {
 
 .account-sidebar {
     overflow: hidden;
-    border: 1px solid #2B313B;
+    border: 1px solid #E4E4E7;
     border-radius: 18px;
-    background-color: #14161B;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+    background-color: #FFFFFF;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
 }
 
 .account-sidebar-label {
     margin: 0;
     padding: 2rem 2rem 1.2rem;
-    color: #7A828C;
+    color: #71717A;
     font-size: 1rem;
     font-weight: 800;
     letter-spacing: 0.12em;
@@ -2560,7 +2419,7 @@ body:has(.orders-section) {
     gap: 1.3rem;
     min-height: 58px;
     padding: 0 2rem;
-    color: #B3B8C5;
+    color: #52525B;
     font-size: 1.45rem;
     font-weight: 600;
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -2571,19 +2430,19 @@ body:has(.orders-section) {
     width: 2rem;
     height: 2rem;
     place-items: center;
-    color: #B3B8C5;
+    color: #52525B;
     font-size: 1.8rem;
     line-height: 1;
 }
 
 .account-sidebar-item:hover {
-    background-color: #20242C;
-    color: #F5F5F5;
+    background-color: #F1F5F9;
+    color: #18181B;
 }
 
 .account-sidebar-item.active {
-    background: #182618;
-    color: #39FF14;
+    background: #ECFDF3;
+    color: #15803D;
 }
 
 .account-sidebar-item.active::after {
@@ -2598,7 +2457,7 @@ body:has(.orders-section) {
 }
 
 .account-sidebar-item.active .account-sidebar-icon {
-    color: #39FF14;
+    color: #15803D;
 }
 
 /* ==========================================================
@@ -2618,7 +2477,7 @@ body:has(.orders-section) {
 
 .orders-eyebrow {
     margin: 0 0 0.6rem;
-    color: #39FF14;
+    color: #15803D;
     font-size: 1rem;
     font-weight: 800;
     letter-spacing: 0.14em;
@@ -2626,7 +2485,7 @@ body:has(.orders-section) {
 
 .orders-title {
     margin: 0;
-    color: #F5F5F5;
+    color: #18181B;
     font-size: clamp(2.6rem, 4vw, 3.4rem);
     font-weight: 800;
     letter-spacing: -0.04em;
@@ -2640,35 +2499,35 @@ body:has(.orders-section) {
 .order-card {
     margin-bottom: 1.8rem;
     padding: 2.2rem;
-    border: 1px solid #2B313B;
+    border: 1px solid #E4E4E7;
     border-radius: 18px;
-    background-color: #1A1D24;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
-    color: #F5F5F5;
+    background-color: #FFFFFF;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+    color: #18181B;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .order-card:hover {
-    border-color: #39414D;
-    background-color: #20242C;
+    border-color: #D4D4D8;
+    background-color: #F8FAFC;
 }
 
 .order-card-header {
     align-items: center;
     padding-bottom: 1.8rem;
     margin-bottom: 1.8rem;
-    border-bottom-color: #313844;
+    border-bottom-color: #E4E4E7;
 }
 
 .order-card-id {
-    color: #F5F5F5;
+    color: #18181B;
     font-size: 1.7rem;
     font-weight: 800;
 }
 
 .order-card-date {
     margin-top: 0.5rem;
-    color: #B3B8C5;
+    color: #71717A;
     font-size: 1.25rem;
 }
 
@@ -2684,32 +2543,32 @@ body:has(.orders-section) {
 .order-item-image {
     width: 6.5rem;
     height: 8rem;
-    border: 1px solid #2B313B;
+    border: 1px solid #E4E4E7;
     border-radius: 12px;
-    background-color: #14161B;
+    background-color: #F1F5F9;
 }
 
 .order-item-name {
-    color: #F5F5F5;
+    color: #18181B;
     font-size: 1.4rem;
     font-weight: 700;
 }
 
 .order-item-price {
     margin-top: 0.5rem;
-    color: #B3B8C5;
+    color: #71717A;
     font-size: 1.25rem;
 }
 
 .order-card-footer {
     padding-top: 1.8rem;
-    border-top-color: #313844;
-    color: #F5F5F5;
+    border-top-color: #E4E4E7;
+    color: #18181B;
     font-size: 1.5rem;
 }
 
 .order-card-total {
-    color: #39FF14;
+    color: #15803D;
     font-size: 1.7rem;
     font-weight: 800;
 }
@@ -2773,15 +2632,15 @@ body:has(.orders-section) {
 .orders-empty,
 .loading-text {
     padding: 5rem 2rem;
-    border: 1px dashed #313844;
+    border: 1px dashed #D4D4D8;
     border-radius: 18px;
-    background-color: #14161B;
-    color: #B3B8C5;
+    background-color: #FFFFFF;
+    color: #71717A;
     text-align: center;
 }
 
 .orders-empty p {
-    color: #B3B8C5;
+    color: #71717A;
 }
 
 .orders-empty-link {
@@ -3167,140 +3026,6 @@ body:has(.orders-section) {
 
 
 
-/*VERSION CLARA DE LA VISTA DE ORDENES*/
-/* ==========================================================
-   MIS PEDIDOS — VARIANTE CLARA
-   Pegar al final: sobrescribe solo colores
-   ========================================================== */
-
-/* Fondo general de la página */
-body:has(.orders-section) {
-    background-color: #F8FAFC;
-}
-
-.orders-section {
-    background-color: #F8FAFC;
-    color: #18181B;
-}
-
-/* Enlace “Volver” */
-.orders-back-link {
-    color: #52525B;
-}
-
-.orders-back-link:hover {
-    color: #15803D;
-}
-
-/* Títulos */
-.orders-eyebrow {
-    color: #15803D;
-}
-
-.orders-title {
-    color: #18181B;
-}
-
-/* Menú lateral */
-.account-sidebar {
-    border-color: #E4E4E7;
-    background-color: #FFFFFF;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-}
-
-.account-sidebar-label {
-    color: #71717A;
-}
-
-.account-sidebar-item,
-.account-sidebar-icon {
-    color: #52525B;
-}
-
-.account-sidebar-item:hover {
-    background-color: #F1F5F9;
-    color: #18181B;
-}
-
-.account-sidebar-item.active {
-    background-color: #ECFDF3;
-    color: #15803D;
-}
-
-.account-sidebar-item.active .account-sidebar-icon {
-    color: #15803D;
-}
-
-/* Tarjetas de pedidos */
-.order-card {
-    border-color: #E4E4E7;
-    background-color: #FFFFFF;
-    color: #18181B;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-}
-
-.order-card:hover {
-    border-color: #D4D4D8;
-    background-color: #F8FAFC;
-}
-
-.order-card-header {
-    border-bottom-color: #E4E4E7;
-}
-
-.order-card-id,
-.order-item-name,
-.order-card-footer {
-    color: #18181B;
-}
-
-.order-card-date,
-.order-item-price {
-    color: #71717A;
-}
-
-.order-card-footer {
-    border-top-color: #E4E4E7;
-}
-
-.order-item-image {
-    border-color: #E4E4E7;
-    background-color: #F1F5F9;
-}
-
-/* Mantiene el verde Amerishop para el total */
-.order-card-total {
-    color: #15803D;
-}
-
-/* Estados de carga o sin pedidos */
-.orders-empty,
-.loading-text {
-    border-color: #D4D4D8;
-    background-color: #FFFFFF;
-    color: #71717A;
-}
-
-.orders-empty p {
-    color: #71717A;
-}
-
-.orders-back-link {
-    font-size: clamp(1.5rem, 1.2vw + 1rem, 1.8rem);
-    gap: 1rem;
-}
-
-.orders-back-arrow {
-    font-size: 2.4rem;
-    line-height: 1;
-    font-weight: 400;
-}
-
-
-
-
-
-
 /* ==========================================================
    FOOTER AMERISHOP — VERSIÓN FINAL CONSOLIDADA
    Reemplaza AMBOS bloques anteriores de footer por este
@@ -3329,6 +3054,11 @@ footer.store-footer {
 .footer-contact,
 .footer-links,
 .footer-social {
+    /* Sin esto, footer-contact y footer-social (que son <section>)
+       heredan el "section{margin-top:4rem}" global del inicio del
+       archivo, mientras que footer-brand (<div>) y footer-links
+       (<nav>) no — eso era lo que las desalineaba 40px. */
+    margin-top: 0;
     align-self: start;
     min-width: 0;
 }
@@ -3522,4 +3252,1048 @@ footer.store-footer {
         min-height: 38px;
         font-size: 1.05rem;
     }
+}
+
+
+
+
+
+/* ==========================================================
+   Para las subastaaaaaas ahhhhh
+   ========================================================== */
+.auction-time-remaining {
+    display: block;
+    font-size: 1.1rem;
+    color: #c0392b;
+    font-weight: 600;
+    margin-top: 0.3rem;
+}
+.auction-time-remaining.auction-ended {
+    color: #888;
+}
+
+/* ===== Overlay + Modal de puja (mismo patrón que checkout-modal) ===== */
+.auction-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease;
+    z-index: 998;
+}
+.auction-overlay.active { opacity: 1; visibility: visible; }
+
+.auction-modal {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -48%);
+    width: 100%; max-width: 700px; max-height: 85vh;
+    overflow-y: auto;
+    background: #fff; border-radius: 12px; padding: 2.5rem;
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease, transform .3s ease;
+    z-index: 999;
+}
+.auction-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+
+.auction-modal-close {
+    position: absolute; top: 1.2rem; right: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    width: 3.2rem; height: 3.2rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    border: none; font-size: 2.2rem; line-height: 1;
+    cursor: pointer; color: var(--text-color);
+    z-index: 20;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.auction-modal-close:hover {
+    background: #FFFFFF;
+    transform: scale(1.05);
+}
+
+.auction-modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+}
+.auction-modal-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.auction-modal-image {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 8px;
+    background-color: #f7f7f7;
+}
+.auction-thumbnails {
+    display: flex;
+    gap: 0.8rem;
+    overflow-x: auto;
+}
+.auction-thumb {
+    width: 5.5rem;
+    height: 7rem;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.6;
+    border: 2px solid transparent;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+.auction-thumb.active,
+.auction-thumb:hover {
+    opacity: 1;
+    border-color: var(--primary-color);
+}
+.auction-description {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    margin: 1.5rem 0;
+}
+.auction-modal-info h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+.auction-current-price {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.auction-time-label {
+    font-size: 1.3rem;
+    color: #c0392b;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+.auction-time-label.auction-ended {
+    color: #888;
+}
+
+.auction-bid-form label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.auction-bid-input-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+.auction-bid-input-row input {
+    flex-grow: 1;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1.3rem;
+}
+.auction-bid-input-row button {
+    padding: 1rem 2rem;
+    background: var(--black-color);
+    color: var(--white-color);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.auction-bid-error {
+    color: #c0392b;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.auction-history-title {
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+}
+.auction-bid-history {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.auction-bid-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+@media (max-width: 768px) {
+    .auction-modal { max-width: 92%; padding: 2rem; }
+    .auction-modal-body { grid-template-columns: 1fr; }
+}
+
+
+
+/*
+PARA EL ANUNCIO AL GANAR UNA SUBASTAAAAAA
+*/
+.auction-win-banner {
+    position: sticky;
+    top: 0;
+    z-index: 250;
+    background: #111;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+    font-size: 1.3rem;
+    flex-wrap: wrap;
+}
+.auction-win-banner button {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.auction-win-banner-close {
+    background: none !important;
+    font-size: 1.8rem;
+    padding: 0 0.5rem !important;
+}
+
+
+/*
+PARA EL MODAL AL GANAR UNA SUBASTA
+*/
+.auction-win-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease;
+    z-index: 400;
+}
+.auction-win-overlay.active { opacity: 1; visibility: visible; }
+
+.auction-win-modal {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -48%);
+    width: 90%; max-width: 420px;
+    background: #fff; border-radius: 16px; padding: 3rem 2.5rem;
+    text-align: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease, transform .3s ease;
+    z-index: 401;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.auction-win-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+
+.auction-win-icon { font-size: 4rem; margin-bottom: 1rem; }
+.auction-win-modal h2 { font-size: 2rem; margin-bottom: 1rem; }
+.auction-win-product { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.3rem; }
+.auction-win-price { font-size: 2rem; font-weight: 700; color: var(--primary-color); margin-bottom: 1rem; }
+.auction-win-extra { font-size: 1.2rem; color: #888; margin-bottom: 1rem; }
+
+.auction-win-actions { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+.auction-win-confirm-btn {
+    padding: 1.3rem; background: var(--black-color); color: #fff; border: none;
+    border-radius: 8px; font-size: 1.3rem; font-weight: 600; text-transform: uppercase; cursor: pointer;
+}
+.auction-win-decline-btn {
+    padding: 1.1rem; background: none; color: #c0392b; border: 1px solid #c0392b;
+    border-radius: 8px; font-size: 1.2rem; font-weight: 600; cursor: pointer;
+}
+.auction-win-later-btn {
+    margin-top: 1.5rem; background: none; border: none; color: #999;
+    font-size: 1.1rem; text-decoration: underline; cursor: pointer;
+}
+
+
+/*
+PARA LA PAGINACION
+*/
+
+.pagination{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+}
+.page-btn{
+    min-width: 3.6rem;
+    height: 3.6rem;
+    padding: 0 0.8rem;
+    border: 1px solid #D4D4D8;
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--black-color);
+    font-size: 1.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.page-btn:hover:not([disabled]){
+    border-color: var(--primary-color);
+}
+.page-btn.active{
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #111111;
+}
+.page-btn[disabled]{
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+
+/*
+Para el modal de las direcciones y perfil
+*/
+.account-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(2px);
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease;
+    z-index: 1000;
+}
+.account-modal-overlay.active { opacity: 1; visibility: visible; }
+
+.account-modal {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -48%);
+    width: 100%; max-width: 480px; max-height: 85vh;
+    overflow-y: auto;
+    background: var(--white-color); border-radius: 18px; padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease, transform .3s ease;
+    z-index: 1001;
+}
+.account-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+
+.account-modal-close {
+    position: absolute; top: 1.2rem; right: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    width: 3.2rem; height: 3.2rem;
+    background: #F1F5F9; border: none; border-radius: 50%;
+    font-size: 2rem; line-height: 1;
+    cursor: pointer; color: var(--text-color);
+    transition: background-color 0.2s ease;
+}
+.account-modal-close:hover { background: #E4E4E7; }
+
+.account-modal-content h3 {
+    font-size: 1.9rem; font-weight: 800;
+    margin-bottom: 1.8rem; padding-right: 3rem;
+}
+
+.account-profile-field { margin-bottom: 1.4rem; }
+.account-profile-field label {
+    font-size: 1.05rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--muted-text-color);
+    display: block; margin-bottom: 0.4rem;
+}
+.account-profile-field p { font-size: 1.4rem; color: var(--text-color); }
+
+.account-address-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+.account-address-card {
+    border: 1px solid var(--border-color); border-radius: 12px; padding: 1.4rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.account-address-card:hover { border-color: var(--primary-color); background-color: #F8FAFC; }
+
+.account-address-info { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.8rem; }
+.account-address-info p { color: var(--muted-text-color); font-size: 1.2rem; font-weight: 400; margin-top: 0.3rem; }
+
+.account-address-default-badge {
+    background: var(--primary-color); color: #111111; font-size: 1rem; font-weight: 700;
+    padding: 0.3rem 0.8rem; border-radius: 999px; margin-left: 0.6rem;
+    text-transform: uppercase; letter-spacing: 0.03em;
+}
+
+.account-address-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+.account-address-actions button {
+    background: none; border: 1px solid var(--border-color); border-radius: 6px;
+    padding: 0.6rem 1.1rem; font-size: 1.1rem; font-weight: 600; cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+.account-address-actions button:hover { border-color: var(--primary-color); color: var(--dark-green); }
+.account-address-delete { color: #EF4444; border-color: #EF4444; }
+.account-address-delete:hover { color: #B91C1C; border-color: #B91C1C; }
+
+.account-link-btn {
+    background: none; border: none; color: var(--dark-green);
+    font-size: 1.3rem; font-weight: 600; cursor: pointer; padding: 0.5rem 0; margin-bottom: 1rem;
+    text-decoration: underline; text-underline-offset: 3px;
+}
+.account-link-btn:hover { color: var(--primary-color); }
+
+.account-new-address-form { display: flex; flex-direction: column; gap: 1.2rem; }
+.account-new-address-form.hidden { display: none; }
+.account-form-row { display: flex; flex-direction: column; gap: 0.5rem; }
+.account-form-row label { font-size: 1.15rem; font-weight: 700; }
+.account-form-row input, .account-form-row textarea {
+    padding: 1.1rem; border: 1px solid var(--border-color); border-radius: 8px;
+    font-size: 1.3rem; font-family: inherit; color: var(--text-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.account-form-row input:focus, .account-form-row textarea:focus {
+    outline: none; border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.15);
+}
+.account-checkbox-row { display: flex; align-items: center; gap: 0.8rem; font-size: 1.2rem; }
+
+.account-primary-btn {
+    padding: 1.2rem; background: var(--primary-color); color: #111111;
+    border: none; border-radius: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; cursor: pointer; transition: background-color 0.2s ease;
+}
+.account-primary-btn:hover { background: var(--dark-green); color: var(--white-color); }
+
+.account-modal-error {
+    color: #EF4444; font-size: 1.2rem; margin-top: 1rem; text-align: center;
+}
+
+@media (max-width: 480px) {
+    .account-modal { max-width: 92%; padding: 2rem; }
+}
+
+.account-address-card {
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+.account-address-card:hover {
+    border-color: var(--primary-color);
+}
+.account-address-card.is-default {
+    border-color: var(--primary-color);
+    background-color: #fafafa;
+    cursor: default;
+}
+.account-address-hint {
+    font-size: 1.1rem;
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+
+
+
+.account-profile-view { text-align: center; }
+.account-profile-avatar {
+    width: 8rem; height: 8rem; border-radius: 50%;
+    background: var(--primary-color); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.6rem; font-weight: 700;
+    margin: 0 auto 1.5rem auto;
+}
+.account-profile-name { font-size: 2rem; margin-bottom: 2rem; }
+.account-profile-details {
+    display: flex; flex-direction: column; gap: 1.5rem;
+    text-align: left; border-top: 1px solid #eee; padding-top: 1.5rem;
+}
+.account-profile-field { display: flex; align-items: flex-start; gap: 1.2rem; }
+.account-profile-icon {
+    font-size: 1.6rem; width: 2.4rem; height: 2.4rem;
+    display: flex; align-items: center; justify-content: center;
+    background: #f5f5f5; border-radius: 50%; flex-shrink: 0;
+}
+.account-profile-field label { font-size: 1.1rem; color: #888; display: block; margin-bottom: 0.2rem; }
+.account-profile-field p { font-size: 1.4rem; }
+
+/*
+Para el modal de que llego al limite de direcciones
+*/
+.account-address-limit-note {
+    font-size: 1.2rem;
+    color: #c0392b;
+    background: #fdecea;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+/*
+Mejora de las tarjetas de subasta
+
+*/
+.product-image-wrapper .discount-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 6;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.4rem 0.8rem;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+
+/* ==========================================================
+   ESTADO DEL PEDIDO — BARRA DE 5 PASOS (Mis Pedidos, cliente)
+   ========================================================== */
+.order-status-tracker {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0.4rem 0 0.6rem;
+}
+.order-status-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+}
+.order-status-step .order-status-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    font-size: 1.05rem;
+    background-color: #F1F5F9;
+    color: #A1A1AA;
+    position: relative;
+    z-index: 2;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.order-status-step .order-status-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #A1A1AA;
+    text-align: center;
+    line-height: 1.2;
+}
+/* Línea que conecta un paso con el siguiente */
+.order-status-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 1.3rem;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background-color: #E4E4E7;
+    z-index: 1;
+}
+.order-status-step.completed .order-status-icon,
+.order-status-step.current .order-status-icon {
+    background-color: #22C55E;
+    color: #FFFFFF;
+}
+.order-status-step.completed:not(:last-child)::after {
+    background-color: #22C55E;
+}
+.order-status-step.completed .order-status-label,
+.order-status-step.current .order-status-label {
+    color: #15803D;
+}
+
+/* Estado "Cancelado": no forma parte de la barra, se muestra aparte */
+.order-status-cancelled-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #EF4444;
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.order-status-cancelled-badge i {
+    font-size: 1.4rem;
+}
+
+@media (max-width: 480px) {
+    .order-status-step .order-status-icon {
+        width: 2.1rem;
+        height: 2.1rem;
+        font-size: 0.85rem;
+    }
+    .order-status-step .order-status-label {
+        font-size: 0.7rem;
+    }
+    .order-status-step:not(:last-child)::after {
+        top: 1.05rem;
+    }
+}
+
+
+
+
+/* =========================================
+   SECCIÓN - UN POCO DE NOSOTROS
+   ========================================= */
+
+.story-section {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 5rem 4rem;
+
+    display: flex;
+    align-items: stretch;
+
+    gap: 0;
+
+    background-color: #ffffff;
+}
+
+
+/* =========================================
+   IMAGEN
+   ========================================= */
+
+.story-container-image {
+    flex: 0 0 55%;
+    min-height: 520px;
+
+    overflow: hidden;
+
+    border-radius: 20px 0 0 20px;
+}
+
+.story-image {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    transition: transform 0.5s ease;
+}
+
+
+/* Pequeño efecto al pasar el mouse */
+
+.story-container-image:hover .story-image {
+    transform: scale(1.03);
+}
+
+
+/* =========================================
+   CONTENIDO
+   ========================================= */
+
+.story-container {
+    flex: 0 0 45%;
+
+    display: flex;
+    align-items: center;
+    min-height: 520px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-left: 4px solid #39FF14;
+
+    border-radius: 0 20px 20px 0;
+
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+
+.story-container-text {
+    width: 82%;
+    margin: 0 auto;
+    padding: 4rem 0;
+}
+
+
+/* =========================================
+   PEQUEÑO TÍTULO VERDE
+   ========================================= */
+
+.story-label {
+    display: block;
+
+    margin-bottom: 0.8rem;
+
+    color: #28C60F;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+
+/* =========================================
+   TÍTULO
+   ========================================= */
+
+.story-container-text h3 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: clamp(2.2rem, 3vw, 3.2rem);
+
+    line-height: 1.15;
+
+    font-weight: 700;
+}
+
+
+.story-container-text h3 span {
+    display: block;
+
+    color: #28C60F;
+}
+
+
+/* =========================================
+   LÍNEA DECORATIVA
+   ========================================= */
+
+.story-line {
+    width: 55px;
+    height: 4px;
+
+    margin: 1.5rem 0;
+
+    background-color: #39FF14;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================
+   PÁRRAFO
+   ========================================= */
+
+.story-container-text p {
+    margin: 0;
+
+    color: #4b5563;
+
+    font-size: 1.5rem;
+
+    line-height: 1.9;
+}
+
+
+/* =========================================
+   CARACTERÍSTICAS
+   ========================================= */
+
+.story-features {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.7rem;
+
+    margin-top: 1.8rem;
+}
+
+
+.story-feature {
+    display: flex;
+    align-items: center;
+
+    gap: 0.8rem;
+
+    padding: 0.65rem 0;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+
+.story-feature:last-child {
+    border-bottom: none;
+}
+
+
+/* =========================================
+   ICONO
+   ========================================= */
+
+.story-feature-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(57, 255, 20, 0.35);
+
+    border-radius: 50%;
+
+    color: #28C60F;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    background-color: rgba(57, 255, 20, 0.06);
+}
+
+
+/* =========================================
+   TEXTO DE CARACTERÍSTICAS
+   ========================================= */
+
+.story-feature strong {
+    display: block;
+
+    margin-bottom: 0.1rem;
+
+    color: #111827;
+
+    font-size: 1.5rem;
+}
+
+
+.story-feature small {
+    display: block;
+
+    color: #6b7280;
+
+    font-size: 1.5rem;
+
+    line-height: 1.35;
+}
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1000px) {
+
+    .story-section {
+        padding: 4rem 2rem;
+    }
+
+    .story-container-image {
+        flex-basis: 50%;
+        min-height: 480px;
+    }
+
+    .story-container {
+        flex-basis: 50%;
+    }
+
+    .story-container-text {
+        width: 82%;
+    }
+
+
+    /* TÍTULO */
+
+    .story-container-text h3 {
+        font-size: 2.3rem;
+    }
+
+
+    /* DESCRIPCIÓN PRINCIPAL */
+
+    .story-container-text p {
+        font-size: 1.25rem;
+        line-height: 1.8;
+    }
+
+
+    /* CARACTERÍSTICAS */
+
+    .story-feature strong {
+        font-size: 1.25rem;
+    }
+
+
+    /* DESCRIPCIÓN DE CADA CARACTERÍSTICA */
+
+    .story-feature small {
+        font-size: 1.15rem;
+        line-height: 1.4;
+    }
+}
+
+
+/* =========================================
+   CELULAR
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .story-section {
+
+        display: flex;
+
+        flex-direction: column;
+
+        padding: 2.5rem 1.2rem;
+
+        gap: 0;
+    }
+
+
+    /* =========================================
+       TEXTO ARRIBA
+       ========================================= */
+
+    .story-container {
+
+        order: 1;
+
+        flex: none;
+
+        width: 100%;
+
+        border-left: none;
+
+        border-top: 4px solid #39FF14;
+
+        border-radius: 20px 20px 0 0;
+
+        box-shadow: none;
+
+        min-height: auto;
+    }
+
+
+    .story-container-text {
+
+        width: 100%;
+
+        padding: 2.5rem 1.5rem;
+    }
+
+
+    /* PEQUEÑO TÍTULO VERDE */
+
+    .story-label {
+
+        font-size: 0.8rem;
+
+        letter-spacing: 1.5px;
+    }
+
+
+    /* TÍTULO PRINCIPAL */
+
+    .story-container-text h3 {
+
+        font-size: 2.2rem;
+
+        line-height: 1.2;
+    }
+
+
+    /* DESCRIPCIÓN PRINCIPAL */
+
+    .story-container-text p {
+
+        font-size: 1.25rem;
+
+        line-height: 1.75;
+
+        margin-top: 0;
+    }
+
+
+    /* =========================================
+       CARACTERÍSTICAS
+       ========================================= */
+
+    .story-features {
+
+        margin-top: 1.5rem;
+
+        gap: 0.5rem;
+    }
+
+
+    .story-feature {
+
+        padding: 0.8rem 0;
+
+        gap: 0.8rem;
+    }
+
+
+    /* ICONO */
+
+    .story-feature-icon {
+
+        width: 36px;
+
+        height: 36px;
+
+        font-size: 0.9rem;
+    }
+
+
+    /* TÍTULO DE CARACTERÍSTICA */
+
+    .story-feature strong {
+
+        font-size: 1.25rem;
+    }
+
+
+    /* DESCRIPCIÓN DE CARACTERÍSTICA */
+
+    .story-feature small {
+
+        font-size: 1.15rem;
+
+        line-height: 1.4;
+    }
+
+
+    /* =========================================
+       IMAGEN ABAJO
+       ========================================= */
+
+    .story-container-image {
+
+        order: 2;
+
+        flex: none;
+
+        width: 100%;
+
+        height: 280px;
+
+        min-height: 280px;
+
+        border-radius: 0 0 20px 20px;
+    }
+
+
+    .story-image {
+
+        height: 100%;
+
+        object-fit: cover;
+    }
+}
+
+/*PARA QUE EL SUBMENU (TIENDA PRINCIPAL, REBAJAS, SUBASTAS)
+SE QUEDE FIJO
+*/
+.secondary-nav {
+    position: sticky;
+    top: var(--header-height, 0px);
+    z-index: 400;
 }

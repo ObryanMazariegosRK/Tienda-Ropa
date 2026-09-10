@@ -1,0 +1,859 @@
+/* ==========================================================
+   AMERISHOP ADMIN — PALETA Y DISTRIBUCIÓN
+   Solo tema visual: no agrega elementos nuevos
+   ========================================================== */
+
+:root {
+  --ad-green: #39FF14;
+  --ad-green-hover: #22C55E;
+  --ad-green-dark: #16A34A;
+  --ad-green-soft: #F0FDF4;
+
+  --ad-bg: #F8FAFC;
+  --ad-card: #FFFFFF;
+
+  --ad-text: #1F2937;
+  --ad-text-muted: #6B7280;
+  --ad-placeholder: #9CA3AF;
+
+  --ad-border: #E5E7EB;
+  --ad-divider: #F1F5F9;
+
+  --ad-warning: #F59E0B;
+  --ad-danger: #EF4444;
+  --ad-info: #3B82F6;
+  --ad-inactive: #9CA3AF;
+
+  --ad-sidebar: #0B0B0C;
+  --ad-sidebar-hover: #17181B;
+  --ad-sidebar-active: #14261A;
+}
+
+/* ==========================================================
+   BASE
+   ========================================================== */
+
+body {
+  background-color: var(--ad-bg);
+  color: var(--ad-text);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+
+#layoutSidenav_content {
+  background-color: var(--ad-bg);
+}
+
+#layoutSidenav_content main {
+  padding-top: 0.5rem;
+}
+
+/* ==========================================================
+   TOPBAR
+   ========================================================== */
+
+.sb-topnav.navbar.bg-dark {
+  background-color: var(--ad-card) !important;
+  border-bottom: 1px solid var(--ad-border);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.sb-topnav .navbar-brand {
+  color: var(--ad-text) !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sb-topnav .navbar-brand span,
+.sb-topnav .navbar-brand strong {
+  color: var(--ad-green-dark);
+}
+
+/* Botón del menú lateral */
+.sb-topnav #sidebarToggle,
+.sb-topnav .btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ad-border);
+  border-radius: 10px;
+  background-color: var(--ad-card);
+  color: var(--ad-text) !important;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+
+
+/* Nombre del administrador */
+.sb-topnav #admin-user-name {
+  color: var(--ad-text) !important;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Cerrar sesión */
+.sb-topnav .btn-outline-light {
+  border-color: var(--ad-border);
+  color: var(--ad-text) !important;
+  font-weight: 600;
+  border-radius: 10px;
+  background-color: var(--ad-card);
+}
+
+.sb-topnav .btn-outline-light:hover {
+  border-color: var(--ad-danger);
+  background-color: #FEF2F2;
+  color: var(--ad-danger) !important;
+}
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+
+.sb-sidenav.sb-sidenav-dark {
+  background-color: var(--ad-sidebar);
+  border-right: 1px solid #17181B;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu-heading {
+  padding: 1.6rem 1.5rem 0.6rem;
+  color: #6B7280;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu .nav-link {
+  position: relative;
+  margin: 0.15rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: #D1D5DB;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu .nav-link .sb-nav-link-icon {
+  margin-right: 0.75rem;
+  color: #9CA3AF;
+  transition: color 0.2s ease;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu .nav-link:hover {
+  background-color: var(--ad-sidebar-hover);
+  color: #FFFFFF;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu .nav-link:hover .sb-nav-link-icon {
+  color: var(--ad-green);
+}
+
+/* Enlace activo */
+.sb-sidenav-dark .sb-sidenav-menu .nav-link.active {
+  background-color: var(--ad-sidebar-active);
+  color: var(--ad-green);
+}
+
+.sb-sidenav-dark .sb-sidenav-menu .nav-link.active .sb-nav-link-icon {
+  color: var(--ad-green);
+}
+
+.sb-sidenav-dark .sb-sidenav-menu .nav-link.active::before {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: -0.75rem;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--ad-green);
+  content: "";
+}
+
+/* Submenú */
+.sb-sidenav-menu-nested {
+  margin-left: 1.6rem;
+  border-left: 1px solid #1F2024;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu-nested .nav-link {
+  margin: 0.1rem 0.75rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.sb-sidenav-dark .sb-sidenav-menu-nested .nav-link.active {
+  background-color: var(--ad-sidebar-hover);
+  color: var(--ad-green);
+}
+
+.sb-sidenav-dark .sb-sidenav-menu-nested .nav-link.active::before {
+  display: none;
+}
+
+.sb-sidenav-collapse-arrow {
+  color: #6B7280;
+}
+
+/* ==========================================================
+   ENCABEZADOS Y BREADCRUMB
+   ========================================================== */
+
+#layoutSidenav_content h1 {
+  margin-top: 2rem !important;
+  color: var(--ad-text);
+  font-size: clamp(1.7rem, 2.4vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.breadcrumb {
+  padding: 0;
+  background: transparent;
+  font-size: 0.85rem;
+}
+
+.breadcrumb-item a {
+  color: var(--ad-green-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  color: var(--ad-green-hover);
+  text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+  color: var(--ad-text-muted);
+}
+
+/* ==========================================================
+   TARJETAS
+   ========================================================== */
+
+.card {
+  border: 1px solid var(--ad-border);
+  border-radius: 14px;
+  background-color: var(--ad-card);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.card.bg-light {
+  background-color: var(--ad-card) !important;
+}
+
+.card-header {
+  border-bottom: 1px solid var(--ad-divider);
+  border-radius: 14px 14px 0 0 !important;
+  font-weight: 700;
+}
+
+.card-header.bg-primary {
+  background-color: var(--ad-card) !important;
+  color: var(--ad-text) !important;
+}
+
+.card-header.bg-primary i {
+  color: var(--ad-green-dark);
+}
+
+.card-footer {
+  border-top: 1px solid var(--ad-divider);
+  border-radius: 0 0 14px 14px !important;
+  background-color: var(--ad-card) !important;
+}
+
+/* Tarjetas de producto */
+.card-img-top {
+  border-radius: 14px 14px 0 0;
+}
+
+.card-body .card-title {
+  color: var(--ad-text);
+  font-weight: 700;
+}
+
+.text-success {
+  color: var(--ad-green-dark) !important;
+}
+
+.text-muted,
+.text-secondary {
+  color: var(--ad-text-muted) !important;
+}
+
+/* Acciones alineadas en la tarjeta */
+.card-footer.d-flex {
+  gap: 0.5rem;
+  justify-content: flex-start !important;
+}
+
+/* ==========================================================
+   FILTROS Y FORMULARIOS
+   ========================================================== */
+
+.form-label {
+  color: var(--ad-text-muted) !important;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.form-control,
+.form-select {
+  min-height: 44px;
+  border: 1px solid var(--ad-border);
+  border-radius: 10px;
+  background-color: var(--ad-card);
+  color: var(--ad-text);
+  font-size: 0.92rem;
+}
+
+.form-select.border-primary {
+  border-color: var(--ad-border) !important;
+}
+
+.form-control::placeholder {
+  color: var(--ad-placeholder);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--ad-green-hover);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.14);
+}
+
+.form-select:disabled,
+.form-control:disabled {
+  background-color: var(--ad-divider);
+  color: var(--ad-placeholder);
+}
+
+textarea.form-control {
+  min-height: 96px;
+}
+
+/* ==========================================================
+   BOTONES
+   ========================================================== */
+
+.btn {
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.btn-success,
+.btn-primary {
+  border-color: var(--ad-green-dark);
+  background-color: var(--ad-green-dark);
+  color: #FFFFFF;
+}
+
+.btn-success:hover,
+.btn-primary:hover {
+  border-color: var(--ad-green-hover);
+  background-color: var(--ad-green-hover);
+  color: #FFFFFF;
+}
+
+.btn-warning {
+  border-color: var(--ad-warning);
+  background-color: var(--ad-warning);
+  color: #111827;
+}
+
+.btn-warning:hover {
+  border-color: #D97706;
+  background-color: #D97706;
+  color: #FFFFFF;
+}
+
+.btn-danger {
+  border-color: var(--ad-danger);
+  background-color: #FEF2F2;
+  color: var(--ad-danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--ad-danger);
+  color: #FFFFFF;
+}
+
+.btn-outline-danger {
+  border-color: var(--ad-danger);
+  color: var(--ad-danger);
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--ad-danger);
+  color: #FFFFFF;
+}
+
+.btn-secondary {
+  border-color: var(--ad-border);
+  background-color: var(--ad-card);
+  color: var(--ad-text);
+}
+
+.btn-secondary:hover {
+  border-color: var(--ad-text-muted);
+  background-color: var(--ad-divider);
+  color: var(--ad-text);
+}
+
+/* ==========================================================
+   ALERTAS Y ESTADOS
+   ========================================================== */
+
+.alert {
+  border: 1px solid var(--ad-border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.alert-info {
+  border-color: rgba(59, 130, 246, 0.35);
+  background-color: #EFF6FF;
+  color: #1E40AF;
+}
+
+.alert-info i {
+  color: var(--ad-info);
+}
+
+.alert-danger {
+  border-color: rgba(239, 68, 68, 0.35);
+  background-color: #FEF2F2;
+  color: #B91C1C;
+}
+
+.badge.bg-success,
+.badge-active {
+  background-color: var(--ad-green-dark) !important;
+  color: #FFFFFF;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.spinner-border.text-primary {
+  color: var(--ad-green-dark) !important;
+}
+
+/* ==========================================================
+   MODALES
+   ========================================================== */
+
+.modal-content {
+  border: 1px solid var(--ad-border);
+  border-radius: 16px;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--ad-divider);
+}
+
+.modal-header.bg-warning {
+  background-color: var(--ad-card) !important;
+  color: var(--ad-text) !important;
+}
+
+.modal-header.bg-warning i {
+  color: var(--ad-warning);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--ad-divider);
+}
+
+/* ==========================================================
+   BANNERS
+   ========================================================== */
+
+.group-card {
+  border: 1px solid var(--ad-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: var(--ad-card);
+}
+
+.group-card:hover {
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.09) !important;
+}
+
+.group-card.active-group {
+  border: 2px solid var(--ad-green-dark) !important;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.group-thumb {
+  background-color: var(--ad-divider) !important;
+}
+
+.media-thumb-item {
+  border: 1px solid var(--ad-border) !important;
+  border-radius: 10px !important;
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 767px) {
+  #layoutSidenav_content h1 {
+    margin-top: 1.4rem !important;
+    font-size: 1.55rem;
+  }
+
+  .card-body {
+    padding: 1.1rem;
+  }
+
+  .form-control,
+  .form-select {
+    min-height: 46px;
+  }
+
+  .card-footer.d-flex {
+    flex-wrap: wrap;
+  }
+
+/* Topnav: evita que el nombre del admin encime el botón de logout en pantallas angostas */
+  .sb-topnav .ms-auto {
+    gap: 0.5rem !important;
+  }
+  .sb-topnav #admin-user-name {
+    display: none;
+  }
+
+  /* Encabezados de tarjeta con un <select> u otra acción a la derecha (ej. filtro de Pedidos) */
+  .card-header.d-flex {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .card-header .form-select-sm {
+    width: 100% !important;
+  }
+
+  /* Cualquier tabla (incluida la que tu JS inyecta en #ordersTableContainer) 
+     que no venga ya envuelta en .table-responsive */
+  #ordersTableContainer,
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Banners: las tarjetas de ancho fijo (260px) no caben en pantallas angostas */
+  #bannersGrid > div {
+    flex: 1 1 100% !important;
+    max-width: 100%;
+  }
+
+  /* Previsualizaciones de imágenes (crear producto / editar banner): más chicas en celular */
+  .preview-item,
+  .media-thumb-item {
+    width: 90px !important;
+    height: 90px !important;
+  }
+
+  /* Modales: un poco más de aire a los lados en pantallas chicas */
+  .modal-dialog {
+    margin: 0.75rem;
+  }
+  .modal-header .modal-title {
+    font-size: 1.1rem;
+  }
+
+  /* Botones "Editar / Eliminar" del pie de la tarjeta de producto: reparten el ancho en vez de apretarse */
+  .card-footer.d-flex .btn {
+    flex: 1 1 auto;
+  }
+
+}
+
+    .preview-item { position: relative; width: 120px; height: 120px; }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+    .btn-remove-image { position: absolute; top: -5px; right: -5px; border-radius: 50%; padding: 2px 6px; }
+
+    /* Filtros fijos al hacer scroll, justo debajo del navbar del admin */
+    #filtersPanel {
+        position: sticky;
+        top: 56px; /* alto aproximado del navbar superior del panel; ajusta si no coincide */
+        z-index: 50;
+    }
+
+    /* Tarjeta de producto con el mismo look de la tienda */
+    .admin-product-card {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .admin-product-image-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        background-color: #f7f7f7;
+        isolation: isolate;
+    }
+    .admin-product-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.4s ease;
+    }
+    .admin-carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.9);
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 10;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .admin-product-image-wrapper:hover .admin-carousel-btn { opacity: 1; }
+    .admin-carousel-btn.prev { left: 10px; }
+    .admin-carousel-btn.next { right: 10px; }
+    .admin-status-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 6;
+        font-size: 1.05rem;
+    }
+    .admin-product-info { padding: 0.8rem 1rem 0.4rem 1rem; text-align: center; }
+    .admin-product-info h6 {
+        font-size: 1.3rem;
+        margin-bottom: 0.3rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .admin-product-price { font-size: 1.3rem; font-weight: 700; color: #198754; margin: 0; }
+    .admin-product-actions {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.6rem 1rem 1rem 1rem;
+        margin-top: auto;
+    }
+
+    /* Responsive: 2 por fila en celular, 4 en escritorio */
+    @media (max-width: 767.98px) {
+        .admin-product-info h6 { font-size: 1.15rem; }
+        .admin-product-price { font-size: 1.15rem; }
+        .admin-product-actions .btn { padding: 0.35rem 0.6rem; font-size: 1.1rem; }
+        #filtersPanel .form-label {
+            font-size: 0.68rem;
+            margin-bottom: 0.25rem;
+        }
+        #filtersPanel .form-select {
+            font-size: 0.78rem;
+            padding: 0.45rem 1.6rem 0.45rem 0.5rem;
+            min-height: 38px;
+        }
+        #filtersPanel .card-body {
+            padding: 0.9rem 0.7rem;
+        }
+
+      /* Bienvenido, Nombre: solo texto, se oculta en celular (queda solo el ícono) */
+      .admin-user-greeting {
+        display: none;
+      }
+      .admin-logout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        padding: 0;
+        border-radius: 50%;
+      }
+      .admin-logout-btn .admin-logout-text {
+        display: none;
+      }
+      .admin-logout-btn i {
+        margin: 0;
+        font-size: 1.1rem;
+      }  
+      
+    
+    
+    }
+
+.admin-user-greeting {
+  color: #D1D5DB;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sb-topnav.navbar.bg-dark {
+  background-color: var(--ad-sidebar) !important;
+  border-bottom: 1px solid #17181B;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.sb-topnav .navbar-brand {
+  color: #FFFFFF !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sb-topnav .navbar-brand span,
+.sb-topnav .navbar-brand strong {
+  color: var(--ad-green);
+}
+
+/* Botón del menú lateral */
+.sb-topnav #sidebarToggle,
+.sb-topnav .btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background-color: transparent;
+  color: #D1D5DB !important;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sb-topnav #sidebarToggle:hover,
+.sb-topnav .btn-link:hover {
+  background-color: var(--ad-sidebar-hover);
+  color: var(--ad-green) !important;
+}
+
+/* Nombre del administrador */
+.sb-topnav #admin-user-name {
+  color: #FFFFFF !important;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Cerrar sesión */
+.sb-topnav .btn-outline-light {
+  border-color: #2E3238;
+  color: #D1D5DB !important;
+  font-weight: 600;
+  border-radius: 10px;
+  background-color: transparent;
+}
+
+.sb-topnav .btn-outline-light:hover {
+  border-color: var(--ad-danger);
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #F87171 !important;
+}
+
+/*
+Para la pagina de productos en el panel del administrador xd
+*/
+.admin-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+.admin-pagination .page-btn {
+    min-width: 3.2rem;
+    height: 3.2rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--ad-border);
+    border-radius: 8px;
+    background-color: var(--ad-card);
+    color: var(--ad-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.admin-pagination .page-btn:hover:not([disabled]) {
+    border-color: var(--ad-green-hover);
+}
+.admin-pagination .page-btn.active {
+    background-color: var(--ad-green-dark);
+    border-color: var(--ad-green-dark);
+    color: #FFFFFF;
+}
+.admin-pagination .page-btn[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/*
+DISEÑO DE MODALES DE ADVERTENCIA
+*/
+.admin-confirm-modal { border-radius: 18px; border: none; }
+.admin-confirm-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 4.5rem; height: 4.5rem; margin: 0 auto;
+    border-radius: 50%; font-size: 2rem;
+    background-color: var(--ad-divider); color: var(--ad-text-muted);
+}
+.admin-confirm-icon-success { background-color: var(--ad-green-soft); color: var(--ad-green-dark); }
+.admin-confirm-icon-error { background-color: #FEF2F2; color: var(--ad-danger); }
+.admin-confirm-icon-warning { background-color: #FEF3C7; color: var(--ad-warning); }
+
+@media (max-width: 480px) {
+    .admin-confirm-modal .modal-body { padding: 2rem 1.5rem !important; }
+}
+#adminAlertMessage, #adminConfirmMessage {
+    white-space: pre-line;
+}
+
+/*Para el scrol de la tabla de productos estancados*/
+#stuckOrdersList {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+/*PARA LA ALTURA DE LA GRAFICA DE INGRESOS*/
+@media (max-width: 767.98px) {
+    #revenueChart {
+        min-height: 240px !important;
+    }
+}
+
+/*PARA EL SCROLEO DE LA NUMERACION DE PAGINACION*/
+.admin-pagination {
+    flex-wrap: nowrap;          /* fuerza una sola fila, sin saltar a la siguiente */
+    overflow-x: auto;           /* si no cabe, aparece scroll horizontal */
+    justify-content: flex-start; /* alinea a la izquierda al hacer scroll (en vez de centrar) */
+    padding-bottom: 0.5rem;     /* espacio para que la barra de scroll no tape los números */
+    -webkit-overflow-scrolling: touch; /* scroll suave en celular */
+}
+
+.admin-pagination .page-btn {
+    flex: 0 0 auto;   /* evita que los botones se encojan para intentar caber todos */
+}
+
+/* Oculta visualmente la barra de scroll (opcional, se ve más limpio) */
+.admin-pagination::-webkit-scrollbar {
+    height: 4px;
+}
+.admin-pagination::-webkit-scrollbar-thumb {
+    background: var(--ad-border);
+    border-radius: 999px;
+}
+

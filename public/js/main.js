@@ -6,10 +6,12 @@ let productGalleries = {};    // Guarda el índice de imagen actual por cada pro
 let navCategoriesContainer;
 let productsContainer;
 let quickviewGalleries = {}; // Índice de imagen actual dentro del panel de vistazo rápido
-
+const AUCTION_SNOOZE_MS = 60 * 60 * 1000;
 const ESTADO_DISPONIBLE = 'available';
 
+
 document.addEventListener("DOMContentLoaded", () => {
+
     // Guardamos la página actual como "última página de la tienda visitada",
     // para que "Mis Pedidos" pueda regresar exactamente a donde estabas.
     // Se excluye a sí misma para no sobreescribir el valor al entrar/salir de ahí
@@ -17,12 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem('last_store_page', window.location.pathname);
     }
 
-    // 1. Resolver las referencias del DOM correctamente para evitar errores de duplicación
+    //Resolver las referencias del DOM correctamente para evitar errores de duplicación
     navCategoriesContainer = document.getElementById("nav-categories");
     productsContainer = document.getElementById("products-container")
         || document.getElementById("ofertas-container");
 
-    // 2. Interactividad de la sección de galerías estáticas ("Hombres", "Mujeres", "Minimalista")
+    //Interactividad de la sección de galerías estáticas ("Hombres", "Mujeres", "Minimalista")
     const container = document.querySelectorAll(".gallery-layout");
 
 
@@ -54,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showClothes(defaultItem.getAttribute("data-category"));
     }
 
-    // 3. Código para el formulario de la suscripción
+    //Código para el formulario de la suscripción
     const subscriberInput = document.querySelector(".subscriber-input");
     const subscriberBtn = document.querySelector(".subscriber-btn");
     const subscriberThanks = document.querySelector(".subscriber-thanks");
@@ -87,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    // 4. Interactividad del menú móvil (Abrir y cerrar menú lateral)
+    //Interactividad del menú móvil (Abrir y cerrar menú lateral)
     //const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     //const mainNav = document.getElementById("main-nav");
 
@@ -99,12 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     const mainNav = document.getElementById("main-nav");
 
-    /* Creamos el fondo oscuro sin modificar tu archivo Blade */
+    /*Creamos el fondo oscuro sin modificar el archivo Blade */
     const mobileNavOverlay = document.createElement("div");
     mobileNavOverlay.id = "mobile-nav-overlay";
     document.body.appendChild(mobileNavOverlay);
 
-    /* Garantiza que la tienda cargue con el scroll desbloqueado */
+    /*Garantiza que la tienda cargue con el scroll desbloqueado */
     document.body.classList.remove("mobile-menu-open");
 
     function cerrarMenuMovil() {
@@ -242,13 +244,21 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCategories();
     cargarContadorCarritoInicial();
     actualizarAuthUI();
+    verificarSubastasGanadas();
+    //Para revisar cada 10 segundos mientras que la pestaña este abierta
+    //setInterval(verificarSubastasGanadas, 20000);
+    iniciarSondeoLigero();
 
     // Decide UNA sola fuente de productos según la página, evitando la carrera
     if (document.getElementById("products-container")) {
         loadFeaturedProducts();
     } else if (document.getElementById("ofertas-container")) {
-        loadOfertas();
+        modoSoloOfertas = true;
+        loadFeaturedProducts();
     }
+
+    window.addEventListener('load', ajustarOffsetSecondaryNav);
+    window.addEventListener('resize', ajustarOffsetSecondaryNav);
 
 });
 
@@ -263,6 +273,7 @@ const loadCategories = async () => {
         if (categorias.data) {
             categorias = categorias.data;
         }
+        categorias = categorias.filter(cat => cat.isActive);
 
         if (Array.isArray(categorias) && categorias.length > 0) {
             globalCategories = categorias; 
@@ -300,6 +311,8 @@ const loadCategories = async () => {
                 `;
                 navCategoriesContainer.innerHTML += liPadreHtml;
             });
+            
+            ajustarOffsetSecondaryNav();
             
         } else {
             navCategoriesContainer.innerHTML = '<li class="nav-item"><a href="#">Sin categorías</a></li>';
@@ -346,7 +359,7 @@ function activarArrastreConMouse(slider) {
 // =========================================================================
 // 3. CARGAR PRODUCTOS DESDE LA API
 // =========================================================================
-const loadFeaturedProducts = async () => {
+/*const loadFeaturedProducts = async () => {
     try {
         const response = await fetch('/api/products');
         const result = await response.json();
@@ -361,7 +374,65 @@ const loadFeaturedProducts = async () => {
         console.error("Error al cargar los productos:", error);
         productsContainer.innerHTML = `<p class="loading-text">Ocurrió un error al cargar el catálogo de productos.</p>`;
     }
+};*/
+
+const PER_PAGE = 24;
+let currentPage = 1;
+let totalPages = 1;
+let modoSoloOfertas = false;
+
+const loadFeaturedProducts = async (page = 1, hacerScroll = false) => {
+    try {
+        const params = new URLSearchParams({ page, per_page: PER_PAGE });
+        if (modoSoloOfertas) params.set('on_offer', 'true');
+
+        const response = await fetch(`/api/products?${params.toString()}`);
+        const result = await response.json();
+
+        if (result.success && result.data.length > 0) {
+            allProducts = result.data;
+            renderizarProductos(allProducts);
+
+            currentPage = result.meta.current_page;
+            totalPages = result.meta.last_page;
+            renderizarPaginacion();
+
+            if (hacerScroll) {
+                productsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            productsContainer.innerHTML = `<p class="loading-text">No hay productos disponibles en este momento.</p>`;
+            document.getElementById('pagination').innerHTML = '';
+        }
+    } catch (error) {
+        console.error("Error al cargar los productos:", error);
+        productsContainer.innerHTML = `<p class="loading-text">Ocurrió un error al cargar el catálogo de productos.</p>`;
+    }
 };
+
+function renderizarPaginacion() {
+    const contenedor = document.getElementById('pagination');
+    if (!contenedor) return;
+
+    if (totalPages <= 1) {
+        contenedor.innerHTML = '';
+        return;
+    }
+
+    let html = `<button class="page-btn page-nav" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+
+    html += `<button class="page-btn page-nav" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+
+    contenedor.innerHTML = html;
+
+    contenedor.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', () => loadFeaturedProducts(parseInt(btn.dataset.page, 10), true));
+    });   
+}
 
 // =========================================================================
 // 4. RENDERIZAR LAS TARJETAS EN PANTALLA (Borderless UI)
@@ -424,7 +495,7 @@ function construirTarjetaProducto(product) {
 
                 ${tieneOferta ? `<span class="discount-badge">${descuento}% de descuento</span>` : ''}
 
-                <img id="img-${product.id}" src="${fotos[0]}" alt="${product.name}">
+                <img id="img-${product.id}" src="${fotos[0]}" alt="${product.name}" loading="lazy">
 
                 ${fotos.length > 1 ? `
                     <button class="product-carousel-btn prev" onclick="cambiarImagen(${product.id}, -1, event)">
@@ -575,11 +646,7 @@ function construirQuickViewHtml(product) {
         </div>
     `;
 
-    //CARRITO DE COMPRAS AHHHH
-    //
-    //
-    //
-    //
+    
 }
 
 window.cambiarImagenQuickView = function(productId, direction, event) {
@@ -686,7 +753,7 @@ window.filtrarPorCategoria = function(categoryId, categoryName, event) {
 };
 
 
-
+/*
 async function loadOfertas() {
     try {
         const response = await fetch('/api/products');
@@ -712,7 +779,7 @@ async function loadOfertas() {
         productsContainer.innerHTML = `<p class="loading-text">Ocurrió un error al cargar las ofertas.</p>`;
     }
 }
-
+*/
 
 // ==========================================
 // 7. CARRITO DE COMPRAS
@@ -781,6 +848,7 @@ async function cargarContadorCarritoInicial() {
         console.error('Error al cargar el contador del carrito:', error);
     }
 }
+
 
 
 // ==========================================
@@ -1047,7 +1115,7 @@ function renderizarPasoDireccion() {
         });
     }
 
-    document.getElementById("checkout-confirm-btn").addEventListener("click", procesarConfirmacionCheckout);
+    document.getElementById("checkout-confirm-btn").onclick = procesarConfirmacionCheckout;
 }
 
 async function procesarConfirmacionCheckout() {
@@ -1163,6 +1231,15 @@ const ORDER_STATUS_LABELS = {
     delivered: 'Entregado',
     cancelled: 'Cancelado'
 };
+const ORDER_STATUS_STEPS = ['pending_payment', 'confirmed', 'preparing', 'on_route', 'delivered'];
+const ORDER_STATUS_ICONS = {
+    pending_payment: 'fa-hourglass-half',
+    confirmed: 'fa-clipboard-check',
+    preparing: 'fa-box',
+    on_route: 'fa-truck',
+    delivered: 'fa-circle-check',
+    cancelled: 'fa-circle-xmark'
+};
 
 async function cargarMisPedidos(container) {
     const token = localStorage.getItem('auth_token');
@@ -1226,7 +1303,7 @@ function renderizarMisPedidos(container, orders) {
         });
 
         const statusLabel = ORDER_STATUS_LABELS[order.status] || order.status;
-
+        const statusIcon = ORDER_STATUS_ICONS[order.status] || 'fa-circle-question';
         const itemsHtml = order.items.map(item => `
             <div class="order-item-row">
                 <img src="${item.productImage ? '/storage/' + item.productImage : '/image/ImagenNoDefinida.png'}" 
@@ -1245,7 +1322,7 @@ function renderizarMisPedidos(container, orders) {
                         <p class="order-card-id">Pedido #${order.id}</p>
                         <p class="order-card-date">${fecha}</p>
                     </div>
-                    <span class="order-status-badge status-${order.status}">${statusLabel}</span>
+                    ${construirBarraDeEstado(order.status)}
                 </div>
 
                 <div class="order-card-items">
@@ -1260,6 +1337,31 @@ function renderizarMisPedidos(container, orders) {
         `;
     }).join('');
 }
+
+function construirBarraDeEstado(status) {
+    if (status === 'cancelled') {
+        return `
+            <div class="order-status-cancelled-badge">
+                <i class="fas ${ORDER_STATUS_ICONS.cancelled}"></i>
+                <span>${ORDER_STATUS_LABELS.cancelled}</span>
+            </div>`;
+    }
+
+    const currentIndex = ORDER_STATUS_STEPS.indexOf(status);
+
+    return `
+        <div class="order-status-tracker">
+            ${ORDER_STATUS_STEPS.map((stepStatus, index) => {
+                const claseEstado = index < currentIndex ? 'completed' : (index === currentIndex ? 'current' : '');
+                return `
+                    <div class="order-status-step ${claseEstado}">
+                        <span class="order-status-icon"><i class="fas ${ORDER_STATUS_ICONS[stepStatus]}"></i></span>
+                        <span class="order-status-label">${ORDER_STATUS_LABELS[stepStatus]}</span>
+                    </div>`;
+            }).join('')}
+        </div>`;
+}
+
 
 // ==========================================
 // 11. ESTADO DE SESIÓN EN EL HEADER (login / hola + logout)
@@ -1288,7 +1390,7 @@ async function actualizarAuthUI() {
         }
 
         const data = await response.json();
-        renderLoggedInUI(authContainer, data.name); // 👈 ajusta "name" si tu DTO usa otro campo
+        renderLoggedInUI(authContainer, data.name); 
 
     } catch (error) {
         console.error('Error al verificar sesión:', error);
@@ -1342,3 +1444,477 @@ window.confirmarCerrarSesion = async function() {
         window.location.href = '/';
     }
 };
+
+// ==========================================
+// 11. Subastas Presentacion al ganar una subasta
+// ==========================================
+async function verificarSubastasGanadas() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('/api/auctions/my-bid-status', {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            cache: 'no-store'
+        });
+        const data = await response.json();
+
+        if (!data.success) return;
+
+        if (data.data.wins.length > 0) {
+            mostrarBannerSubastaGanada(data.data.wins);
+            return;
+        }
+
+        const key = auctionFlagKey();
+        if (data.data.activeBidsCount === 0 && key) {
+            localStorage.removeItem(key);
+        }
+
+    } catch (error) {
+        console.error('Error al verificar subastas ganadas:', error);
+    }
+}
+
+function iniciarSondeoLigero() {
+    setInterval(() => {
+        const key = auctionFlagKey();
+        if (key && localStorage.getItem(key) === 'true') {
+            verificarSubastasGanadas();
+        }
+    }, 20000);
+}
+
+
+function mostrarBannerSubastaGanada(wins) {
+    if (document.getElementById('auction-win-modal')) return; // ya se está mostrando
+    //Para que no interrumpa si el usuario esta en el modal de checkout
+    if (document.getElementById('checkout-modal')?.classList.contains('active')) return;
+    const primera = wins[0];
+    const extraTexto = wins.length > 1
+        ? `<p class="auction-win-extra">Tienes ${wins.length - 1} subasta(s) ganada(s) más pendientes de confirmar.</p>`
+        : '';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'auction-win-overlay';
+    overlay.className = 'auction-win-overlay active';
+
+    const modal = document.createElement('div');
+    modal.id = 'auction-win-modal';
+    modal.className = 'auction-win-modal active';
+
+    modal.innerHTML = `
+        <div class="auction-win-icon">🏆</div>
+        <h2>¡Ganaste la subasta!</h2>
+        <p class="auction-win-product">${primera.productName}</p>
+        <p class="auction-win-price">Q${primera.finalPrice.toFixed(2)}</p>
+        ${extraTexto}
+        <div class="auction-win-actions">
+            <button type="button" class="auction-win-confirm-btn" onclick="cerrarModalGanador(); abrirConfirmacionSubastaGanada(${primera.auctionId})">
+                Confirmar pedido
+            </button>
+            <button type="button" class="auction-win-decline-btn" onclick="confirmarCancelarSubasta(${primera.auctionId})">
+                No quiero este producto
+            </button>
+        </div>
+    `;
+
+
+    
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+    document.body.style.overflow = "hidden";
+}
+
+window.cerrarModalGanador = function() {
+    document.getElementById('auction-win-overlay')?.remove();
+    document.getElementById('auction-win-modal')?.remove();
+    document.body.style.overflow = "";
+};
+
+
+window.confirmarCancelarSubasta = async function(auctionId) {
+    if (!confirm('¿Seguro que no quieres este producto? Se le ofrecerá al siguiente postor.')) return;
+
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch(`/api/auctions/${auctionId}/decline`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudo procesar tu decisión.');
+
+        alert('Entendido, se le ha ofrecido el producto al siguiente postor.');
+        cerrarModalGanador();
+
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+function auctionFlagKey() {
+    const token = localStorage.getItem('auth_token');
+    return token ? `tiene_pujas_activas_${token}` : null;
+}
+
+
+
+//MODAL DE SUBASTAS
+window.abrirConfirmacionSubastaGanada = async function(auctionId) {
+    document.getElementById('auction-win-banner')?.remove();
+
+    abrirCheckoutModal(); // función que ya existe, solo abre el modal visualmente
+    await cargarPasoDireccionParaSubasta(auctionId);
+};
+
+async function cargarPasoDireccionParaSubasta(auctionId) {
+    const content = document.getElementById("checkout-modal-content");
+    const token = localStorage.getItem('auth_token');
+
+    content.innerHTML = `<p class="loading-text">Cargando tus direcciones...</p>`;
+
+    try {
+        const response = await fetch('/api/addresses', {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            cache: 'no-store'
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudieron cargar tus direcciones.');
+
+        checkoutState.addresses = data.data;
+        renderizarPasoDireccion(); // función que ya tienes
+
+        //Sobrescribimos el botón de confirmar para que apunte al endpoint de subasta
+        document.getElementById("checkout-confirm-btn").onclick = () => procesarConfirmacionSubasta(auctionId);
+
+    } catch (error) {
+        content.innerHTML = `<p class="loading-text">${error.message}</p>`;
+    }
+}
+
+async function procesarConfirmacionSubasta(auctionId) {
+    const errorEl = document.getElementById("checkout-error");
+    errorEl.style.display = "none";
+
+    const token = localStorage.getItem('auth_token');
+    const seleccionado = document.querySelector('input[name="checkout-address"]:checked');
+    const labelInput = document.getElementById("new-address-label");
+    const lineInput = document.getElementById("new-address-line");
+    const formVisible = labelInput && !document.getElementById("new-address-form").classList.contains("hidden");
+
+    try {
+        let addressId;
+
+        if (formVisible && labelInput.value.trim() && lineInput.value.trim()) {
+            const isDefaultCheckbox = document.getElementById("new-address-default");
+            const isDefault = isDefaultCheckbox ? isDefaultCheckbox.checked : true;
+            const nueva = await crearDireccion(token, labelInput.value.trim(), lineInput.value.trim(), isDefault);
+            addressId = nueva.id;
+        } else if (seleccionado) {
+            addressId = parseInt(seleccionado.value, 10);
+        } else {
+            errorEl.textContent = "Selecciona una dirección o agrega una nueva.";
+            errorEl.style.display = "block";
+            return;
+        }
+
+        const response = await fetch(`/api/auctions/${auctionId}/checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ addressId })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudo confirmar tu pedido.');
+
+        renderizarPasoConfirmacion(data.data); // función que ya tienes, reutilizada tal cual
+
+    } catch (error) {
+        errorEl.textContent = error.message;
+        errorEl.style.display = "block";
+    }
+
+
+    
+}
+
+// ==========================================
+// MODAL DE CUENTA (Perfil / Direcciones)
+// ==========================================
+let direccionesCache = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    const profileBtn = document.getElementById("sidebarProfileBtn");
+    const addressesBtn = document.getElementById("sidebarAddressesBtn");
+    const closeBtn = document.getElementById("account-modal-close");
+    const overlay = document.getElementById("account-modal-overlay");
+
+    if (profileBtn) profileBtn.addEventListener("click", abrirModalPerfil);
+    if (addressesBtn) addressesBtn.addEventListener("click", abrirModalDirecciones);
+    if (closeBtn) closeBtn.addEventListener("click", cerrarAccountModal);
+    if (overlay) overlay.addEventListener("click", cerrarAccountModal);
+});
+
+function abrirAccountModal() {
+    document.getElementById("account-modal").classList.add("active");
+    document.getElementById("account-modal-overlay").classList.add("active");
+    document.body.style.overflow = "hidden";
+}
+
+window.cerrarAccountModal = function() {
+    document.getElementById("account-modal").classList.remove("active");
+    document.getElementById("account-modal-overlay").classList.remove("active");
+    document.body.style.overflow = "";
+};
+
+//Para dejar el submenu fijo xd
+function ajustarOffsetSecondaryNav() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    document.documentElement.style.setProperty('--header-height', `${header.offsetHeight}px`);
+}
+
+// ===== PERFIL (solo lectura) =====
+async function abrirModalPerfil() {
+    abrirAccountModal();
+    const content = document.getElementById("account-modal-content");
+    content.innerHTML = `<p class="loading-text">Cargando...</p>`;
+
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch('/api/profile', {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            cache: 'no-store'
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error('No se pudo cargar tu perfil.');
+
+        const iniciales = (data.name?.[0] || '') + (data.lastName?.[0] || '');
+
+        content.innerHTML = `
+            <div class="account-profile-view">
+                <div class="account-profile-avatar">${iniciales.toUpperCase()}</div>
+                <h3 class="account-profile-name">${data.name} ${data.lastName || ''}</h3>
+                <div class="account-profile-details">
+                    <div class="account-profile-field">
+                        <span class="account-profile-icon">✉</span>
+                        <div>
+                            <label>Correo electrónico</label>
+                            <p>${data.email}</p>
+                        </div>
+                    </div>
+                    ${data.phone ? `
+                    <div class="account-profile-field">
+                        <span class="account-profile-icon">☎</span>
+                        <div>
+                            <label>Teléfono</label>
+                            <p>${data.phone}</p>
+                        </div>
+                    </div>` : ''}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        content.innerHTML = `<p class="loading-text">${error.message}</p>`;
+    }
+}
+
+// ===== DIRECCIONES (CRUD completo) =====
+async function abrirModalDirecciones() {
+    abrirAccountModal();
+    await cargarDireccionesModal();
+}
+
+async function cargarDireccionesModal() {
+    const content = document.getElementById("account-modal-content");
+    content.innerHTML = `<p class="loading-text">Cargando direcciones...</p>`;
+
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch('/api/addresses', {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            cache: 'no-store'
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudieron cargar tus direcciones.');
+
+        direccionesCache = data.data;
+        renderizarDireccionesModal();
+
+    } catch (error) {
+        content.innerHTML = `<p class="loading-text">${error.message}</p>`;
+    }
+}
+
+function renderizarDireccionesModal() {
+    const content = document.getElementById("account-modal-content");
+    const alLimite = direccionesCache.length >= 5;
+
+    const listHtml = direccionesCache.map(addr => `
+        <div class="account-address-card ${addr.isDefault ? 'is-default' : ''}" data-address-id="${addr.id}" onclick="clicEnDireccion(${addr.id}, event)">
+            <div class="account-address-info">
+                <strong>${addr.label}</strong> ${addr.isDefault ? '<span class="account-address-default-badge">Predeterminada</span>' : ''}
+                <p>${addr.addressLine}</p>
+            </div>
+            <div class="account-address-actions">
+                <button type="button" onclick="event.stopPropagation(); abrirEdicionDireccion(${addr.id})">Editar</button>
+                <button type="button" class="account-address-delete" onclick="event.stopPropagation(); eliminarDireccionModal(${addr.id})">Eliminar</button>
+            </div>
+        </div>
+    `).join('');
+
+    content.innerHTML = `
+        <h3>Mis Direcciones</h3>
+        <div class="account-address-list">
+            ${direccionesCache.length > 0 ? listHtml : '<p class="text-muted">Aún no tienes direcciones guardadas.</p>'}
+        </div>
+        ${direccionesCache.length > 0 ? '<p class="account-address-hint">Toca una dirección para marcarla como predeterminada.</p>' : ''}
+
+        ${alLimite
+            ? `<p class="account-address-limit-note">Ya tienes el máximo de 5 direcciones. Elimina una para poder agregar otra.</p>`
+            : `<button type="button" class="account-link-btn" id="toggleNewAddressBtn">+ Agregar nueva dirección</button>
+               <form id="newAddressModalForm" class="account-new-address-form hidden">
+                   <div class="account-form-row">
+                       <label>Etiqueta</label>
+                       <input type="text" id="newAddrLabel" placeholder="Ej. Casa, Trabajo" maxlength="50">
+                   </div>
+                   <div class="account-form-row">
+                       <label>Dirección completa</label>
+                       <textarea id="newAddrLine" rows="2" placeholder="Zona, calle, referencia..." maxlength="500"></textarea>
+                   </div>
+                   <button type="button" class="account-primary-btn" onclick="guardarNuevaDireccionModal()">Guardar dirección</button>
+               </form>`
+        }
+
+        <p class="account-modal-error" id="accountAddressError" style="display:none;"></p>
+    `;
+
+    if (!alLimite) {
+        document.getElementById("toggleNewAddressBtn").addEventListener("click", () => {
+            document.getElementById("newAddressModalForm").classList.toggle("hidden");
+        });
+    }
+}
+
+
+
+window.clicEnDireccion = function(id, event) {
+    const addr = direccionesCache.find(a => a.id === id);
+    if (!addr || addr.isDefault) return; // ya es la predeterminada, no hace nada
+    marcarDireccionPredeterminada(id);
+};
+
+window.marcarDireccionPredeterminada = async function(id) {
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch(`/api/addresses/${id}/default`, {
+            method: 'PATCH',
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudo actualizar.');
+        cargarDireccionesModal();
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+window.eliminarDireccionModal = async function(id) {
+    if (!confirm('¿Eliminar esta dirección?')) return;
+
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch(`/api/addresses/${id}`, {
+            method: 'DELETE',
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudo eliminar.');
+        cargarDireccionesModal();
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+window.guardarNuevaDireccionModal = async function() {
+    const errorEl = document.getElementById("accountAddressError");
+    errorEl.style.display = 'none';
+
+    const label = document.getElementById("newAddrLabel").value.trim();
+    const addressLine = document.getElementById("newAddrLine").value.trim();
+
+    if (!label || !addressLine) {
+        errorEl.textContent = 'Completa la etiqueta y la dirección.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch('/api/addresses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ label, addressLine, isDefault: false })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudo guardar.');
+
+        cargarDireccionesModal();
+
+    } catch (error) {
+        errorEl.textContent = error.message;
+        errorEl.style.display = 'block';
+    }
+};
+
+
+window.abrirEdicionDireccion = function(id) {
+    const addr = direccionesCache.find(a => a.id === id);
+    if (!addr) return;
+
+    const card = document.querySelector(`.account-address-card[data-address-id="${id}"]`);
+    card.innerHTML = `
+        <div class="account-form-row">
+            <label>Etiqueta</label>
+            <input type="text" id="editAddrLabel_${id}" value="${addr.label}" maxlength="50">
+        </div>
+        <div class="account-form-row">
+            <label>Dirección completa</label>
+            <textarea id="editAddrLine_${id}" rows="2" maxlength="500">${addr.addressLine}</textarea>
+        </div>
+        <div class="account-address-actions">
+            <button type="button" onclick="guardarEdicionDireccion(${id})">Guardar</button>
+            <button type="button" onclick="renderizarDireccionesModal()">Cancelar</button>
+        </div>
+    `;
+};
+
+window.guardarEdicionDireccion = async function(id) {
+    const label = document.getElementById(`editAddrLabel_${id}`).value.trim();
+    const addressLine = document.getElementById(`editAddrLine_${id}`).value.trim();
+
+    if (!label || !addressLine) {
+        alert('Completa ambos campos.');
+        return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch(`/api/addresses/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ label, addressLine })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'No se pudo actualizar.');
+
+        cargarDireccionesModal();
+
+    } catch (error) {
+        alert(error.message);
+    }
+};
+
+
+

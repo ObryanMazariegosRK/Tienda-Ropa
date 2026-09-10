@@ -31,7 +31,13 @@
 })();
 
 window.adminLogout = async function() {
-    if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+    const confirmado = await adminConfirm('¿Estás seguro de que quieres cerrar sesión?', {
+        title: 'Cerrar sesión',
+        confirmText: 'Sí, cerrar sesión',
+        confirmClass: 'btn-danger',
+        icon: 'fa-sign-out-alt'
+    });
+    if (!confirmado) return;
 
     const token = localStorage.getItem('admin_auth_token');
     try {

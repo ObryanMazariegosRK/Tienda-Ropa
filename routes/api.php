@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AdminBannerController;
+use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\AuthController\ForgotPasswordController;
 use App\Http\Controllers\AuthController\GetProfileController;
 use App\Http\Controllers\AuthController\LoginUserController;
@@ -10,7 +11,9 @@ use App\Http\Controllers\AuthController\VerifyEmailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AuthController\ResendVerificationCodeController;
 use App\Http\Controllers\AuthController\LogoutUserController;
 use App\Http\Controllers\AuthController\ResetPasswordController;
@@ -29,6 +32,8 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 
 //PRODUCTOS
 Route::get('/products', [ProductController::class, 'index']);
+//Para las subastas
+Route::get('/products/on-auction', [ProductController::class, 'onAuction']);
 Route::get('products/{id}', [ProductController::class, 'show']);
 Route::get('/categories/{categoryId}/products', [ProductController::class, 'getByCategory']);
 
@@ -39,8 +44,19 @@ Route::post('/verify-email', VerifyEmailController::class);
 //Permite solo 3 peticiones por minuto para esta ruta
 Route::post('/resend-code', ResendVerificationCodeController::class)->middleware('throttle:3,1');
 
+//Cualquiera puede ver el estado de la subasta (polling) y el historial
+Route::get('/auctions/product/{productId}/status', [AuctionController::class, 'status']);
+Route::get('/auctions/product/{productId}/bids', [AuctionController::class, 'bidsHistory']);
+
 //Banner publico
 Route::get('/banner', [BannerController::class, 'index']);
+
+
+
+
+
+
+
 // Rutas protegidas, el middleware hace varias cosas
 //al recibir la peticion con el ID y el token, va a la db y busca el ID 3
 //y comprueba de que el token es válido y no ha expirado, si el token es valido
@@ -68,10 +84,16 @@ Route::middleware('auth:sanctum')->group(function () {
     //Para las ordenes
     Route::post('/orders/checkout', [OrderController::class, 'checkout']);
     Route::get('/orders/mine', [OrderController::class, 'myOrders']);
+    Route::post('/auctions/{auctionId}/decline', [AuctionController::class, 'decline']);
     //Ordes del lado del admin
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    //Para poder pujar en las subastas
+    Route::post('/auctions/product/{productId}/bid', [AuctionController::class, 'bid']);
+    Route::get('/auctions/my-wins', [AuctionController::class, 'myWins']);
+    Route::post('/auctions/{auctionId}/checkout', [AuctionController::class, 'checkoutWin']);
+    Route::get('/auctions/my-active-bids-count', [AuctionController::class, 'myActiveBidsCount']);
+    Route::get('/auctions/my-bid-status', [AuctionController::class, 'myBidStatus']);
 
-    
     //Solo el admin podra entrar Xd
     Route::middleware('admin')->group(function () {
         Route::get('/orders/all', [OrderController::class, 'allOrders']);
@@ -97,6 +119,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
+        Route::patch('/auctions/{auctionId}/extend-duration', [AuctionController::class, 'extendDuration']);
+        Route::get('/admin/products', [AdminProductController::class, 'index']);
+
+        //Ruta para el dashboard del admin
+        Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+        Route::get('/dashboard/revenue', [DashboardController::class, 'revenue']);
+        Route::get('/dashboard/order-stats', [DashboardController::class, 'orderStats']);
+        Route::get('/dashboard/top-categories', [DashboardController::class, 'topCategories']);
+        Route::get('/dashboard/revenue-by-sale-type', [DashboardController::class, 'revenueBySaleType']);
+        Route::get('/dashboard/export/orders-excel', [DashboardController::class, 'exportOrdersExcel']);
+        Route::get('/dashboard/export/sales-excel', [DashboardController::class, 'exportSalesExcel']);
+        Route::get('/dashboard/export/sales-pdf', [DashboardController::class, 'exportSalesPdf']);
+        Route::get('/dashboard/export/orders-pdf', [DashboardController::class, 'exportOrdersPdf']);
     });
 
 });

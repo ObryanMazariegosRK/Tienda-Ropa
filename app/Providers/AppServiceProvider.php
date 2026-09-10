@@ -7,6 +7,15 @@ use App\Application\Abstractions\Address\IDeleteAddressUseCase;
 use App\Application\Abstractions\Address\IListAddressesUseCase;
 use App\Application\Abstractions\Address\ISetDefaultAddressUseCase;
 use App\Application\Abstractions\Address\IUpdateAddressUseCase;
+use App\Application\Abstractions\Auction\ICheckoutWonAuctionUseCase;
+use App\Application\Abstractions\Auction\IExtendAuctionDurationUseCase;
+use App\Application\Abstractions\Auction\IGetAuctionStatusUseCase;
+use App\Application\Abstractions\Auction\IGetMyWonAuctionsUseCase;
+use App\Application\Abstractions\Auction\IListAuctionBidsUseCase;
+use App\Application\Abstractions\Auction\IPlaceBidUseCase;
+use App\Application\Abstractions\Auction\IDeclineAuctionWinUseCase;
+use App\Application\Abstractions\Auction\IGetMyActiveBidsCountUseCase;
+use App\Application\Abstractions\Auction\IGetMyAuctionBidStatusUseCase;
 use App\Application\Abstractions\Banner\IAddMediaToGroupUseCase;
 use App\Application\Abstractions\Banner\ICreateBannerGroupUseCase;
 use App\Application\Abstractions\Banner\ICreateBannerUseCase;
@@ -39,12 +48,19 @@ use App\Application\Abstractions\Category\IGetCategoriesUseCase;
 use App\Application\Abstractions\Category\IGetCategoryByIdUseCase;
 use App\Application\Abstractions\Category\ISaveCategoryUseCase;
 use App\Application\Abstractions\Category\IUpdateCategoryUseCase;
+use App\Application\Abstractions\Dashboard\IGetDashboardSummaryUseCase;
+use App\Application\Abstractions\Dashboard\IGetOrderStatsUseCase;
+use App\Application\Abstractions\Dashboard\IGetRevenueBySaleTypeUseCase;
+use App\Application\Abstractions\Dashboard\IGetRevenueReportUseCase;
+use App\Application\Abstractions\Dashboard\IGetTopCategoriesUseCase;
 use App\Application\Abstractions\Order\ICheckoutUseCase;
 use App\Application\Abstractions\Order\IListAllOrdersUseCase;
 use App\Application\Abstractions\Order\IListMyOrdersUseCase;
 use App\Application\Abstractions\Order\IUpdateOrderStatusUseCase;
 use App\Application\Abstractions\Product\IDeleteProductUseCase;
 use App\Application\Abstractions\Product\IGetAllProductsUseCase;
+use App\Application\Abstractions\Product\IGetPaginatedProductsForAdminUseCase;
+use App\Application\Abstractions\Product\IGetPaginatedProductsUseCase;
 use App\Application\Abstractions\Product\IGetProductByIdUseCase;
 use App\Application\Abstractions\Product\IGetProductsByCategoryUseCase;
 use App\Application\Abstractions\Product\IImageStorageService;
@@ -57,11 +73,21 @@ use App\Application\Abstractions\User\IRegisterUserUseCase;
 use App\Application\Abstractions\User\IResendVerificationCodeUseCase;
 use App\Application\Abstractions\User\IResetPasswordUseCase;
 use App\Application\Abstractions\User\IVerifyEmailUseCase;
+use App\Application\Services\AuctionReassignmentService;
 use App\Application\UseCases\Address\CreateAddressUseCase;
 use App\Application\UseCases\Address\DeleteAddressUseCase;
 use App\Application\UseCases\Address\ListAddressesUseCase;
+use App\Application\UseCases\Auction\DeclineAuctionWinUseCase;
 use App\Application\UseCases\Address\SetDefaultAddressUseCase;
 use App\Application\UseCases\Address\UpdateAddressUseCase;
+use App\Application\UseCases\Auction\CheckoutWonAuctionUseCase;
+use App\Application\UseCases\Auction\ExtendAuctionDurationUseCase;
+use App\Application\UseCases\Auction\GetAuctionStatusUseCase;
+use App\Application\UseCases\Auction\GetMyActiveBidsCountUseCase;
+use App\Application\UseCases\Auction\GetMyAuctionBidStatusUseCase;
+use App\Application\UseCases\Auction\GetMyWonAuctionsUseCase;
+use App\Application\UseCases\Auction\ListAuctionBidsUseCase;
+use App\Application\UseCases\Auction\PlaceBidUseCase;
 use App\Application\UseCases\Banner\AddMediaToGroupUseCase;
 use App\Application\UseCases\Banner\CreateBannerGroupUseCase;
 use App\Application\UseCases\Banner\CreateBannerUseCase;
@@ -89,12 +115,19 @@ use App\Application\UseCases\Category\GetCategoriesUseCase;
 use App\Application\UseCases\Category\GetCategoryByIdUseCase;
 use App\Application\UseCases\Category\SaveCategoryUseCase;
 use App\Application\UseCases\Category\UpdateCategoryUseCase;
+use App\Application\UseCases\Dashboard\GetDashboardSummaryUseCase;
+use App\Application\UseCases\Dashboard\GetOrderStatsUseCase;
+use App\Application\UseCases\Dashboard\GetRevenueBySaleTypeUseCase;
+use App\Application\UseCases\Dashboard\GetRevenueReportUseCase;
+use App\Application\UseCases\Dashboard\GetTopCategoriesUseCase;
 use App\Application\UseCases\Order\CheckoutUseCase;
 use App\Application\UseCases\Order\ListAllOrdersUseCase;
 use App\Application\UseCases\Order\ListMyOrdersUseCase;
 use App\Application\UseCases\Order\UpdateOrderStatusUseCase;
 use App\Application\UseCases\Product\DeleteProductUseCase;
 use App\Application\UseCases\Product\GetAllProductsUseCase;
+use App\Application\UseCases\Product\GetPaginatedProductsForAdminUseCase;
+use App\Application\UseCases\Product\GetPaginatedProductsUseCase;
 use App\Application\UseCases\Product\GetProductByIdUseCase;
 use App\Application\UseCases\Product\GetProductsByCategoryUseCase;
 use App\Application\UseCases\Product\SaveProductUseCase;
@@ -107,6 +140,9 @@ use App\Application\UseCases\User\ResendVerificationCodeUseCase;
 use App\Application\UseCases\User\ResetPasswordUseCase;
 use App\Application\UseCases\User\VerifyEmailUseCase;
 use App\Data\Repositories\AddressRepository;
+use App\Data\Repositories\AuctionBidRepository;
+use App\Data\Repositories\AuctionDeclineRepository;
+use App\Data\Repositories\AuctionRepository;
 use App\Data\Repositories\BannerGroupRepository;
 use App\Data\Repositories\BannerRepository;
 use App\Data\Repositories\CartRepository;
@@ -115,6 +151,9 @@ use App\Data\Repositories\OrderRepository;
 use App\Data\Repositories\ProductRepository;
 use App\Data\Repositories\UserRepository;
 use App\Domain\Abstractions\IAddressRepository;
+use App\Domain\Abstractions\IAuctionBidRepository;
+use App\Domain\Abstractions\IAuctionDeclineRepository;
+use App\Domain\Abstractions\IAuctionRepository;
 use App\Domain\Abstractions\IBannerGroupRepository;
 use App\Domain\Abstractions\IBannerRepository;
 use App\Domain\Abstractions\ICartRepository;
@@ -187,6 +226,14 @@ class AppServiceProvider extends ServiceProvider
             IGetProductByIdUseCase::class,
             GetProductByIdUseCase::class
         );
+
+        $this->app->bind(
+            IGetPaginatedProductsUseCase::class,
+            GetPaginatedProductsUseCase::class
+        );
+
+        $this->app->bind(IGetPaginatedProductsForAdminUseCase::class, 
+        GetPaginatedProductsForAdminUseCase::class);
 
         $this->app->bind(
             IUpdateProductUseCase::class,
@@ -325,6 +372,49 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IToggleBannerGroupActiveUseCase::class, 
         ToggleBannerGroupActiveUseCase::class);
 
+        /**Para las subastas  */
+        $this->app->bind(IAuctionRepository::class,
+         AuctionRepository::class);
+        $this->app->bind(IAuctionBidRepository::class,
+         AuctionBidRepository::class);
+        $this->app->bind(IGetAuctionStatusUseCase::class,
+         GetAuctionStatusUseCase::class);
+        $this->app->bind(IPlaceBidUseCase::class,
+         PlaceBidUseCase::class);
+        $this->app->bind(IListAuctionBidsUseCase::class,
+         ListAuctionBidsUseCase::class);
+
+        $this->app->bind(IGetMyWonAuctionsUseCase::class, 
+        GetMyWonAuctionsUseCase::class);
+        $this->app->bind(ICheckoutWonAuctionUseCase::class, 
+        CheckoutWonAuctionUseCase::class);
+
+        $this->app->bind(IExtendAuctionDurationUseCase::class, 
+        ExtendAuctionDurationUseCase::class);
+        $this->app->bind(IAuctionDeclineRepository::class, 
+        AuctionDeclineRepository::class);
+        $this->app->bind(IDeclineAuctionWinUseCase::class, 
+        DeclineAuctionWinUseCase::class);    
+        $this->app->bind(IGetMyActiveBidsCountUseCase::class, 
+        GetMyActiveBidsCountUseCase::class);
+        $this->app->bind(IGetMyAuctionBidStatusUseCase::class, 
+        GetMyAuctionBidStatusUseCase::class);
+        $this->app->bind(AuctionReassignmentService::class, 
+        AuctionReassignmentService::class);
+
+        //Para el dashboard del admin
+        $this->app->bind(IGetDashboardSummaryUseCase::class, 
+        GetDashboardSummaryUseCase::class);
+        $this->app->bind(IGetRevenueReportUseCase::class, 
+        GetRevenueReportUseCase::class);
+        $this->app->bind(IGetOrderStatsUseCase::class, 
+        GetOrderStatsUseCase::class);
+        $this->app->bind(IGetTopCategoriesUseCase::class, 
+        GetTopCategoriesUseCase::class);
+        $this->app->bind(IGetRevenueBySaleTypeUseCase::class, 
+        GetRevenueBySaleTypeUseCase::class);
+
+    
     }
 
 
