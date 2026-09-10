@@ -12,11 +12,15 @@ class Auction
     private int $productId;
     private float $startingPrice;
     private float $currentPrice;
+    private float $minIncrement; 
     private DateTimeImmutable $startDate;
     private DateTimeImmutable $endDate;
     private AuctionStatus $status;
     private ?int $currentWinnerUserId;
     private ?int $winnerUserId;
+    private ?int $orderId;
+    private ?DateTimeImmutable $wonAt;
+    private const MAX_BID_AMOUNT = 10000.00;// Límite máximo de oferta
 
     public function __construct(
         ?int $id,
@@ -27,27 +31,31 @@ class Auction
         AuctionStatus $status = AuctionStatus::ACTIVE,
         ?int $currentWinnerUserId = null,
         ?int $winnerUserId = null,
-        ?float $currentPrice = null 
+        ?float $currentPrice = null,
+        float $minIncrement = 10.00,
+        ?int $orderId = null,
+        ?DateTimeImmutable $wonAt = null
+        
+
     ) {
         $this->validateProductId($productId);
         $this->validatePrice($startingPrice);
         $this->validateDates($startDate, $endDate);
+        $this->validateMinIncrement($minIncrement);
 
         $this->id = $id;
         $this->productId = $productId;
         $this->startingPrice = $startingPrice;
-        
-        //Si viene de la BD usamos el currentPrice, si es nueva, usamos el startingPrice
-        $this->currentPrice = $currentPrice ?? $startingPrice; 
-        
+        $this->currentPrice = $currentPrice ?? $startingPrice;
+        $this->minIncrement = $minIncrement;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->status = $status;
         $this->currentWinnerUserId = $currentWinnerUserId;
         $this->winnerUserId = $winnerUserId;
+         $this->orderId = $orderId;
+         $this->wonAt = $wonAt;
     }
-
-    //VALIDACIONES
 
     private function validateProductId(int $productId): void
     {
@@ -63,16 +71,19 @@ class Auction
         }
     }
 
-    private function validateDates(
-        DateTimeImmutable $startDate,
-        DateTimeImmutable $endDate
-    ): void {
+    private function validateMinIncrement(float $minIncrement): void
+    {
+        if ($minIncrement <= 0) {
+            throw new InvalidArgumentException('El incremento mínimo debe ser mayor a cero.');
+        }
+    }
+
+    private function validateDates(DateTimeImmutable $startDate, DateTimeImmutable $endDate): void
+    {
         if ($endDate <= $startDate) {
             throw new InvalidArgumentException('La fecha de finalización debe ser posterior a la de inicio.');
         }
     }
-
-    //REGLAS DE NEGOCIO
 
     public function registerBid(int $userId, float $amount): void
     {
@@ -84,13 +95,22 @@ class Auction
             throw new InvalidArgumentException('El usuario es inválido.');
         }
 
-        //Evitamos que el usuario que va ganando vuelva a pujar
         if ($userId === $this->currentWinnerUserId) {
             throw new InvalidArgumentException('Ya eres el ganador actual de esta subasta.');
         }
 
-        if ($amount <= $this->currentPrice) {
-            throw new InvalidArgumentException("La oferta debe ser mayor a la actual (\${$this->currentPrice}).");
+        $minimoRequerido = $this->currentPrice + $this->minIncrement;
+        if ($amount < $minimoRequerido) {
+            throw new InvalidArgumentException(
+                "La oferta debe ser de al menos Q" . number_format($minimoRequerido, 2) .
+                " (precio actual + incremento mínimo de Q" . number_format($this->minIncrement, 2) . ")."
+            );
+        }
+
+        if ($amount > self::MAX_BID_AMOUNT) {
+            throw new InvalidArgumentException(
+                "El monto ingresado es demasiado alto. La oferta máxima permitida es Q" . number_format(self::MAX_BID_AMOUNT, 2) . "."
+            );
         }
 
         $this->currentPrice = $amount;
@@ -104,6 +124,10 @@ class Auction
         }
         $this->status = AuctionStatus::FINISHED;
         $this->winnerUserId = $this->currentWinnerUserId;
+
+        if ($this->winnerUserId !== null) {
+            $this->wonAt = new DateTimeImmutable(); 
+        }
     }
 
     public function cancel(): void
@@ -114,34 +138,67 @@ class Auction
         $this->status = AuctionStatus::CANCELLED;
     }
 
-    //CONSULTAS
-
-    public function isActive(): bool
+    public function markAsOrdered(int $orderId): void
     {
-        return $this->status === AuctionStatus::ACTIVE;
+        $this->orderId = $orderId;
     }
 
-    public function isFinished(): bool
+    public function hasBeenOrdered(): bool
     {
-        return $this->status === AuctionStatus::FINISHED;
+        return $this->orderId !== null;
     }
 
-    public function isCancelled(): bool
+    public function extendEndDate(DateTimeImmutable $newEndDate): void
     {
-        return $this->status === AuctionStatus::CANCELLED;
+        if (!$this->isActive()) {
+            throw new InvalidArgumentException('Solo se puede modificar la duración de una subasta activa.');
+        }
+        if ($newEndDate <= new DateTimeImmutable()) {
+            throw new InvalidArgumentException('La nueva fecha de finalización debe ser en el futuro.');
+        }
+        $this->endDate = $newEndDate;
     }
 
-    public function hasWinner(): bool
+    public function reassignWinner(int $userId, float $amount): void
     {
-        return $this->winnerUserId !== null;
+        if (!$this->isFinished()) {
+            throw new InvalidArgumentException('Solo se puede reasignar una subasta finalizada.');
+        }
+        $this->winnerUserId = $userId;
+        $this->currentWinnerUserId = $userId;
+        $this->currentPrice = $amount;
     }
 
-    //GETTERS
+    public function clearWinner(): void
+    {
+        $this->winnerUserId = null;
+        $this->currentWinnerUserId = null;
+    }
+
+    public function hasWinConfirmationExpired(int $daysAllowed): bool
+    {
+        if (!$this->wonAt) return false;
+        $limite = $this->wonAt->modify("+{$daysAllowed} days");
+        return new DateTimeImmutable() >= $limite;
+    }
+
+    public function getWonAt(): ?DateTimeImmutable { return $this->wonAt; }    
+
+
+    public function getOrderId(): ?int { return $this->orderId; }
+    
+
+    public function isActive(): bool { return $this->status === AuctionStatus::ACTIVE; }
+    public function isFinished(): bool { return $this->status === AuctionStatus::FINISHED; }
+    public function isCancelled(): bool { return $this->status === AuctionStatus::CANCELLED; }
+    public function hasWinner(): bool { return $this->winnerUserId !== null; }
+    public function hasExpired(): bool { return new DateTimeImmutable() >= $this->endDate; } // 👈 nuevo, útil para el cierre automático
 
     public function getId(): ?int { return $this->id; }
     public function getProductId(): int { return $this->productId; }
     public function getStartingPrice(): float { return $this->startingPrice; }
     public function getCurrentPrice(): float { return $this->currentPrice; }
+    public function getMinIncrement(): float { return $this->minIncrement; }
     public function getStartDate(): DateTimeImmutable { return $this->startDate; }
     public function getEndDate(): DateTimeImmutable { return $this->endDate; }
     public function getStatus(): AuctionStatus { return $this->status; }
