@@ -18,25 +18,22 @@ class VerifyEmailController extends Controller
     public function __invoke(VerifyEmailRequest $request): JsonResponse
     {
         try {
-            //Armamos el DTO con los datos limpios que pasaron la validación del Request
             $dto = new VerifyEmailDTO(
                 email: $request->validated('email'),
                 code: $request->validated('code')
             );
 
-            //Ejecutamos el caso de uso
-            $this->verifyEmailUseCase->execute($dto);
+            $token = $this->verifyEmailUseCase->execute($dto);
 
-            //Respondemos con éxito
             return response()->json([
-                'message' => 'Correo electrónico verificado con éxito. Ya puedes iniciar sesión.'
+                'message' => 'Correo electrónico verificado con éxito.',
+                'token' => $token
             ], 200);
 
         } catch (Exception $e) {
-            //Si el código expiró, es inválido o el usuario no existe, atrapamos la excepción
             return response()->json([
                 'error' => $e->getMessage()
-            ], 400); // 400 Bad Request
+            ], 400);
         }
     }
 }

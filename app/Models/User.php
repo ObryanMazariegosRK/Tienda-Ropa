@@ -52,4 +52,6 @@ class User extends Authenticatable
         //Convertimos el string de la DB en tu Enum de Dominio
         'role' => RoleType::class,
     ];
+
+    
 }

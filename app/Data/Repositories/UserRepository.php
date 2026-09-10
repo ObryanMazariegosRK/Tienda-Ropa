@@ -80,7 +80,7 @@ class UserRepository implements IUserRepository{
         $userModel = UserModel::where('email', $user->getEmail())->first();
  
         //Definimos el tiempo de vida del token
-        $expiresAt = $rememberMe ? now()->addDays(30) : now()->addHours(2);
+        $expiresAt = $rememberMe ? now()->addDays(30) : now()->addDay();
 
         //Generamos el token de Sanctum pasándole el nombre, los permisos y la fecha de expiración
         return $userModel->createToken(

@@ -13,14 +13,17 @@ class CreateAddressUseCase implements ICreateAddressUseCase
 
     public function execute(int $userId, string $label, string $addressLine, bool $isDefault): AddressDTO
     {
-        // Si esta se marca como predeterminada, quitamos el flag de cualquier otra
+        $existentes = $this->addressRepository->findByUserId($userId);
+
+        if (count($existentes) >= 5) {
+            throw new \InvalidArgumentException('Ya tienes el máximo de 5 direcciones guardadas. Elimina una para poder agregar otra.');
+        }
+
         if ($isDefault) {
             $this->addressRepository->clearDefaultForUser($userId);
         }
 
-        // Si es la primera dirección del usuario, la forzamos como predeterminada
-        $tieneOtras = count($this->addressRepository->findByUserId($userId)) > 0;
-        if (!$tieneOtras) {
+        if (count($existentes) === 0) {
             $isDefault = true;
         }
 

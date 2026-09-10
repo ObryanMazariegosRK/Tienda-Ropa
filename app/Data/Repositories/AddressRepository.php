@@ -46,7 +46,7 @@ class AddressRepository implements IAddressRepository
 
     public function findByUserId(int $userId): array
     {
-        $models = AddressModel::where('user_id', $userId)->orderByDesc('is_default')->get();
+        $models = AddressModel::where('user_id', $userId)->orderBy('id')->get();
         return $models->map(fn($m) => $this->mapToDomain($m))->toArray();
     }
 

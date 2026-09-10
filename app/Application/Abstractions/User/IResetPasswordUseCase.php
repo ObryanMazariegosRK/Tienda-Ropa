@@ -10,8 +10,7 @@ interface IResetPasswordUseCase
      * Valida el código de recuperación y actualiza la contraseña del usuario
      *
      * @param ResetPasswordDTO $dto
-     * @return void
      * @throws \Exception
      */
-    public function execute(ResetPasswordDTO $dto): void;
+    public function execute(ResetPasswordDTO $dto): string;
 }

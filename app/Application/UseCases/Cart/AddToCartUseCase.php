@@ -35,6 +35,11 @@ class AddToCartUseCase implements IAddToCartUseCase
             throw new Exception('Este producto ya está en tu carrito.');
         }
 
+        // Dentro de AddToCartUseCase, antes de agregar al carrito
+        if ($product->getSaleType()->value === 'auction') {
+            throw new Exception('Este producto está en subasta y no se puede comprar directamente.');
+        }
+
         // Precio efectivo: si tiene oferta, esa es la que se cobra
         $precioFinal = $product->getOfferPrice() ?? $product->getPrice();
 

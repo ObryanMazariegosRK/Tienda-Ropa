@@ -9,8 +9,7 @@ interface IVerifyEmailUseCase
     /**
      * Verificacion del correo
      * * @param VerifyEmailDTO $dto
-     * @return void
      * @throws \Exception Si el código es inválido o expiró
      */
-    public function execute(VerifyEmailDTO $dto): void;
+    public function execute(VerifyEmailDTO $dto): string;
 }

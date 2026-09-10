@@ -134,15 +134,25 @@
                     throw new Error(data.message || 'Error al restablecer la contraseña.');
                 }
 
-                // Éxito: Mostrar mensaje verde y redirigir
-                errorMessage.textContent = '¡Contraseña actualizada! Redirigiendo al Login...';
+                // Éxito: guardamos el token (sesión automática) y redirigimos a la tienda,
+                // ya no al login — el usuario queda logueado directamente.
+                if (data.token) {
+                    localStorage.setItem('auth_token', data.token);
+                }
+
+                errorMessage.textContent = '¡Contraseña actualizada! Iniciando sesión...';
                 errorMessage.className = "alert alert-success mt-3";
                 errorMessage.classList.remove('d-none');
 
                 setTimeout(() => {
-                    sessionStorage.removeItem('password_reset_origin'); // limpiamos, ya cumplió su propósito
-                    window.location.href = loginUrl;
-                }, 2000);
+                    sessionStorage.removeItem('password_reset_origin');
+                    // Si viene del admin, sí lo mandamos a su login (el flujo de admin es distinto,
+                    // no comparte el mismo token con la tienda pública). Si es cliente, va directo a la tienda.
+                    window.location.href = (origin === 'admin') ? loginUrl : '/';
+                }, 1500);
+
+
+
 
             } catch (error) {
                 // Error: Mostrar mensaje rojo

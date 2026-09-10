@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda De Ropa</title>
-    <link rel="icon" href="{{ asset('image/logo.png') }}" type="image/x-png">
+    <title>Amerishop</title>
+
+    <link rel="icon" href="{{ asset('Auth/images/Prenda.png') }}" type="image/x-png">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <script src="{{ asset('js/main.js') }}"></script>
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -96,27 +98,78 @@
             <a href="/subastas" class="secondary-nav-link">Subastas</a>
         </div>
 
-        
         <section class="products-section">
-
             <div class="products-container" id="products-container">
                 <p class="loading-text" style="text-align: center; width: 100%;">Cargando catálogo...</p>
             </div>
+
+            <nav class="pagination" id="pagination" aria-label="Paginación de productos"></nav>
         </section>
-        
+
+
         <section class="story-section">
+            <div class="story-container-image">
+                <img src="{{ asset('image/ImagenLocal.jpg') }}"
+                    alt="Local de AMERISHOP"
+                    class="story-image">
+            </div>
+
             <div class="story-container">
                 <div class="story-container-text">
-                    <h3>Quienes somos</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. In necessitatibus natus ab officia commodi sunt molestias nostrum saepe quod veritatis repellendus similique perferendis impedit, animi, earum veniam provident nihil numquam.</p>
+
+                    <span class="story-label">QUIENES SOMOS</span>
+
+                    <h3>
+                        Un poco de nosotros,
+                        <span>tu mejor elección.</span>
+                    </h3>
+
+                    <div class="story-line"></div>
+
+                    <p>
+                        Estamos ubicados en Tecpán Chimaltenango. Ofrecemos prendas
+                        nuevas y de segunda mano en excelente estado. Nuestro objetivo
+                        es brindar opciones de calidad, modernas y accesibles para
+                        personas que desean vestir bien sin gastar de más.
+                    </p>
+
+                    <div class="story-features">
+
+                        <div class="story-feature">
+                            <div class="story-feature-icon">
+                                ✓
+                            </div>
+                            <div>
+                                <strong>Calidad</strong>
+                                <small>Prendas seleccionadas cuidadosamente.</small>
+                            </div>
+                        </div>
+
+                        <div class="story-feature">
+                            <div class="story-feature-icon">
+                                ✓
+                            </div>
+                            <div>
+                                <strong>Estilo</strong>
+                                <small>Opciones modernas para cada ocasión.</small>
+                            </div>
+                        </div>
+
+                        <div class="story-feature">
+                            <div class="story-feature-icon">
+                                ✓
+                            </div>
+                            <div>
+                                <strong>Accesibilidad</strong>
+                                <small>Moda a precios al alcance de todos.</small>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
-            <div class="story-container-image">
-                <img src="{{ asset('image/ImagenLocal.jpg') }}" alt="Nuestra historia" class="story-image">
-            </div>
         </section>
-        
-        
     </main>
     
 
@@ -145,64 +198,74 @@
                     <li>
                         <span class="footer-contact-icon" aria-hidden="true">
                             <!-- Ubicación -->
-                            
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 14.314 0z" />
+                            </svg>
+                        </span>
+                        <span>Tecpán, Chimaltenango,<br>Guatemala</span>
+                    </li>
 
-                    </span>
-                    <span>Tecpán, Chimaltenango,<br>Guatemala</span>
-                </li>
+                    <li>
+                        <span class="footer-contact-icon" aria-hidden="true">
+                            <!-- Correo -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+                                <path d="M3 7l9 6l9 -6" />
+                            </svg>
+                        </span>
+                        <a href="mailto:amerishop@gmail.com">amerishop@gmail.com</a>
+                    </li>
 
-                <li>
-                    <span class="footer-contact-icon" aria-hidden="true">
-                        <!-- Correo -->
-                        
+                    <li>
+                        <span class="footer-contact-icon" aria-hidden="true">
+                            <!-- Horario -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                <path d="M12 7v5l3 3" />
+                            </svg>
+                        </span>
+                        <span>
+                            Lun–Vie: 8:00 AM – 6:00 PM<br>
+                            Sáb: 9:00 AM – 2:00 PM
+                        </span>
+                    </li>
+                </ul>
+            </section>
 
-                    </span>
-                    <a href="mailto:amerishop@gmail.com">amerishop@gmail.com</a>
-                </li>
+            <!-- Navegación -->
+            <nav class="footer-links" aria-label="Enlaces del pie de página">
+                <h3>Explora</h3>
+                <ul>
+                    <li><a href="/">Inicio</a></li>
+                    <li><a href="/ofertas">Ofertas</a></li>
+                    <li><a href="/subastas">Subastas</a></li>
+                    <li><a href="/mis-pedidos">Mis pedidos</a></li>
+                </ul>
+            </nav>
 
-                <li>
-                    <span class="footer-contact-icon" aria-hidden="true">
-                        <!-- Horario -->
-                        
+            <!-- Redes -->
+            <section class="footer-social" aria-labelledby="footer-social-title">
+                <h3 id="footer-social-title">Síguenos</h3>
 
-                    </span>
-                    <span>
-                        Lun–Vie: 8:00 AM – 6:00 PM<br>
-                        Sáb: 9:00 AM – 2:00 PM
-                    </span>
-                </li>
-            </ul>
-        </section>
 
-        <!-- Navegación -->
-        <nav class="footer-links" aria-label="Enlaces del pie de página">
-            <h3>Explora</h3>
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/ofertas">Ofertas</a></li>
-                <li><a href="/subastas">Subastas</a></li>
-                <li><a href="/mis-pedidos">Mis pedidos</a></li>
-            </ul>
-        </nav>
-
-        <!-- Redes -->
-        <section class="footer-social" aria-labelledby="footer-social-title">
-            <h3 id="footer-social-title">Síguenos</h3>
-
-            <a
-                href="https://www.instagram.com/amerishopgt502/"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="instagram-link"
-                aria-label="Visitar Instagram de Amerishop"
-            >
-                _
-
-                <span>@amerishopgt502</span>
-            </a>
-        </section>
-    </div>
-
+                <a href="https://www.instagram.com/amerishopgt502/" target="_blank" rel="noopener noreferrer" class="instagram-link" aria-label="Visitar Instagram de Amerishop">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M4 4m0 4a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z" />
+                        <path d="M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0 -8z" />
+                        <path d="M16.5 7.5l0 .01" />
+                    </svg>
+                    <span>@amerishopgt502</span>
+                </a>
+                
+                    
+            </section>
+        </div>
+    </footer>
 
 
 

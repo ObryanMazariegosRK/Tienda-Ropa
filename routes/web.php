@@ -60,3 +60,6 @@ Route::get('/admin/banners', function () {
 //Para las ordenes 
 Route::view('/mis-pedidos', 'orders');
 Route::view('/admin/pedidos', 'admin.pedidos.index')->name('pedidos.index');
+
+//Para las subastas xd
+Route::view('/subastas', 'subastas');
