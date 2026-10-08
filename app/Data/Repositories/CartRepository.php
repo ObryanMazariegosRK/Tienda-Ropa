@@ -80,6 +80,8 @@ class CartRepository implements ICartRepository
                 'productName' => $product?->name ?? 'Producto no disponible',
                 'productImage' => $imagenPrincipal,
                 'originalPrice' => $product ? (float) $product->price : null,
+                // Precio vigente: la oferta si tiene, si no el precio normal
+                'currentPrice' => $product ? (float) ($product->offer_price ?? $product->price) : null,
             ];
         })->toArray();
     }

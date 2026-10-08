@@ -11,7 +11,8 @@ use Laravel\Socialite\Facades\Socialite;
 class SocialAuthController extends Controller
 {
     //solo permitimos estos proveedores, nada más
-    private const PROVIDERS_PERMITIDOS = ['google', 'facebook'];
+    //Facebook tiene la lógica lista pero no está configurado; agregarlo aquí para activarlo
+    private const PROVIDERS_PERMITIDOS = ['google'];
 
     public function __construct(
         private HandleSocialLoginUseCase $handleSocialLogin

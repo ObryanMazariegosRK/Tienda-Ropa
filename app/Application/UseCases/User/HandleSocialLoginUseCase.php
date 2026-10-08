@@ -24,6 +24,13 @@ class HandleSocialLoginUseCase
             $existing = $this->userRepository->findUserByEmail($dto->email);
 
             if ($existing !== null) {
+                //Si la cuenta no estaba verificada, Google lo hace ahora y se descarta
+                //la contraseña que pudo haber puesto otra persona con este correo
+                if (!$existing->isEmailVerified()) {
+                    $existing->claimWithVerifiedProvider(new \DateTimeImmutable());
+                    $this->userRepository->updateUser($existing);
+                }
+
                 //Vinculamos su cuenta existente al proveedor (evita duplicados)
                 $this->userRepository->linkProvider($existing->getId(), $dto->provider, $dto->providerId);
                 $user = $existing;

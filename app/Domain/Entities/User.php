@@ -152,6 +152,18 @@ class User{
         return true;
     }
 
+    //Google confirmó que el correo es de esta persona. Si la cuenta nunca se verificó,
+    //la contraseña que tenía la puso alguien que no demostró ser dueño del correo,
+    //así que la descartamos y la cuenta queda como cuenta de Google
+    public function claimWithVerifiedProvider(\DateTimeImmutable $verifiedAt): void
+    {
+        if ($this->isEmailVerified()) {
+            return;
+        }
+        $this->password = null;
+        $this->markEmailAsVerified($verifiedAt);
+    }
+
     //Acción para marcar la cuenta como verificada
     public function markEmailAsVerified(\DateTimeImmutable $verifiedAt): void
     {

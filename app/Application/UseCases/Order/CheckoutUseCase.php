@@ -64,10 +64,8 @@ class CheckoutUseCase implements ICheckoutUseCase
             throw new Exception('Tu carrito está vacío.');
         }
 
-        $total = array_sum(array_map(fn($row) => $row['cartItem']->getPriceSnapshot(), $cartRows));
-
         // Todo en una transacción: si algo falla, no queremos una orden a medias
-        $order = DB::transaction(function () use ($userId, $address, $total, $cartRows, $contactPhone) {
+        [$order, $precios, $total] = DB::transaction(function () use ($userId, $address, $cartRows, $contactPhone) {
 
             // Bloqueamos los productos antes de revisar si están disponibles: si dos
             // clientes compran la misma prenda a la vez, el segundo espera y la ve reservada.
@@ -78,6 +76,9 @@ class CheckoutUseCase implements ICheckoutUseCase
             }
             ksort($rowsPorId);
 
+            // Cobramos el precio vigente del producto (no el que tenía al agregarlo al carrito),
+            // así un cambio de precio o el fin de una oferta se respetan
+            $precios = [];
             foreach ($rowsPorId as $productId => $row) {
                 $product = $this->productRepository->findByIdForUpdate($productId);
                 if (!$product || $product->getStatus()->value !== ProductStatus::AVAILABLE->value) {
@@ -85,7 +86,9 @@ class CheckoutUseCase implements ICheckoutUseCase
                         "El producto \"{$row['productName']}\" ya no está disponible. Por favor elimínalo de tu carrito."
                     );
                 }
+                $precios[$productId] = $product->getOfferPrice() ?? $product->getPrice();
             }
+            $total = array_sum($precios);
 
             $newOrder = new Order(
                 id: null,
@@ -98,12 +101,12 @@ class CheckoutUseCase implements ICheckoutUseCase
 
             $createdOrder = $this->orderRepository->create($newOrder);
 
-            $details = array_map(function ($row) use ($createdOrder) {
+            $details = array_map(function ($row) use ($createdOrder, $precios) {
                 return new OrderDetail(
                     id: null,
                     orderId: $createdOrder->getId(),
                     productId: $row['cartItem']->getProductId(),
-                    unitPrice: $row['cartItem']->getPriceSnapshot(),
+                    unitPrice: $precios[$row['cartItem']->getProductId()],
                     quantity: 1
                 );
             }, $cartRows);
@@ -119,21 +122,22 @@ class CheckoutUseCase implements ICheckoutUseCase
             $this->orderDetailRepository->createMany($details);
             $this->cartRepository->clearByUserId($userId);
 
-            return $createdOrder;
+            return [$createdOrder, $precios, $total];
         });
 
         $this->pushNotifier->notificarNuevoPedido($order->getPublicCode(), $total);
 
         // Armamos los items del DTO reutilizando lo que ya teníamos del carrito
         // (evita otra consulta a la BD justo después de crearlos)
-        $itemDTOs = array_map(function ($row) {
+        $itemDTOs = array_map(function ($row) use ($precios) {
+            $precio = $precios[$row['cartItem']->getProductId()];
             return new OrderDetailDTO(
                 productId: $row['cartItem']->getProductId(),
                 productName: $row['productName'],
                 productImage: $row['productImage'],
                 quantity: 1,
-                unitPrice: $row['cartItem']->getPriceSnapshot(),
-                subtotal: $row['cartItem']->getPriceSnapshot()
+                unitPrice: $precio,
+                subtotal: $precio
             );
         }, $cartRows);
 

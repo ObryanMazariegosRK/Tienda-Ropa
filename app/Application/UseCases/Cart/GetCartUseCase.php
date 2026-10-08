@@ -19,7 +19,8 @@ class GetCartUseCase implements IGetCartUseCase
 
         $itemDTOs = array_map(function ($row) {
             $cartItem = $row['cartItem'];
-            $precioGuardado = $cartItem->getPriceSnapshot();
+            // Mostramos el precio vigente, que es el que se cobrará en el checkout
+            $precioGuardado = $row['currentPrice'] ?? $cartItem->getPriceSnapshot();
             $precioOriginal = $row['originalPrice'];
 
             // Solo mostramos "originalPrice" si de verdad hay diferencia (fue oferta)
