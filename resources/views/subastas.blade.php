@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <title>Subastas | Amerishop</title>
     <link rel="icon" href="{{ asset('Auth/images/Prenda.png') }}" type="image/x-png">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">

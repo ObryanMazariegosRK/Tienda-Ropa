@@ -11,6 +11,7 @@ use App\Domain\Abstractions\IAddressRepository;
 use App\Domain\Abstractions\IProductRepository;
 use App\Domain\Abstractions\IOrderRepository;
 use App\Domain\Abstractions\IOrderDetailRepository;
+use App\Domain\Abstractions\IPushNotifier;
 use App\Domain\Enum\ProductStatus;
 use App\Domain\Entities\Order;
 use App\Domain\Entities\OrderDetail;
@@ -27,11 +28,32 @@ class CheckoutUseCase implements ICheckoutUseCase
         private IAddressRepository $addressRepository,
         private IOrderRepository $orderRepository,
         private IOrderDetailRepository $orderDetailRepository,
-        private IProductRepository $productRepository
+        private IProductRepository $productRepository,
+        private \App\Domain\Abstractions\User\IUserRepository $userRepository,
+        private IPushNotifier $pushNotifier,
     ) {}
 
-    public function execute(int $userId, int $addressId): CheckoutResultDTO
+    public function execute(int $userId, int $addressId, ?string $phone = null): CheckoutResultDTO
     {
+        $user = $this->userRepository->findUserById($userId);
+        if (!$user) {
+            throw new Exception('Usuario no encontrado.');
+        }
+
+        // Teléfono de contacto para ESTE pedido:
+        // - Si el usuario ya tiene uno, usamos ese (no lo dejamos cambiar aquí).
+        // - Si no tiene (usuarios de Google), es obligatorio que venga del checkout,
+        //   y lo guardamos en su perfil para no volver a pedirlo.
+        $contactPhone = $user->getPhone();
+        if ($contactPhone === null) {
+            if (empty($phone)) {
+                throw new Exception('Necesitamos un teléfono de contacto para coordinar la entrega.');
+            }
+            $contactPhone = $phone;
+            $this->userRepository->updatePhone($userId, $phone);
+        }
+
+
         $address = $this->addressRepository->findByIdAndUser($addressId, $userId);
         if (!$address) {
             throw new Exception('La dirección seleccionada no es válida.');
@@ -54,13 +76,15 @@ class CheckoutUseCase implements ICheckoutUseCase
         }
 
         // Todo en una transacción: si algo falla, no queremos una orden a medias
-        $order = DB::transaction(function () use ($userId, $address, $total, $cartRows) {
+        $order = DB::transaction(function () use ($userId, $address, $total, $cartRows, $contactPhone) {
+       
             $newOrder = new Order(
                 id: null,
                 userId: $userId,
                 addressId: $address->getId(),
                 shippingAddress: $address->getAddressLine(),
-                total: $total
+                total: $total,
+                contactPhone: $contactPhone
             );
 
             $createdOrder = $this->orderRepository->create($newOrder);
@@ -89,6 +113,8 @@ class CheckoutUseCase implements ICheckoutUseCase
             return $createdOrder;
         });
 
+        $this->pushNotifier->notificarNuevoPedido($order->getPublicCode(), $total);
+
         // Armamos los items del DTO reutilizando lo que ya teníamos del carrito
         // (evita otra consulta a la BD justo después de crearlos)
         $itemDTOs = array_map(function ($row) {
@@ -110,6 +136,7 @@ class CheckoutUseCase implements ICheckoutUseCase
             createdAt: $order->getCreatedAt()->format('Y-m-d H:i:s'),
             items: $itemDTOs,
             confirmedAt: $order->getConfirmedAt()?->format('Y-m-d H:i:s'),
+            publicCode: $order->getPublicCode(),
         );
 
         return new CheckoutResultDTO(
@@ -120,8 +147,7 @@ class CheckoutUseCase implements ICheckoutUseCase
 
     private function buildWhatsappUrl(OrderDTO $order): string
     {
-        //$lineas = ["¡Hola! Quiero confirmar mi pedido *#{$order->id}*:", ""];
-        $lineas = ["¡Hola! Quiero confirmar mi pedido:", ""];
+        $lineas = ["¡Hola! Quiero confirmar mi pedido *{$order->publicCode}*:", ""];
 
         foreach ($order->items as $item) {
             $lineas[] = "• {$item->productName} — Q" . number_format($item->unitPrice, 2);
@@ -131,6 +157,11 @@ class CheckoutUseCase implements ICheckoutUseCase
         $lineas[] = "*Total: Q" . number_format($order->total, 2) . "*";
         $lineas[] = "";
         $lineas[] = "Dirección de envío: {$order->shippingAddress}";
+
+        //Link 
+        $baseUrl = rtrim(config('app.url'), '/');
+        $lineas[] = "";
+        $lineas[] = "Ver pedido: {$baseUrl}/pedido/{$order->publicCode}";
 
         $mensaje = implode("\n", $lineas);
 

@@ -3,5 +3,5 @@ namespace App\Application\Abstractions\Order;
 use App\Application\DTOs\Order\CheckoutResultDTO;
 
 interface ICheckoutUseCase {
-    public function execute(int $userId, int $addressId): CheckoutResultDTO;
+    public function execute(int $userId, int $addressId, ?string $phone = null): CheckoutResultDTO;
 }

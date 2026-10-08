@@ -21,4 +21,11 @@ interface IUserRepository{
 
     //Para encontrar una persona por su ID
     public function findUserById(int $id): ?User;
+
+    //Para iniciar con google o facebook
+    public function findUserByProvider(string $provider, string $providerId): ?User;
+
+    public function linkProvider(int $userId, string $provider, string $providerId): void;
+
+    public function updatePhone(int $userId, string $phone): void;
 }

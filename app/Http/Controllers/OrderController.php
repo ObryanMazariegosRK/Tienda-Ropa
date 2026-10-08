@@ -22,12 +22,14 @@ class OrderController extends Controller
     {
         $request->validate([
             'addressId' => ['required', 'integer'],
+            'phone'     => ['nullable', 'string', 'regex:/^[0-9]{8}$/'],  
         ]);
 
         try {
             $result = $this->checkoutUseCase->execute(
                 $request->user()->id,
-                $request->input('addressId')
+                $request->input('addressId'),
+                $request->input('phone')        // 
             );
 
             return response()->json(['success' => true, 'data' => $result], 201);
@@ -60,9 +62,10 @@ class OrderController extends Controller
     public function allOrders(Request $request): JsonResponse
     {
         $status = $request->query('status');
-        $grupo = $request->query('grupo'); // 'active' | 'history'
+        $grupo  = $request->query('grupo');
+        $codigo = $request->query('codigo');   // 👈 nuevo
 
-        $orders = $this->listAllOrdersUseCase->execute($status, $grupo);
+        $orders = $this->listAllOrdersUseCase->execute($status, $grupo, $codigo);
 
         return response()->json(['success' => true, 'data' => $orders], 200);
     }

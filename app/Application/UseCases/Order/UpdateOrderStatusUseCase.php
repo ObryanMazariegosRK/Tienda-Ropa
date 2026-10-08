@@ -9,6 +9,7 @@ use App\Domain\Abstractions\IAuctionRepository;
 use App\Domain\Abstractions\IOrderRepository;
 use App\Domain\Abstractions\IProductRepository;
 use App\Domain\Abstractions\IOrderDetailRepository;
+use App\Domain\Abstractions\IPushNotifier;
 use App\Domain\Enum\OrderStatus;
 use App\Domain\Enum\ProductStatus;
 use Exception;
@@ -25,11 +26,21 @@ class UpdateOrderStatusUseCase implements IUpdateOrderStatusUseCase
         'cancelled'        => ProductStatus::AVAILABLE,
     ];
 
+    private const STATUS_LABELS = [
+        'pending_payment' => 'Pendiente de pago',
+        'confirmed'       => 'Confirmado',
+        'preparing'       => 'En preparación',
+        'on_route'        => 'En camino',
+        'delivered'       => 'Entregado',
+        'cancelled'       => 'Cancelado',
+    ];
+
     public function __construct(
         private IOrderRepository $orderRepository,
         private IOrderDetailRepository $orderDetailRepository,
         private IProductRepository $productRepository,
-        private IAuctionRepository $auctionRepository
+        private IAuctionRepository $auctionRepository,
+        private IPushNotifier $pushNotifier,
     ) {}
 
     public function execute(int $orderId, string $newStatus): OrderDTO
@@ -65,6 +76,13 @@ class UpdateOrderStatusUseCase implements IUpdateOrderStatusUseCase
                 }
             }
         }
+
+        //Avisamos al cliente dueño del pedido
+        $this->pushNotifier->notificarCambioEstado(
+            $order->getUserId(),
+            $order->getPublicCode(),
+            self::STATUS_LABELS[$statusEnum->value] ?? $statusEnum->value
+        );
 
         $items = array_map(fn($row) => new OrderDetailDTO(
             productId: $row['detail']->getProductId(),

@@ -98,7 +98,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Ocurrió un error al enviar el código.');
+                    throw new Error(data.error || data.message || 'Ocurrió un error al enviar el código.');
                 }
 
                 // Mostrar mensaje de éxito

@@ -18,23 +18,24 @@ class ForgotPasswordController extends Controller
     public function __invoke(ForgotPasswordRequest $request): JsonResponse
     {
         try {
-            //Armamos el DTO con el correo validado
             $dto = new ForgotPasswordDTO(
                 email: $request->validated('email')
             );
 
-            //Ejecutamos el caso de uso
             $this->forgotPasswordUseCase->execute($dto);
 
-            //Devolvemos siempre un mensaje de éxito para evitar enumeración de correos
             return response()->json([
                 'message' => 'Si el correo existe en nuestro sistema, hemos enviado un código de recuperación.'
             ], 200);
 
+        } catch (\App\Domain\Exceptions\BusinessRuleException $e) {
+            
+            return response()->json(['error' => $e->getMessage()], 409);
+
         } catch (Exception $e) {
+            
             return response()->json([
-                'message' => 'Ocurrió un error al procesar la solicitud.',
-                'error' => $e->getMessage()
+                'message' => 'Ocurrió un error al procesar la solicitud.'
             ], 500);
         }
     }

@@ -26,6 +26,7 @@ let grupoActual = 'active';
 document.addEventListener("DOMContentLoaded", () => {
     const tableContainer = document.getElementById("ordersTableContainer");
     const filterStatus = document.getElementById("filterStatus");
+    const searchCodigo = document.getElementById("searchCodigo");
 
     function poblarDropdown(grupo) {
         const config = ESTADOS_POR_GRUPO[grupo];
@@ -42,27 +43,49 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll('#orderTabs .nav-link').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             grupoActual = tab.dataset.grupo;
+            searchCodigo.value = "";
             poblarDropdown(grupoActual);
             cargarPedidos();
         });
     });
 
     filterStatus.addEventListener("change", () => {
+        searchCodigo.value = "";
         cargarPedidos();
+    });
+
+    let searchTimeout;
+    searchCodigo.addEventListener("input", () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => cargarPedidos(), 350);
     });
 
     // Carga inicial
     poblarDropdown(grupoActual);
-    cargarPedidos();
+
+    // ¿Venimos del link de WhatsApp con un código? Lo buscamos y abrimos su modal.
+    const codigoUrl = new URLSearchParams(window.location.search).get('codigo');
+    if (codigoUrl) {
+        searchCodigo.value = codigoUrl;
+        cargarPedidos().then(() => {
+            const order = ordersCache.find(o => o.publicCode === codigoUrl);
+            if (order) verDetalleOrden(order.id);
+        });
+    } else {
+        cargarPedidos();
+    }
 
     async function cargarPedidos() {
         const token = localStorage.getItem('admin_auth_token');
         const status = filterStatus.value;
+        const codigo = searchCodigo.value.trim();          // 👈 nuevo
         tableContainer.innerHTML = `<p class="text-center text-muted">Cargando pedidos...</p>`;
 
         try {
             const params = new URLSearchParams();
-            if (status) {
+            if (codigo) {
+                params.set('codigo', codigo);              // 👈 búsqueda por código: ignora grupo/estado
+            } else if (status) {
                 params.set('status', status);
             } else {
                 params.set('grupo', grupoActual);
@@ -84,17 +107,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    const PEDIDOS_POR_LOTE = 20;   // cuántos pedidos revela cada "Ver más"
+    let pedidosListaCompleta = [];
+    let pedidosMostrados = 0;
+
+    // Entrada principal: se llama al cambiar de pestaña, buscar o recargar.
+    // Guarda la lista completa y reinicia el contador al primer lote.
     function renderizarTabla(orders) {
+        pedidosListaCompleta = orders;
+        pedidosMostrados = PEDIDOS_POR_LOTE;
+        pintarLotePedidos();
+    }
+
+    // Pinta solo los pedidos visibles hasta ahora + el botón "Ver más".
+    function pintarLotePedidos() {
+        const orders = pedidosListaCompleta;
+
         if (orders.length === 0) {
             tableContainer.innerHTML = `<p class="text-center text-muted">No hay pedidos que coincidan.</p>`;
             return;
         }
 
-        const rows = orders.map(order => {
-            const fecha = new Date(order.createdAt).toLocaleDateString('es-GT', {
-                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
+        const visibles = orders.slice(0, pedidosMostrados);
 
+        const rows = visibles.map(order => {
+            const fecha = formatearFechaHoraGT(order.createdAt);
             const rowClass = order.status === 'pending_payment' ? 'order-row-pending' : '';
 
             const statusOptions = Object.entries(ORDER_STATUS_LABELS).map(([value, label]) =>
@@ -123,8 +160,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                 </tr>
             `;
-
         }).join('');
+
+        const restantes = orders.length - visibles.length;
+        const botonVerMas = restantes > 0
+            ? `<div class="text-center my-3">
+                <button id="btnVerMasPedidos" class="btn btn-outline-dark btn-sm">
+                    Ver más (${restantes} restante${restantes === 1 ? '' : 's'})
+                </button>
+            </div>`
+            : '';
 
         tableContainer.innerHTML = `
             <div class="table-responsive">
@@ -142,10 +187,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     <tbody>${rows}</tbody>
                 </table>
             </div>
+            ${botonVerMas}
         `;
 
         document.querySelectorAll('.status-select').forEach(select => {
             select.addEventListener('change', (e) => actualizarEstado(e.target.dataset.orderId, e.target.value, e.target));
+        });
+
+        const btnVerMas = document.getElementById('btnVerMasPedidos');
+        if (btnVerMas) {
+            btnVerMas.addEventListener('click', () => {
+                pedidosMostrados += PEDIDOS_POR_LOTE;
+                pintarLotePedidos();
+            });
+        }
+    }
+
+
+    function formatearFechaHoraGT(fechaUtc) {
+        if (!fechaUtc) return '—';
+        const d = new Date(fechaUtc.replace(' ', 'T') + 'Z');
+        return d.toLocaleString('es-GT', {
+            timeZone: 'America/Guatemala',
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
     }
 
@@ -236,9 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const order = ordersCache.find(o => o.id === orderId);
         if (!order) return;
 
-        const fecha = new Date(order.createdAt).toLocaleDateString('es-GT', {
-            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
+        const fecha = formatearFechaHoraGT(order.createdAt);
 
         const itemsHtml = order.items.map(item => `
             <tr>
@@ -254,7 +316,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("orderDetailBody").innerHTML = `
             <div class="order-detail-meta">
                 <p><strong>Pedido:</strong> #${order.id}</p>
+                <p><strong>Código:</strong> ${order.publicCode || '—'}</p>
                 <p><strong>Fecha:</strong> ${fecha}</p>
+                <p><strong>Cliente:</strong> ${order.customerName || 'No disponible'}</p>
+                <p><strong>Teléfono:</strong> ${order.contactPhone
+                    ? `<a href="https://wa.me/502${order.contactPhone}" target="_blank">${order.contactPhone}</a>`
+                    : 'No registrado'}</p>
                 <p><strong>Dirección de envío:</strong> ${order.shippingAddress}</p>
                 <p><strong>Estado:</strong>
                     <span class="order-detail-status-pill status-${order.status}">${ORDER_STATUS_LABELS[order.status]}</span>

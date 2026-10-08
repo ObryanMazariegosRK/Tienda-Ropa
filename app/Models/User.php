@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 class User extends Authenticatable
 {
@@ -15,6 +16,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     use HasApiTokens;
+    use HasPushSubscriptions;
 
     //Indicamos explícitamente que se conecte con la tabla users de mysql
     protected $table = 'users';
@@ -29,7 +31,9 @@ class User extends Authenticatable
         'role',   
         'email_verified_at',       
         'verification_code',           
-        'verification_code_expires_at',   
+        'verification_code_expires_at',
+        'provider',
+        'provider_id',   
     ];
 
     //Ocultamos campos sensibles para que no se muestren si imprimimos el modelo

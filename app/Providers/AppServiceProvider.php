@@ -139,6 +139,7 @@ use App\Application\UseCases\User\RegisterUserUseCase;
 use App\Application\UseCases\User\ResendVerificationCodeUseCase;
 use App\Application\UseCases\User\ResetPasswordUseCase;
 use App\Application\UseCases\User\VerifyEmailUseCase;
+use App\Application\UseCases\User\HandleSocialLoginUseCase;
 use App\Data\Repositories\AddressRepository;
 use App\Data\Repositories\AuctionBidRepository;
 use App\Data\Repositories\AuctionDeclineRepository;
@@ -167,6 +168,7 @@ use App\Http\Controllers\AuthController\GetProfileController;
 use App\Infraestructure\Services\LaravelEmailService;
 use App\Infraestructure\Services\LaravelPasswordHasher;
 use App\Infraestructure\Services\LaravelImageStorageService;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -415,6 +417,16 @@ class AppServiceProvider extends ServiceProvider
         GetRevenueBySaleTypeUseCase::class);
 
     
+        //Para el login con google
+        $this->app->bind(HandleSocialLoginUseCase::class, function ($app) {
+            return new HandleSocialLoginUseCase($app->make(IUserRepository::class));
+        });
+
+        //Para las notificaciones!!
+        $this->app->bind(
+            \App\Domain\Abstractions\IPushNotifier::class,
+            \App\Infraestructure\Notifications\PushNotifier::class
+        );
     }
 
 

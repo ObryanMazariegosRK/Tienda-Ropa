@@ -26,6 +26,12 @@ class LoginUserUseCase implements ILoginUserUseCase{
             throw new Exception("Las credenciales proporcionadas son incorrectas");
         }
 
+        if($userEntity->getPassword()===null){
+            throw new \App\Domain\Exceptions\BusinessRuleException(
+                'Esta cuenta usa inicio de sesión con Google. Ingresa con el botón de Google.'
+            );
+        }
+
         $isPasswordValid= $this->passwordHasher->verifyPassword(
             $dto->password,
             $userEntity->getPassword()

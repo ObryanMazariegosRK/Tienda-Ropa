@@ -7,6 +7,7 @@ use App\Domain\Abstractions\IAuctionRepository;
 use App\Domain\Abstractions\IAuctionBidRepository;
 use App\Domain\Abstractions\IAuctionDeclineRepository;
 use App\Domain\Abstractions\IProductRepository;
+use App\Domain\Abstractions\IPushNotifier;
 use App\Domain\Enum\ProductStatus;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -16,7 +17,8 @@ class DeclineAuctionWinUseCase implements IDeclineAuctionWinUseCase
 
     public function __construct(
         private IAuctionRepository $auctionRepo,
-        private AuctionReassignmentService $reassignmentService
+        private AuctionReassignmentService $reassignmentService,
+        private IPushNotifier $pushNotifier
     ) {}
 
     public function execute(int $auctionId, int $userId): void
@@ -31,7 +33,17 @@ class DeclineAuctionWinUseCase implements IDeclineAuctionWinUseCase
             throw new InvalidArgumentException('Ya confirmaste este pedido; no se puede cancelar desde aquí.');
         }
 
-        DB::transaction(fn() => $this->reassignmentService->reassignExcluding($auction, $userId));
+
+        $nuevoGanadorId = DB::transaction(
+            fn() => $this->reassignmentService->reassignExcluding($auction, $userId)
+        );
+
+        // 🔔 Si hubo un siguiente postor, él es el nuevo ganador
+        if ($nuevoGanadorId) {
+            $this->pushNotifier->notificarSubastaGanada($nuevoGanadorId);
+        }        
+
+        
     }
 
     

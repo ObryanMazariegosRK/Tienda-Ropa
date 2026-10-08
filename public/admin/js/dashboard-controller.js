@@ -420,4 +420,135 @@ async function descargarReporte(url, nombrePorDefecto) {
 }
 
 
+// ==========================================
+// NOTIFICACIONES PUSH (ADMIN)
+// ==========================================
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function obtenerSuscripcionActual() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+    const reg = await navigator.serviceWorker.ready;
+    return await reg.pushManager.getSubscription();
+}
+
+async function desuscribirPushAdmin() {
+    const sub = await obtenerSuscripcionActual();
+    if (!sub) return;
+
+    await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        headers: { ...authHeadersAdmin(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: sub.endpoint })
+    });
+
+    await sub.unsubscribe();
+}
+
+
+
+
+async function suscribirPushAdmin() {
+    const reg = await navigator.serviceWorker.ready;
+    const vapidKey = document.querySelector('meta[name="vapid-public-key"]')?.content || '';
+
+    if (!vapidKey) {
+        throw new Error('Falta la llave VAPID (el meta vapid-public-key está vacío).');
+    }
+
+    const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey)
+    });
+
+    const subJson = sub.toJSON();
+    const resp = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { ...authHeadersAdmin(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: subJson.endpoint, keys: subJson.keys })
+    });
+
+    if (!resp.ok) {
+        console.error('[push] El backend rechazó la suscripción:', resp.status, await resp.text());
+    }
+}
+
+async function inicializarToggleNotificaciones() {
+    const toggle = document.getElementById('admin-notif-toggle');
+    if (!toggle) return;
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        toggle.disabled = true;
+        return;
+    }
+
+    try {
+        await navigator.serviceWorker.register('/sw.js');
+    } catch (e) {
+        console.error('[push] No se pudo registrar el service worker:', e);
+        toggle.disabled = true;
+        return;
+    }
+
+    // Estado real al cargar (suscrito / no suscrito / bloqueado)
+    await refrescarEstadoToggle(toggle);
+
+    toggle.addEventListener('change', async () => {
+        try {
+            if (toggle.checked) {
+                if (Notification.permission === 'denied') {
+                    adminAlert('Tu navegador tiene bloqueadas las notificaciones para este sitio. Actívalas desde el candado de la barra de direcciones y recarga la página.', { type: 'warning', title: 'Notificaciones bloqueadas' });
+                    await refrescarEstadoToggle(toggle);
+                    return;
+                }
+                await suscribirPushAdmin();
+                await refrescarEstadoToggle(toggle);
+                adminAlert('Notificaciones activadas. Te avisaremos cuando entre un nuevo pedido.', { type: 'success', title: 'Listo' });
+            } else {
+                await desuscribirPushAdmin();
+                await refrescarEstadoToggle(toggle);
+            }
+        } catch (e) {
+            console.error('[push] Error al cambiar suscripción:', e);
+            await refrescarEstadoToggle(toggle);
+            if (/push service error/i.test(e.message)) {
+                adminAlert('Si usas Brave, activa "Usar los servicios de Google para la mensajería push" en brave://settings/privacy y reinicia el navegador.', { type: 'warning', title: 'Brave' });
+            } else {
+                adminAlert(e.message || 'No se pudieron activar las notificaciones en este navegador.', { type: 'error' });
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', inicializarToggleNotificaciones);
+
+async function refrescarEstadoToggle(toggle) {
+    // Sin soporte de push en el navegador → ahí sí no hay nada que hacer
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        toggle.checked = false;
+        toggle.disabled = true;
+        return;
+    }
+
+    // Con soporte, siempre lo dejamos activable (aunque esté bloqueado,
+    // para poder explicarle al admin cómo desbloquearlo al intentar prenderlo)
+    toggle.disabled = false;
+
+    // Si está bloqueado → lo mostramos apagado
+    if (Notification.permission === 'denied') {
+        toggle.checked = false;
+        return;
+    }
+
+    // Reflejamos si este navegador ya está suscrito
+    const sub = await obtenerSuscripcionActual();
+    toggle.checked = !!sub;
+}
+
+
 

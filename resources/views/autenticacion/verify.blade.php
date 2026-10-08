@@ -107,7 +107,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Código incorrecto o expirado.');
+                    throw new Error(data.error || data.message || 'Código incorrecto o expirado.');
                 }
 
                 // Si la validación es correcta y te devuelve el token de sesión:
@@ -159,7 +159,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'No se pudo reenviar el código.');
+                    throw new Error(data.error || data.message || 'No se pudo reenviar el código.');
                 }
 
                 successMessage.textContent = '¡Se ha enviado un código nuevo a tu correo!';

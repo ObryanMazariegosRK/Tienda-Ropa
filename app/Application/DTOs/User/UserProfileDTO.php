@@ -9,7 +9,7 @@ readonly class UserProfileDTO{
         public string $name,
         public string $lastName,
         public string $email,
-        public string $phone,
+        public ?string $phone,
         public string $role
     ){}
 

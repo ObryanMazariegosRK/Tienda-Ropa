@@ -621,7 +621,7 @@ function construirQuickViewHtml(product) {
 
         <div class="quickview-gallery">
             <div class="quickview-main-image">
-                <img id="quickview-img-${product.id}" src="${fotos[0]}" alt="${product.name}">
+                <img id="quickview-img-${product.id}" src="${fotos[0]}" alt="${product.name}" class="zoomable">
                 ${fotos.length > 1 ? `
                     <button class="product-carousel-btn prev" onclick="cambiarImagenQuickView(${product.id}, 'prev', event)">
                         <i class="fas fa-chevron-left"></i>
@@ -663,7 +663,11 @@ window.cambiarImagenQuickView = function(productId, direction, event) {
         gallery.currentIndex = direction; // clic directo sobre una miniatura
     }
 
-    document.getElementById(`quickview-img-${productId}`).src = gallery.images[gallery.currentIndex];
+    //Cambiamos la imagen Y reiniciamos el zoom al nivel 1
+    const mainImg = document.getElementById(`quickview-img-${productId}`);
+    mainImg.src = gallery.images[gallery.currentIndex];
+    mainImg.style.transform = 'scale(1)';
+    mainImg.dataset.zoom = '1';
 
     document.querySelectorAll(`#quickview-${productId} .quickview-thumb`).forEach((thumb, index) => {
         thumb.classList.toggle('active', index === gallery.currentIndex);
@@ -813,7 +817,7 @@ window.agregarAlCarrito = async function(productId, event) {
         }
 
         actualizarContadorCarrito(data.data.itemCount);
-        await abrirCarrito(); // 👈 antes tenías alert(), ahora abre el drawer directamente
+        await abrirCarrito(); //antes tenías alert(), ahora abre el drawer directamente
 
     } catch (error) {
         alert(error.message);
@@ -1046,14 +1050,28 @@ async function cargarPasoDireccion() {
     content.innerHTML = `<p class="loading-text">Cargando tus direcciones...</p>`;
 
     try {
-        const response = await fetch('/api/addresses', {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
-            cache: 'no-store'
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'No se pudieron cargar tus direcciones.');
+        // Traemos direcciones y perfil a la vez
+        const [addrRes, profileRes] = await Promise.all([
+            fetch('/api/addresses', {
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+                cache: 'no-store'
+            }),
+            fetch('/api/profile', {
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+                cache: 'no-store'
+            })
+        ]);
 
-        checkoutState.addresses = data.data;
+        const addrData = await addrRes.json();
+        if (!addrRes.ok) throw new Error(addrData.message || 'No se pudieron cargar tus direcciones.');
+
+        const profileData = await profileRes.json();
+        // Soportamos que el perfil venga como {data:{...}} o directo
+        const phone = profileRes.ok ? (profileData.data?.phone ?? profileData.phone ?? null) : null;
+
+        checkoutState.addresses = addrData.data;
+        checkoutState.needsPhone = !phone;  
+
         renderizarPasoDireccion();
 
     } catch (error) {
@@ -1101,6 +1119,15 @@ function renderizarPasoDireccion() {
                 ` : ''}
             </form>
 
+            ${checkoutState.needsPhone ? `
+                <div class="checkout-form-row">
+                    <label>Teléfono de contacto</label>
+                    <input type="tel" id="checkout-phone" inputmode="numeric"
+                           pattern="[0-9]{8}" maxlength="8" placeholder="Ej: 55123456">
+                    <small class="checkout-empty-note">Lo usaremos para coordinar la entrega de tu pedido.</small>
+                </div>
+            ` : ''}
+
             <p class="checkout-error" id="checkout-error" style="display:none;"></p>
             <button type="button" class="checkout-primary-btn" id="checkout-confirm-btn">Confirmar pedido</button>
         </div>
@@ -1129,6 +1156,19 @@ async function procesarConfirmacionCheckout() {
     const formVisible = labelInput && !document.getElementById("new-address-form").classList.contains("hidden");
 
     try {
+
+        // Si el usuario no tenía teléfono, lo pedimos y validamos aquí
+        let phone = null;
+        if (checkoutState.needsPhone) {
+            const phoneInput = document.getElementById("checkout-phone");
+            phone = phoneInput.value.trim();
+            if (!/^[0-9]{8}$/.test(phone)) {
+                errorEl.textContent = "Ingresa un teléfono de contacto válido (8 dígitos).";
+                errorEl.style.display = "block";
+                return;
+            }
+        }
+
         let addressId;
 
         if (formVisible && labelInput.value.trim() && lineInput.value.trim()) {
@@ -1144,7 +1184,8 @@ async function procesarConfirmacionCheckout() {
             return;
         }
 
-        const resultado = await confirmarCheckout(token, addressId);
+        
+        const resultado = await confirmarCheckout(token, addressId, phone);
         renderizarPasoConfirmacion(resultado);
 
     } catch (error) {
@@ -1164,17 +1205,20 @@ async function crearDireccion(token, label, addressLine, isDefault) {
     return data.data;
 }
 
-async function confirmarCheckout(token, addressId) {
+async function confirmarCheckout(token, addressId, phone) {
+    const body = { addressId };
+    if (phone) body.phone = phone;   
+
     const response = await fetch('/api/orders/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ addressId })
+        body: JSON.stringify(body)
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'No se pudo generar tu pedido.');
 
     actualizarContadorCarrito(0);
-    return data.data; // { order, whatsappUrl }
+    return data.data;
 }
 
 function renderizarPasoConfirmacion(resultado) {
@@ -1206,9 +1250,37 @@ function renderizarPasoConfirmacion(resultado) {
     window.open(whatsappUrl, '_blank');
 }
 
+// ==========================================
+// 11. ZOOM IMAGENES XD
+// ==========================================
+// ==========================================
+// 11. ZOOM EN EL LUGAR (sin agrandar el espacio)
+// ==========================================
+document.addEventListener('click', (e) => {
+    const img = e.target.closest('img.zoomable');
+    if (!img) return;
+
+    let nivel = parseInt(img.dataset.zoom || '1', 10);
+    nivel = nivel >= 3 ? 1 : nivel + 1;   // cicla 1x → 2x → 3x → 1x
+    img.dataset.zoom = nivel;
+
+    if (nivel === 1) {
+        img.style.transform = 'scale(1)';
+        img.style.transformOrigin = 'center center';
+    } else {
+        // Solo al primer zoom fijamos el punto hacia dónde acercar (donde se hizo clic)
+        if (nivel === 2) {
+            const rect = img.parentElement.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+        }
+        img.style.transform = `scale(${nivel})`;
+    }
+});
 
 // ==========================================
-// 10. VISTA "MIS PEDIDOS"
+// 12. VISTA "MIS PEDIDOS"
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     const ordersContent = document.getElementById("orders-content");
@@ -1713,8 +1785,42 @@ async function abrirModalPerfil() {
                         </div>
                     </div>` : ''}
                 </div>
+
+
+
+
+                <div class="account-profile-notifications" style="margin-top:1.5rem; border-top:1px solid #333; padding-top:1.2rem;">
+                    <h4 style="margin-bottom:.7rem; font-size:1.15rem;">🔔 Notificaciones</h4>
+                    <label style="display:flex; align-items:center; gap:.6rem; cursor:pointer; font-size:1.15rem;">
+                        <input type="checkbox" id="notif-toggle" style="width:18px; height:18px; cursor:pointer;">
+                        <span>Activar notificaciones en este dispositivo</span>
+                    </label>
+                    <small style="color:#aaa; display:block; margin-top:.5rem; font-size:1.10rem; line-height:1.4;">
+                        Te avisaremos cuando tu pedido cambie de estado o ganes una subasta.
+                    </small>
+                </div>
+
+
             </div>
         `;
+
+        // Enganchamos el toggle de notificaciones
+        const notifToggle = document.getElementById('notif-toggle');
+        if (notifToggle) {
+            notifToggle.checked = await estaSuscritoPush();   // refleja el estado actual
+            notifToggle.addEventListener('change', async () => {
+                try {
+                    if (notifToggle.checked) {
+                        await suscribirPush();
+                    } else {
+                        await desuscribirPush();
+                    }
+                } catch (e) {
+                    mostrarAviso(e.message, 'error'); 
+                    notifToggle.checked = await estaSuscritoPush();  // revierte si falla
+                }
+            });
+        }
     } catch (error) {
         content.innerHTML = `<p class="loading-text">${error.message}</p>`;
     }
@@ -1917,4 +2023,109 @@ window.guardarEdicionDireccion = async function(id) {
 };
 
 
+// ==========================================
+// NOTIFICACIONES PUSH
+// ==========================================
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function estaSuscritoPush() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) return false;
+    return !!(await reg.pushManager.getSubscription());
+}
+
+async function suscribirPush() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) throw new Error('Debes iniciar sesión.');
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        throw new Error('Tu navegador no soporta notificaciones.');
+    }
+
+    const permiso = await Notification.requestPermission();
+    if (permiso !== 'granted') throw new Error('No diste permiso para las notificaciones.');
+
+    // Registramos y ESPERAMOS a que el Service Worker esté activo
+    await navigator.serviceWorker.register('/sw.js');
+    const reg = await navigator.serviceWorker.ready;   //espera a que esté activo
+
+    const vapidKey = document.querySelector('meta[name="vapid-public-key"]').content;
+
+    let sub;
+    try {
+        sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey)
+        });
+    } catch (err) {
+        // Navegadores que bloquean el servicio de push de Google (Brave por defecto)
+        if (err && /push service error/i.test(err.message)) {
+            throw new Error(
+                'Tu navegador está bloqueando las notificaciones. ' +
+                'actívalas en Configuración. '+
+                'También puedes usar Chrome.'
+            );
+        }
+        throw err; // cualquier otro error, lo dejamos pasar tal cual
+    }
+
+    const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(sub)
+    });
+    if (!res.ok) throw new Error('No se pudo guardar la suscripción.');
+}
+
+async function desuscribirPush() {
+    const token = localStorage.getItem('auth_token');
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) return;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return;
+
+    await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ endpoint: sub.endpoint })
+    });
+    await sub.unsubscribe();
+}
+
+
+//PARA LOS MODALES DE AVISOSSSSSS
+//=============
+function mostrarAviso(mensaje, tipo = 'error') {
+    let overlay = document.getElementById('store-alert-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'store-alert-overlay';
+        overlay.className = 'store-alert-overlay';
+        overlay.innerHTML = `
+            <div class="store-alert-box">
+                <div class="store-alert-icon"></div>
+                <p class="store-alert-message"></p>
+                <button type="button" class="store-alert-btn">Entendido</button>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay || e.target.classList.contains('store-alert-btn')) {
+                overlay.classList.remove('active');
+            }
+        });
+    }
+
+    const iconos = { success: '✓', error: '✕', warning: '!' };
+    const iconEl = overlay.querySelector('.store-alert-icon');
+    iconEl.textContent = iconos[tipo] || 'i';
+    iconEl.className = `store-alert-icon store-alert-icon-${tipo}`;
+    overlay.querySelector('.store-alert-message').textContent = mensaje;
+    overlay.classList.add('active');
+}
 

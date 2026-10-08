@@ -18,15 +18,18 @@ class AuctionReassignmentService
     ) {}
 
     // Quita al ganador actual (por rechazo o por vencimiento) y pasa al siguiente postor.
-    public function reassignExcluding(Auction $auction, int $userIdAExcluir): void
+    public function reassignExcluding(Auction $auction, int $userIdAExcluir): ?int
     {
         $this->declineRepo->record($auction->getId(), $userIdAExcluir);
 
         $excluidos = $this->declineRepo->getDeclinedUserIds($auction->getId());
         $siguiente = $this->bidRepo->findHighestBidExcluding($auction->getId(), $excluidos);
 
+        $nuevoGanadorId = null;
+
         if ($siguiente) {
             $auction->reassignWinner($siguiente->getUserId(), $siguiente->getAmount());
+            $nuevoGanadorId = $siguiente->getUserId();        // ← hay nuevo ganador
         } else {
             $auction->clearWinner();
             $this->productRepo->updateStatus($auction->getProductId(), ProductStatus::AVAILABLE->value);
@@ -34,5 +37,7 @@ class AuctionReassignmentService
         }
 
         $this->auctionRepo->update($auction);
+
+        return $nuevoGanadorId;                                // null = nadie más pujó
     }
 }

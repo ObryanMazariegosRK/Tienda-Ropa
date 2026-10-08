@@ -15,6 +15,8 @@ class Order {
     private OrderStatus $status;
     private DateTimeImmutable $createdAt; 
     private ?DateTimeImmutable $confirmedAt;
+    private ?string $contactPhone;
+    private ?string $publicCode;
 
     public function __construct(
         ?int $id,
@@ -24,7 +26,9 @@ class Order {
         float $total,
         ?OrderStatus $status = null, 
         ?DateTimeImmutable $createdAt = null,
-        ?DateTimeImmutable $confirmedAt = null 
+        ?DateTimeImmutable $confirmedAt = null,
+        ?string $contactPhone = null,
+        ?string $publicCode = null  
     ) {
         $this->validateUserId($userId);
         $this->validateAddressId($addressId);
@@ -40,6 +44,8 @@ class Order {
         $this->status = $status ?? OrderStatus::PENDING_PAYMENT; 
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->confirmedAt = $confirmedAt;
+        $this->contactPhone = $contactPhone;
+        $this->publicCode = $publicCode;
     }
 
     //VALIDACIONES
@@ -139,5 +145,11 @@ class Order {
     }
     public function getConfirmedAt(): ?DateTimeImmutable {
         return $this->confirmedAt;
+    }
+    public function getContactPhone(): ?string {
+        return $this->contactPhone;
+    }
+    public function getPublicCode(): ?string {
+        return $this->publicCode;
     }
 }

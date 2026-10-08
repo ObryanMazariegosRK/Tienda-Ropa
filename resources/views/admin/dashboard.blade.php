@@ -3,10 +3,23 @@
 @section('title', 'Dashboard Principal')
 
 @section('content')
-    <h1 class="mt-4">Dashboard</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Resumen General</li>
-    </ol>
+    
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mt-4 mb-4">
+        <div>
+            <h1 class="mb-1">Dashboard</h1>
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item active">Resumen General</li>
+            </ol>
+        </div>
+
+        <div class="form-check form-switch fs-6 mt-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="admin-notif-toggle" style="cursor:pointer;">
+            <label class="form-check-label" for="admin-notif-toggle" style="cursor:pointer;">
+                <i class="fas fa-bell me-1"></i> Activar notificaciones
+            </label>
+        </div>
+    </div>
+
 
     <!-- ========== BLOQUE 1: RESUMEN RÁPIDO ========== -->
     <div class="row">

@@ -14,6 +14,10 @@ RUN apt-get update && apt-get install -y \
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
+# Acelera la firma VAPID de las notificaciones push
+RUN apt-get update && apt-get install -y libgmp-dev \
+    && docker-php-ext-install gmp
+
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \

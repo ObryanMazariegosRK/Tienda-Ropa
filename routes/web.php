@@ -2,6 +2,7 @@
 
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController\SocialAuthController;
 
 // ==========================================
 // RUTAS PÚBLICAS Y AUTENTICACIÓN
@@ -63,3 +64,14 @@ Route::view('/admin/pedidos', 'admin.pedidos.index')->name('pedidos.index');
 
 //Para las subastas xd
 Route::view('/subastas', 'subastas');
+
+
+//Para el login con google|facebook
+Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback']);
+Route::view('/oauth/callback', 'autenticacion.oauth-callback');
+
+//Para el link de la orden
+Route::get('/pedido/{codigo}', function (string $codigo) {
+    return view('pedido-redirect', ['codigo' => $codigo]);
+});

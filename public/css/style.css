@@ -4297,3 +4297,63 @@ SE QUEDE FIJO
     top: var(--header-height, 0px);
     z-index: 400;
 }
+
+
+/*PARA LOS BOTONES DE INICIAR CON GOOGLE O FACEBOOK*/
+.oauth-divider { display:flex; align-items:center; text-align:center; margin:1.2rem 0; color:#888; font-size:.85rem; }
+.oauth-divider::before, .oauth-divider::after { content:""; flex:1; border-bottom:1px solid #ddd; }
+.oauth-divider span { padding:0 .8rem; }
+
+.oauth-buttons { display:flex; gap:.7rem; }
+.btn-oauth {
+    flex:1; display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    padding:.65rem; border-radius:8px; font-weight:600; text-decoration:none;
+    border:1px solid #ddd; cursor:pointer; transition:opacity .2s;
+}
+.btn-oauth:hover { opacity:.85; }
+.btn-oauth-google { background:#fff; color:#444; }
+.btn-oauth-facebook { background:#1877F2; color:#fff; border-color:#1877F2; }
+
+/*PARA EL ZOOM DE LAS IMAGENES*/
+/* El marco de la imagen recorta el acercamiento para que NO crezca el espacio */
+.quickview-main-image {
+    overflow: hidden;
+    position: relative;
+}
+.quickview-main-image img.zoomable {
+    transition: transform 0.25s ease;   /* acercamiento suave */
+    cursor: zoom-in;                     /* la lupita en escritorio */
+}
+
+
+/*
+PARA LOS MODALES DE LOS AVISOOOOOS
+
+*/
+
+.store-alert-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 10000; padding: 1rem;
+}
+.store-alert-overlay.active { display: flex; }
+.store-alert-box {
+    background: #fff; border-radius: 12px;
+    padding: 1.8rem 1.5rem; max-width: 380px; width: 100%;
+    text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.store-alert-icon {
+    width: 54px; height: 54px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: bold; margin: 0 auto 1rem; color: #fff;
+}
+.store-alert-icon-success { background: #22C55E; }
+.store-alert-icon-error   { background: #EF4444; }
+.store-alert-icon-warning { background: #F59E0B; }
+.store-alert-message { color: #333; margin-bottom: 1.2rem; line-height: 1.5; }
+.store-alert-btn {
+    background: #111; color: #fff; border: none;
+    padding: .6rem 1.6rem; border-radius: 8px; cursor: pointer; font-weight: 600;
+}

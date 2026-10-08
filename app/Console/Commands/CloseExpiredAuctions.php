@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Domain\Abstractions\IAuctionRepository;
 use App\Domain\Abstractions\IProductRepository;
+use App\Domain\Abstractions\IPushNotifier;
 use App\Domain\Enum\ProductStatus;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -14,7 +15,7 @@ class CloseExpiredAuctions extends Command
     protected $signature = 'auctions:close-expired';
     protected $description = 'Finaliza subastas activas cuya fecha de fin ya pasó, y reserva el producto para el ganador (si hubo pujas).';
 
-    public function handle(IAuctionRepository $auctionRepo, IProductRepository $productRepo): int
+        public function handle(IAuctionRepository $auctionRepo, IProductRepository $productRepo, IPushNotifier $pushNotifier): int
     {
         $expired = $auctionRepo->findExpiredActive();
 
@@ -27,6 +28,7 @@ class CloseExpiredAuctions extends Command
             // Si nadie pujó, el producto vuelve a estar disponible.
             if ($auction->hasWinner()) {
                 $productRepo->updateStatus($auction->getProductId(), ProductStatus::RESERVED->value);
+                $pushNotifier->notificarSubastaGanada($auction->getWinnerUserId());
             } else {
                 $productRepo->updateStatus($auction->getProductId(), ProductStatus::AVAILABLE->value);
                 $productRepo->updateSaleType($auction->getProductId(), 'direct');

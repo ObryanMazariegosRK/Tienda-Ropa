@@ -11,8 +11,8 @@ class User{
     private string $name;
     private string $lastName;
     private string $email;
-    private string $password;
-    private string $phone;
+    private ?string $password;
+    private ?string $phone;
     private RoleType $role;
     private ?\DateTimeImmutable $emailVerifiedAt;
     private ?string $verificationCode;
@@ -23,8 +23,8 @@ class User{
         string $name,
         string $lastName,
         string $email,
-        string $password,
-        string $phone,
+        ?string $password,
+        ?string $phone,
         RoleType $role,
         ?\DateTimeImmutable $emailVerifiedAt= null,
         ?string $verificationCode=null,
@@ -83,27 +83,29 @@ class User{
         }
     }
 
-    private function validatePassword(string $password):void{
+    private function validatePassword(?string $password):void{
 
-        if(empty(trim($password))){
-            throw new InvalidArgumentException('La contraseña no puede estar vacia');
+        if ($password !== null && strlen($password) < 8) {
+            throw new \InvalidArgumentException('La contraseña debe tener al menos 8 caracteres.');
         }
 
     }
 
-    private function validatePhone(string $phone):void{
+    private function validatePhone(?string $phone): void
+    {
+        //Usuario de Google/Facebook
+        if ($phone === null) {
+            return;
+        }
 
-        if(empty(trim($phone))){
+        if (empty(trim($phone))) {
             throw new InvalidArgumentException('El teléfono no puede estar vacio');
         }
 
-        if(strlen($phone)<8){
+        if (strlen($phone) < 8) {
             throw new InvalidArgumentException('El teléfono no puede tener menos de 8 caracteres');
         }
     }
-
-
-
 
     public function changePhone(string $phone):void{
         $this->validatePhone($phone);
@@ -192,12 +194,12 @@ class User{
         return $this->email;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function getPhone(): string
+    public function getPhone(): ?string
     {
         return $this->phone;
     }

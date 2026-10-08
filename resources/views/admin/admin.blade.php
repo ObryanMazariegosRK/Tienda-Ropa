@@ -8,6 +8,7 @@
    
     <link rel="icon" href="{{ asset('Auth/images/Prenda.png') }}" type="image/x-png">
     <title>@yield('title', 'Panel de Administración')</title>
+    <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="/admin/css/styles.css" rel="stylesheet" />
     <link href="/admin/css/admin-theme.css" rel="stylesheet" />

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <title>Mis Pedidos | Amerishop</title>
     <link rel="icon" href="{{ asset('Auth/images/Prenda.png') }}" type="image/x-png">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -11,6 +12,7 @@
 </head>
 <body>
 
+    
     <header>
         <div class="header-top">
             <div class="mobile-menu-btn" id="mobile-menu-btn">
@@ -67,11 +69,13 @@
             </div>
         </div>
 
+        <!--
         <nav class="main-nav" id="main-nav">
             <ul class="nav-categories" id="nav-categories">
                 <li class="nav-item"><a href="#">Cargando categorías...</a></li>
             </ul>
         </nav>
+        -->
     </header>
 
     <main>

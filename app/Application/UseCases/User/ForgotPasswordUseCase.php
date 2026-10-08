@@ -28,6 +28,12 @@ class ForgotPasswordUseCase implements IForgotPasswordUseCase
             return; 
         }
 
+        if ($userEntity->getPassword() === null) {
+            throw new \App\Domain\Exceptions\BusinessRuleException(
+                'Esta cuenta se creó con Google. Inicia sesión con el botón de Google.'
+            );
+        }
+
         //Generamos el código de 6 dígitos y el tiempo de expiración 
         $resetCode = (string) rand(100000, 999999);
         $expiresAt = new \DateTimeImmutable('+15 minutes');

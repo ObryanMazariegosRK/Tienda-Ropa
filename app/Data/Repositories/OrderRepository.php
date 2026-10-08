@@ -18,6 +18,7 @@ class OrderRepository implements IOrderRepository
             'shipping_address' => $order->getShippingAddress(),
             'total' => $order->getTotal(),
             'status' => $order->getStatus()->value,
+            'contact_phone' => $order->getContactPhone(),
         ]);
 
         return $this->mapToDomain($model);
@@ -44,12 +45,14 @@ class OrderRepository implements IOrderRepository
     private const ACTIVE_STATUSES = ['pending_payment', 'confirmed', 'preparing', 'on_route'];
     private const HISTORY_STATUSES = ['delivered', 'cancelled'];
 
-    public function findAll(?string $status = null, ?string $grupo = null): array
+    public function findAll(?string $status = null, ?string $grupo = null, ?string $codigo = null): array
     {
         $query = OrderModel::query()->orderByDesc('created_at');
 
-        if ($status) {
-            // Un estado específico elegido en el dropdown
+        // Búsqueda por código: ignora grupo y estado, busca en TODOS los pedidos
+        if ($codigo) {
+            $query->where('public_code', 'like', '%' . $codigo . '%');
+        } elseif ($status) {
             $query->where('status', $status);
         } elseif ($grupo === 'active') {
             $query->whereIn('status', self::ACTIVE_STATUSES);
@@ -90,7 +93,9 @@ class OrderRepository implements IOrderRepository
             total: (float) $model->total,
             status: OrderStatus::from($model->status),
             createdAt: new \DateTimeImmutable($model->created_at),
-            confirmedAt: $model->confirmed_at ? new DateTimeImmutable($model->confirmed_at) : null
+            confirmedAt: $model->confirmed_at ? new DateTimeImmutable($model->confirmed_at) : null,
+            contactPhone: $model->contact_phone,
+            publicCode: $model->public_code,
         );
     }
 }

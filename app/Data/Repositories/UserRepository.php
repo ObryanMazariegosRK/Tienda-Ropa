@@ -112,8 +112,41 @@ class UserRepository implements IUserRepository{
         );
     }
 
+    public function findUserByProvider(string $provider, string $providerId): ?User
+    {
+        $User = UserModel::where('provider', $provider)
+            ->where('provider_id', $providerId)
+            ->first();
 
+        if (!$User) {
+            return null;
+        }
 
+        return new User(
+            id: $User->id,
+            name: $User->name,
+            lastName: $User->last_name,
+            email: $User->email,
+            password: $User->password,
+            phone: $User->phone,
+            role: $User->role,
+            emailVerifiedAt: $User->email_verified_at?->toDateTimeImmutable(),
+            verificationCode: $User->verification_code,
+            verificationCodeExpiresAt: $User->verification_code_expires_at?->toDateTimeImmutable()
+        );
+    }
 
+    public function linkProvider(int $userId, string $provider, string $providerId): void
+    {
+        UserModel::where('id', $userId)->update([
+            'provider'    => $provider,
+            'provider_id' => $providerId,
+        ]);
+    }
+
+    public function updatePhone(int $userId, string $phone): void
+    {
+        UserModel::where('id', $userId)->update(['phone' => $phone]);
+    }
 
 }

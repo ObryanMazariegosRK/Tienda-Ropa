@@ -172,12 +172,21 @@
 
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-primary text-white">
+
+
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span><i class="fas fa-receipt me-1"></i> Pedidos</span>
-                <select id="filterStatus" class="form-select form-select-sm" style="width: auto;">
-                    <!-- Se llena dinámicamente según la pestaña -->
-                </select>
+                <div class="d-flex gap-2 flex-wrap">
+                    <input type="text" id="searchCodigo" class="form-control form-control-sm"
+                        placeholder="Buscar por código..." style="width: auto;">
+                    <select id="filterStatus" class="form-select form-select-sm" style="width: auto;">
+                        <!-- Se llena dinámicamente según la pestaña -->
+                    </select>
+                </div>
             </div>
+
+
+
             <ul class="nav nav-tabs card-header-tabs mt-2" id="orderTabs">
                 <li class="nav-item">
                     <button class="nav-link active" data-grupo="active">Activos</button>

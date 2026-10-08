@@ -591,3 +591,112 @@ input:focus-visible {
 .login-wrap h3 {
   margin-bottom: 34px;
 }
+
+
+
+/*PARA EL LOGIN CON GOOGLE | FACEBOOK*/
+
+.oauth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #9ca3af;
+    font-size: .85rem;
+}
+.oauth-divider::before,
+.oauth-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.oauth-divider span {
+    padding: 0 .8rem;
+    white-space: nowrap;
+}
+
+.oauth-buttons {
+    display: flex;
+    gap: .8rem;
+}
+.btn-oauth {
+    flex: 1;                       /* cada botón ocupa la mitad */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .7rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: .95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity .2s ease, transform .05s ease;
+}
+.btn-oauth:hover { opacity: .9; }
+.btn-oauth:active { transform: translateY(1px); }
+.btn-oauth svg { flex-shrink: 0; }   /* evita que el logo se aplaste */
+
+.btn-oauth-google {
+    background: #ffffff;
+    color: #3c4043;
+    border-color: #dadce0;
+}
+.btn-oauth-facebook {
+    background: #1877F2;
+    color: #ffffff;
+}
+
+/* En pantallas muy pequeñas, uno debajo del otro */
+@media (max-width: 380px) {
+    .oauth-buttons { flex-direction: column; }
+}
+
+.oauth-buttons {
+    display: flex;
+    justify-content: center;   /* 👈 centra el botón cuando es único */
+    gap: .8rem;
+}
+.btn-oauth {
+    flex: 0 1 auto;            /* 👈 antes: flex: 1 — ahora se ajusta a su contenido */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .7rem 1.6rem;    /* un poco más ancho para que no quede diminuto */
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: .95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity .2s ease, transform .05s ease;
+}
+
+.btn-oauth-google {
+    background: transparent;              /*sin fondo blanco */
+    color: #ffffff;                       /* texto claro sobre el fondo oscuro */
+    border-color: rgba(255, 255, 255, 0.25);
+}
+.btn-oauth-google:hover {
+    background: rgba(255, 255, 255, 0.08); /* leve realce al pasar el mouse */
+    opacity: 1;
+}
+
+.btn-oauth-google,
+.btn-oauth-google span {
+    color: #ffffff !important;    /*gana sobre el verde de los enlaces */
+}
+
+.btn-oauth-google {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+.btn-oauth-google:hover {
+    background: rgba(255, 255, 255, 0.08);
+    opacity: 1;
+}
+.btn-oauth-google:hover span {
+    color: #ffffff !important;    /*que siga blanco al pasar el mouse */
+}

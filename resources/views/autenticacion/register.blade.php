@@ -38,7 +38,9 @@
 			      		        </div>
                                 <div class="form-group mb-3">
                                     <label class="label" for="phone">Teléfono</label>
-                                    <input type="text" id="phone" class="form-control" placeholder="Ej: 5559876543" required>
+                                    <input type="tel" id="phone" class="form-control"
+                                        inputmode="numeric" pattern="[0-9]{8}" maxlength="8"
+                                        placeholder="Ej: 55123456" required>
                                 </div>
 		                        <div class="form-group mb-3">
 		            	            <label class="label" for="password">Contraseña</label>
@@ -104,8 +106,13 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Si el correo ya existe u otro error
-                    throw new Error(data.message || 'Ocurrió un error al registrarte.');
+                    //Errores de validación del Request (422) → vienen en data.errors
+                    if (data.errors) {
+                        const primerError = Object.values(data.errors)[0][0];
+                        throw new Error(primerError);
+                    }
+                    //Errores de negocio (correo duplicado, etc.) → vienen en data.error
+                    throw new Error(data.error || data.message || 'Ocurrió un error al registrarte.');
                 }
 
                 // ¡Éxito!

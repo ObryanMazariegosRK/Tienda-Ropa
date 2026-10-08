@@ -94,6 +94,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auctions/my-active-bids-count', [AuctionController::class, 'myActiveBidsCount']);
     Route::get('/auctions/my-bid-status', [AuctionController::class, 'myBidStatus']);
 
+    //Para las notificaciones
+    Route::post('/push/subscribe',   [\App\Http\Controllers\PushController::class, 'subscribe']);
+    Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe']);
     //Solo el admin podra entrar Xd
     Route::middleware('admin')->group(function () {
         Route::get('/orders/all', [OrderController::class, 'allOrders']);
