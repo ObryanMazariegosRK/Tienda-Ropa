@@ -39,8 +39,8 @@ Route::get('/categories/{categoryId}/products', [ProductController::class, 'getB
 
 //AUTH
 Route::post('/register', RegisterUserController::class);
-Route::post('/login', LoginUserController::class); 
-Route::post('/verify-email', VerifyEmailController::class);
+Route::post('/login', LoginUserController::class)->middleware('throttle:login');
+Route::post('/verify-email', VerifyEmailController::class)->middleware('throttle:codigo');
 //Permite solo 3 peticiones por minuto para esta ruta
 Route::post('/resend-code', ResendVerificationCodeController::class)->middleware('throttle:3,1');
 
@@ -144,5 +144,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/forgot-password', ForgotPasswordController::class)->middleware('throttle:3,1');
 
 //Reuta para cambiar la contraseña xd
-Route::post('/reset-password', ResetPasswordController::class)->middleware('throttle:3,1');
+Route::post('/reset-password', ResetPasswordController::class)->middleware('throttle:codigo');
 

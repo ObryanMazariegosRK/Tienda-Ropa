@@ -10,6 +10,11 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-Schedule::command(CloseExpiredAuctions::class)->everyMinute();
+//withoutOverlapping evita que dos ejecuciones procesen la misma subasta
+//si una tarda más de lo normal (por ejemplo, enviando notificaciones)
+Schedule::command(CloseExpiredAuctions::class)->everyMinute()->withoutOverlapping();
 
-Schedule::command(\App\Console\Commands\ExpireUnclaimedAuctionWins::class)->hourly();
+Schedule::command(\App\Console\Commands\ExpireUnclaimedAuctionWins::class)->hourly()->withoutOverlapping();
+
+//Borra de la db los tokens de Sanctum que ya vencieron
+Schedule::command('sanctum:prune-expired --hours=24')->daily();

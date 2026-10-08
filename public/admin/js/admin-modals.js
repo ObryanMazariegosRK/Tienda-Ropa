@@ -1,3 +1,14 @@
+// Escapa texto antes de meterlo en innerHTML. Úsalo con cualquier dato que
+// escriba un cliente (nombre, dirección, teléfono...) para evitar XSS.
+window.escapeHtml = function(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
+
 window.adminConfirm = function(message, options = {}) {
     return new Promise((resolve) => {
         const modalEl = document.getElementById('adminConfirmModal');

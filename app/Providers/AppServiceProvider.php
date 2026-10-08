@@ -38,7 +38,11 @@ use App\Application\Abstractions\Cart\IGetCartUseCase;
 use App\Application\Abstractions\Cart\IRemoveFromCartUseCase;
 use App\Application\Abstractions\Category\IDeleteCategoryUseCase;
 use App\Application\Abstractions\Category\IGetCategoriesByParentIdUseCase;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 use App\Application\UseCases\Category\GetCategoriesByParentIdUseCase;
 
@@ -441,6 +445,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $demasiadosIntentos = fn () => response()->json([
+            'message' => 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+        ], 429);
+
+        //Login: limitamos por correo + IP para frenar la fuerza bruta de contraseñas
+        RateLimiter::for('login', function (Request $request) use ($demasiadosIntentos) {
+            $email = Str::lower((string) $request->input('email'));
+            return [
+                Limit::perMinute(5)->by('login:' . $email . '|' . $request->ip())->response($demasiadosIntentos),
+                Limit::perHour(20)->by('login:' . $email)->response($demasiadosIntentos),
+            ];
+        });
+
+        //Códigos de 6 dígitos (verificación y recuperación): el límite por correo
+        //impide adivinar el código aunque el atacante cambie de IP
+        RateLimiter::for('codigo', function (Request $request) use ($demasiadosIntentos) {
+            $email = Str::lower((string) $request->input('email'));
+            return [
+                Limit::perMinute(5)->by('codigo-ip:' . $request->ip())->response($demasiadosIntentos),
+                Limit::perHour(10)->by('codigo:' . $email)->response($demasiadosIntentos),
+            ];
+        });
     }
 }

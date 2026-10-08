@@ -18,21 +18,25 @@ class PlaceBidUseCase implements IPlaceBidUseCase
 
     public function execute(int $productId, int $userId, float $amount): AuctionDTO
     {
-        $auction = $this->auctionRepo->findByProductId($productId);
-        if (!$auction) {
-            throw new InvalidArgumentException('No hay una subasta activa para este producto.');
-        }
+        // Bloqueamos la fila de la subasta: si dos personas pujan al mismo tiempo,
+        // la segunda espera y se valida contra el precio que dejó la primera.
+        $auction = DB::transaction(function () use ($productId, $userId, $amount) {
+            $auction = $this->auctionRepo->findByProductIdForUpdate($productId);
+            if (!$auction) {
+                throw new InvalidArgumentException('No hay una subasta activa para este producto.');
+            }
 
-        if ($auction->hasExpired()) {
-            throw new InvalidArgumentException('Esta subasta ya finalizó.');
-        }
+            if ($auction->hasExpired()) {
+                throw new InvalidArgumentException('Esta subasta ya finalizó.');
+            }
 
-        // registerBid() valida internamente: activa, no ser ya el ganador, incremento mínimo
-        $auction->registerBid($userId, $amount);
+            // registerBid() valida internamente: activa, no ser ya el ganador, incremento mínimo
+            $auction->registerBid($userId, $amount);
 
-        DB::transaction(function () use ($auction, $userId, $amount) {
             $this->auctionRepo->update($auction);
             $this->bidRepo->create(new AuctionBid(id: null, auctionId: $auction->getId(), userId: $userId, amount: $amount));
+
+            return $auction;
         });
 
         $secondsRemaining = max(0, $auction->getEndDate()->getTimestamp() - time());

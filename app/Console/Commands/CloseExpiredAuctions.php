@@ -9,6 +9,7 @@ use App\Domain\Enum\ProductStatus;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class CloseExpiredAuctions extends Command
 {
@@ -19,19 +20,37 @@ class CloseExpiredAuctions extends Command
     {
         $expired = $auctionRepo->findExpiredActive();
 
-        foreach ($expired as $auction) {
-            $auction->finish();
-            $auctionRepo->update($auction);
+        foreach ($expired as $expiredAuction) {
+            // Releemos con bloqueo: una puja de último segundo pudo cambiar la subasta
+            // entre la consulta de arriba y este punto.
+            $auction = DB::transaction(function () use ($expiredAuction, $auctionRepo, $productRepo) {
+                $auction = $auctionRepo->findByIdForUpdate($expiredAuction->getId());
+                if (!$auction || !$auction->isActive() || !$auction->hasExpired()) {
+                    return null;
+                }
 
-            // Si hubo al menos una puja, el producto queda reservado esperando
-            // que el ganador complete el pago vía WhatsApp (mismo flujo que checkout normal).
-            // Si nadie pujó, el producto vuelve a estar disponible.
+                $auction->finish();
+                $auctionRepo->update($auction);
+
+                // Si hubo al menos una puja, el producto queda reservado esperando
+                // que el ganador complete el pago vía WhatsApp (mismo flujo que checkout normal).
+                // Si nadie pujó, el producto vuelve a estar disponible.
+                if ($auction->hasWinner()) {
+                    $productRepo->updateStatus($auction->getProductId(), ProductStatus::RESERVED->value);
+                } else {
+                    $productRepo->updateStatus($auction->getProductId(), ProductStatus::AVAILABLE->value);
+                    $productRepo->updateSaleType($auction->getProductId(), 'direct');
+                }
+
+                return $auction;
+            });
+
+            if (!$auction) {
+                continue;
+            }
+
             if ($auction->hasWinner()) {
-                $productRepo->updateStatus($auction->getProductId(), ProductStatus::RESERVED->value);
                 $pushNotifier->notificarSubastaGanada($auction->getWinnerUserId());
-            } else {
-                $productRepo->updateStatus($auction->getProductId(), ProductStatus::AVAILABLE->value);
-                $productRepo->updateSaleType($auction->getProductId(), 'direct');
             }
 
             $this->info("Subasta #{$auction->getId()} finalizada.");

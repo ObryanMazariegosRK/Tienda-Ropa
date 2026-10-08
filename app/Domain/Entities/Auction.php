@@ -167,6 +167,8 @@ class Auction
         $this->winnerUserId = $userId;
         $this->currentWinnerUserId = $userId;
         $this->currentPrice = $amount;
+        //El nuevo ganador recibe su propio plazo completo para confirmar
+        $this->wonAt = new DateTimeImmutable();
     }
 
     public function clearWinner(): void

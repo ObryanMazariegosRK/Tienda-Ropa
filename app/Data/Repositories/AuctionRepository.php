@@ -35,6 +35,18 @@ class AuctionRepository implements IAuctionRepository
         return $model ? $this->mapToDomain($model) : null;
     }
 
+    public function findByIdForUpdate(int $id): ?Auction
+    {
+        $model = AuctionModel::whereKey($id)->lockForUpdate()->first();
+        return $model ? $this->mapToDomain($model) : null;
+    }
+
+    public function findByProductIdForUpdate(int $productId): ?Auction
+    {
+        $model = AuctionModel::where('product_id', $productId)->latest()->lockForUpdate()->first();
+        return $model ? $this->mapToDomain($model) : null;
+    }
+
     public function update(Auction $auction): Auction
     {
         $model = AuctionModel::findOrFail($auction->getId());

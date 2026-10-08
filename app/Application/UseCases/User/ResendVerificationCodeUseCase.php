@@ -30,7 +30,7 @@ class ResendVerificationCodeUseCase implements IResendVerificationCodeUseCase
         }
 
         //Generamos el nuevo código y nueva fecha de expiración
-        $newCode = (string) rand(100000, 999999);
+        $newCode = (string) random_int(100000, 999999);
         $newExpiresAt = new \DateTimeImmutable('+15 minutes');
 
         //Actualizamos los valores dentro de la Entidad

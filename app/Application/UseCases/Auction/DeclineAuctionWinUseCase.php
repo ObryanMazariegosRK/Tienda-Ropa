@@ -23,20 +23,21 @@ class DeclineAuctionWinUseCase implements IDeclineAuctionWinUseCase
 
     public function execute(int $auctionId, int $userId): void
     {
-        $auction = $this->auctionRepo->findById($auctionId);
-        if (!$auction) throw new InvalidArgumentException('Subasta no encontrada.');
+        // Validamos con la fila bloqueada para no chocar con un checkout
+        // o con la expiración automática que ocurran al mismo tiempo
+        $nuevoGanadorId = DB::transaction(function () use ($auctionId, $userId) {
+            $auction = $this->auctionRepo->findByIdForUpdate($auctionId);
+            if (!$auction) throw new InvalidArgumentException('Subasta no encontrada.');
 
-        if ($auction->getWinnerUserId() !== $userId) {
-            throw new InvalidArgumentException('No eres el ganador de esta subasta.');
-        }
-        if ($auction->hasBeenOrdered()) {
-            throw new InvalidArgumentException('Ya confirmaste este pedido; no se puede cancelar desde aquí.');
-        }
+            if ($auction->getWinnerUserId() !== $userId) {
+                throw new InvalidArgumentException('No eres el ganador de esta subasta.');
+            }
+            if ($auction->hasBeenOrdered()) {
+                throw new InvalidArgumentException('Ya confirmaste este pedido; no se puede cancelar desde aquí.');
+            }
 
-
-        $nuevoGanadorId = DB::transaction(
-            fn() => $this->reassignmentService->reassignExcluding($auction, $userId)
-        );
+            return $this->reassignmentService->reassignExcluding($auction, $userId);
+        });
 
         // 🔔 Si hubo un siguiente postor, él es el nuevo ganador
         if ($nuevoGanadorId) {

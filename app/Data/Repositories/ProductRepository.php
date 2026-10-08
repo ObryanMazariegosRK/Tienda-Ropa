@@ -242,6 +242,12 @@ class ProductRepository implements IProductRepository{
     }
 
     //Para actualizar el estado del producto
+    public function findByIdForUpdate(int $id): ?Product
+    {
+        $model = ProductModel::whereKey($id)->lockForUpdate()->first();
+        return $model ? $this->mapToDomain($model) : null;
+    }
+
     public function updateStatus(int $id, string $status): void
     {
         ProductModel::where('id', $id)->update(['status' => $status]);

@@ -66,18 +66,27 @@ class CheckoutUseCase implements ICheckoutUseCase
 
         $total = array_sum(array_map(fn($row) => $row['cartItem']->getPriceSnapshot(), $cartRows));
 
-        foreach ($cartRows as $row) {
-            $product = $this->productRepository->findById($row['cartItem']->getProductId());
-            if (!$product || $product->getStatus()->value !== ProductStatus::AVAILABLE->value) {
-                throw new \InvalidArgumentException(
-                    "El producto \"{$row['productName']}\" ya no está disponible. Por favor elimínalo de tu carrito."
-                );
-            }
-        }
-
         // Todo en una transacción: si algo falla, no queremos una orden a medias
         $order = DB::transaction(function () use ($userId, $address, $total, $cartRows, $contactPhone) {
-       
+
+            // Bloqueamos los productos antes de revisar si están disponibles: si dos
+            // clientes compran la misma prenda a la vez, el segundo espera y la ve reservada.
+            // Ordenamos por id para que dos checkouts no se bloqueen entre sí (deadlock).
+            $rowsPorId = [];
+            foreach ($cartRows as $row) {
+                $rowsPorId[$row['cartItem']->getProductId()] = $row;
+            }
+            ksort($rowsPorId);
+
+            foreach ($rowsPorId as $productId => $row) {
+                $product = $this->productRepository->findByIdForUpdate($productId);
+                if (!$product || $product->getStatus()->value !== ProductStatus::AVAILABLE->value) {
+                    throw new \InvalidArgumentException(
+                        "El producto \"{$row['productName']}\" ya no está disponible. Por favor elimínalo de tu carrito."
+                    );
+                }
+            }
+
             $newOrder = new Order(
                 id: null,
                 userId: $userId,

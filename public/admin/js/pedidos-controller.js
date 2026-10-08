@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderizarTabla(ordersCache);
 
         } catch (error) {
-            tableContainer.innerHTML = `<p class="text-center text-danger">${error.message}</p>`;
+            tableContainer.innerHTML = `<p class="text-center text-danger">${escapeHtml(error.message)}</p>`;
         }
     }
 
@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <tr class="${rowClass}">
                     <td>#${order.id}</td>
                     <td>${fecha}</td>
-                    <td>${order.shippingAddress}</td>
+                    <td>${escapeHtml(order.shippingAddress)}</td>
                     <td>${order.total.toFixed(2)} GTQ</td>
                     <td>
                         <div class="status-select-wrapper status-${order.status}">
@@ -308,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <img src="${item.productImage ? '/storage/' + item.productImage : '/image/ImagenNoDefinida.png'}"
                         style="width:50px;height:65px;object-fit:cover;border-radius:4px;">
                 </td>
-                <td>${item.productName}</td>
+                <td>${escapeHtml(item.productName)}</td>
                 <td>${item.unitPrice.toFixed(2)} GTQ</td>
             </tr>
         `).join('');
@@ -316,13 +316,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("orderDetailBody").innerHTML = `
             <div class="order-detail-meta">
                 <p><strong>Pedido:</strong> #${order.id}</p>
-                <p><strong>Código:</strong> ${order.publicCode || '—'}</p>
+                <p><strong>Código:</strong> ${escapeHtml(order.publicCode || '—')}</p>
                 <p><strong>Fecha:</strong> ${fecha}</p>
-                <p><strong>Cliente:</strong> ${order.customerName || 'No disponible'}</p>
+                <p><strong>Cliente:</strong> ${escapeHtml(order.customerName || 'No disponible')}</p>
                 <p><strong>Teléfono:</strong> ${order.contactPhone
-                    ? `<a href="https://wa.me/502${order.contactPhone}" target="_blank">${order.contactPhone}</a>`
+                    ? `<a href="https://wa.me/502${encodeURIComponent(order.contactPhone)}" target="_blank" rel="noopener">${escapeHtml(order.contactPhone)}</a>`
                     : 'No registrado'}</p>
-                <p><strong>Dirección de envío:</strong> ${order.shippingAddress}</p>
+                <p><strong>Dirección de envío:</strong> ${escapeHtml(order.shippingAddress)}</p>
                 <p><strong>Estado:</strong>
                     <span class="order-detail-status-pill status-${order.status}">${ORDER_STATUS_LABELS[order.status]}</span>
                 </p>

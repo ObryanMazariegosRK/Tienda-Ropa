@@ -9,6 +9,8 @@ interface IProductRepository{
     public function save(Product $product):Product;
     //listo :v
     public function findById(int $id): ?Product;
+    // Con bloqueo de fila: llamarlo solo dentro de DB::transaction
+    public function findByIdForUpdate(int $id): ?Product;
     //listo :v
     public function update(Product $product): void;
     //Método para guardar las imagenes

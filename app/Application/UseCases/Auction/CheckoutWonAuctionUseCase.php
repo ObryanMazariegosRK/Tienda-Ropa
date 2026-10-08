@@ -29,27 +29,27 @@ class CheckoutWonAuctionUseCase implements ICheckoutWonAuctionUseCase
 
     public function execute(int $auctionId, int $userId, int $addressId): CheckoutResultDTO
     {
-        $auction = $this->auctionRepository->findById($auctionId);
-        if (!$auction) {
-            throw new InvalidArgumentException('Subasta no encontrada.');
-        }
-
-        if ($auction->getWinnerUserId() !== $userId) {
-            throw new InvalidArgumentException('No eres el ganador de esta subasta.');
-        }
-
-        if ($auction->hasBeenOrdered()) {
-            throw new InvalidArgumentException('Ya generaste el pedido de esta subasta anteriormente.');
-        }
-
         $address = $this->addressRepository->findByIdAndUser($addressId, $userId);
         if (!$address) {
             throw new InvalidArgumentException('La dirección seleccionada no es válida.');
         }
 
-        $product = $this->productRepository->findById($auction->getProductId());
+        // Validamos con la fila bloqueada: evita dos pedidos por doble clic y
+        // choques con la reasignación automática del ganador
+        [$order, $auction] = DB::transaction(function () use ($auctionId, $userId, $address) {
+            $auction = $this->auctionRepository->findByIdForUpdate($auctionId);
+            if (!$auction) {
+                throw new InvalidArgumentException('Subasta no encontrada.');
+            }
 
-        $order = DB::transaction(function () use ($userId, $address, $auction) {
+            if ($auction->getWinnerUserId() !== $userId) {
+                throw new InvalidArgumentException('No eres el ganador de esta subasta.');
+            }
+
+            if ($auction->hasBeenOrdered()) {
+                throw new InvalidArgumentException('Ya generaste el pedido de esta subasta anteriormente.');
+            }
+
             $newOrder = new Order(
                 id: null,
                 userId: $userId,
@@ -73,8 +73,10 @@ class CheckoutWonAuctionUseCase implements ICheckoutWonAuctionUseCase
             $auction->markAsOrdered($createdOrder->getId());
             $this->auctionRepository->update($auction);
 
-            return $createdOrder;
+            return [$createdOrder, $auction];
         });
+
+        $product = $this->productRepository->findById($auction->getProductId());
 
         $firstImage = $product->getImages()[0] ?? null;
         $productImageUrl = $firstImage ? $firstImage->getImageUrl() : null;

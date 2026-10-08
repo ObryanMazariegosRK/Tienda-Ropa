@@ -35,7 +35,7 @@ class ForgotPasswordUseCase implements IForgotPasswordUseCase
         }
 
         //Generamos el código de 6 dígitos y el tiempo de expiración 
-        $resetCode = (string) rand(100000, 999999);
+        $resetCode = (string) random_int(100000, 999999);
         $expiresAt = new \DateTimeImmutable('+15 minutes');
 
         //Actualizamos la entidad del usuario con el código de recuperación

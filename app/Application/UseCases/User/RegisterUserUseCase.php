@@ -42,7 +42,7 @@ class RegisterUserUseCase implements IRegisterUserUseCase{
         );
 
         //Generamos el código de 6 digitos
-        $verificationCode = (string) rand(100000, 999999);
+        $verificationCode = (string) random_int(100000, 999999);
 
         //Calculamos la expiración 
         $expiresAt = new \DateTimeImmutable('+15 minutes');

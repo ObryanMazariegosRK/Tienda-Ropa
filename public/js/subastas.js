@@ -398,7 +398,7 @@ async function cargarHistorialPujas(productId) {
 
         historyEl.innerHTML = data.data.map(bid => `
             <div class="auction-bid-row">
-                <span>${bid.userName}</span>
+                <span>${escapeHtml(bid.userName)}</span>
                 <span>Q${bid.amount.toFixed(2)}</span>
             </div>
         `).join('');

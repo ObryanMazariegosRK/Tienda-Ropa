@@ -1,3 +1,14 @@
+// Escapa texto antes de meterlo en innerHTML. Úsalo con cualquier dato que
+// escriba un cliente (nombre, dirección, teléfono...) para evitar XSS.
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 let allProducts = [];         // Almacena todos los productos cargados del servidor
 let globalCategories = [];    // Copia en memoria para resolver la jerarquía (Padres e Hijas)
 let productGalleries = {};    // Guarda el índice de imagen actual por cada producto
@@ -1155,6 +1166,12 @@ async function procesarConfirmacionCheckout() {
     const lineInput = document.getElementById("new-address-line");
     const formVisible = labelInput && !document.getElementById("new-address-form").classList.contains("hidden");
 
+    // Desactivamos el botón mientras se procesa para evitar pedidos dobles
+    const confirmBtn = document.getElementById("checkout-confirm-btn");
+    if (confirmBtn.disabled) return;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Procesando...";
+
     try {
 
         // Si el usuario no tenía teléfono, lo pedimos y validamos aquí
@@ -1191,6 +1208,10 @@ async function procesarConfirmacionCheckout() {
     } catch (error) {
         errorEl.textContent = error.message;
         errorEl.style.display = "block";
+    } finally {
+        // Si hubo éxito el botón ya no existe en pantalla; si hubo error, se puede reintentar
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Confirmar pedido";
     }
 }
 
@@ -1218,7 +1239,20 @@ async function confirmarCheckout(token, addressId, phone) {
     if (!response.ok) throw new Error(data.message || 'No se pudo generar tu pedido.');
 
     actualizarContadorCarrito(0);
+    quitarProductosDeLaTienda(data.data.order.items.map(item => item.productId));
     return data.data;
+}
+
+// Quita de la vista los productos que el cliente acaba de comprar, sin recargar la página
+function quitarProductosDeLaTienda(productIds) {
+    allProducts = allProducts.filter(p => !productIds.includes(p.id));
+    productIds.forEach(id => {
+        document.querySelectorAll(`.product-card[data-id="${id}"]`).forEach(card => card.remove());
+    });
+
+    if (productsContainer && !productsContainer.querySelector('.product-card')) {
+        renderizarProductos([]);
+    }
 }
 
 function renderizarPasoConfirmacion(resultado) {
@@ -1676,6 +1710,12 @@ async function procesarConfirmacionSubasta(auctionId) {
     const lineInput = document.getElementById("new-address-line");
     const formVisible = labelInput && !document.getElementById("new-address-form").classList.contains("hidden");
 
+    // Desactivamos el botón mientras se procesa para evitar pedidos dobles
+    const confirmBtn = document.getElementById("checkout-confirm-btn");
+    if (confirmBtn.disabled) return;
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Procesando...";
+
     try {
         let addressId;
 
@@ -1705,6 +1745,9 @@ async function procesarConfirmacionSubasta(auctionId) {
     } catch (error) {
         errorEl.textContent = error.message;
         errorEl.style.display = "block";
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Confirmar pedido";
     }
 
 

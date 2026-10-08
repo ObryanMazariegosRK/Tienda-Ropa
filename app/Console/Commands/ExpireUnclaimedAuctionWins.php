@@ -21,11 +21,24 @@ class ExpireUnclaimedAuctionWins extends Command
 
         foreach ($pendientes as $auction) {
             if ($auction->hasWinConfirmationExpired(self::DIAS_LIMITE)) {
-                $winnerId = $auction->getWinnerUserId();
+                // Releemos con bloqueo: el ganador pudo confirmar o rechazar justo ahora
+                $resultado = DB::transaction(function () use ($auction, $auctionRepo, $reassignmentService) {
+                    $locked = $auctionRepo->findByIdForUpdate($auction->getId());
+                    if (!$locked || !$locked->hasWinner() || $locked->hasBeenOrdered()
+                        || !$locked->hasWinConfirmationExpired(self::DIAS_LIMITE)) {
+                        return ['procesada' => false];
+                    }
 
-                $nuevoGanadorId = DB::transaction(
-                    fn() => $reassignmentService->reassignExcluding($auction, $winnerId)
-                );
+                    return [
+                        'procesada' => true,
+                        'nuevoGanadorId' => $reassignmentService->reassignExcluding($locked, $locked->getWinnerUserId()),
+                    ];
+                });
+
+                if (!$resultado['procesada']) {
+                    continue;
+                }
+                $nuevoGanadorId = $resultado['nuevoGanadorId'];
 
                 if ($nuevoGanadorId) {
                     $pushNotifier->notificarSubastaGanada($nuevoGanadorId);            // 🔔

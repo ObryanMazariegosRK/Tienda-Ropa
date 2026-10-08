@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 class AuctionModel extends Model
 {
     protected $table = 'auctions';
-    protected $fillable = ['product_id', 'starting_price', 'current_price', 'min_increment', 'start_date', 'end_date', 'status', 'current_winner_user_id', 'winner_user_id', 'order_id'];
+    protected $fillable = ['product_id', 'starting_price', 'current_price', 'min_increment', 'start_date', 'end_date', 'status', 'current_winner_user_id', 'winner_user_id', 'order_id', 'won_at'];
 
     public function bids()
     {
