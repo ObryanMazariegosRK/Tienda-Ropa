@@ -107,15 +107,15 @@
 
         
     document.addEventListener('DOMContentLoaded', function() {
-        // Si venimos de un login social fallido, avisamos
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('oauth_error')) {
-            alert('No se pudo iniciar sesión con el proveedor. Intenta de nuevo.');
-            // O usa tu sistema de alertas bonito en vez de alert()
-        }   
-    
         const loginForm = document.getElementById('loginForm');
         const errorMessage = document.getElementById('errorMessage');
+
+        // Si venimos de un login social fallido, lo mostramos en el mismo recuadro de errores
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('oauth_error')) {
+            errorMessage.textContent = 'No se pudo iniciar sesión con Google. Intenta de nuevo.';
+            errorMessage.classList.remove('d-none');
+        }
         const submitBtn = document.getElementById('submitBtn');
 
 

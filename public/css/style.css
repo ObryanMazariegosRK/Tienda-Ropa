@@ -49,7 +49,7 @@ header {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 0.6rem; /* espacio entre el logo y las categorías */
     padding: 3rem 6rem 1.5rem 6rem;
     z-index: 500;
     background-color: #0F0F10;
@@ -891,6 +891,50 @@ letter-spacing: 1px;
 }
 
 
+
+/* scroll-margin-top: al abrir el vistazo rápido, el scroll se detiene DEBAJO
+   del header y del submenú fijos (antes tapaban el título y la descripción) */
+.quickview-panel {
+    padding: 2.4rem;
+    scroll-margin-top: calc(var(--header-height, 150px) + 6rem);
+}
+.quickview-main-image {
+    max-height: none;
+}
+
+/* Distribución del vistazo rápido en computadora (en celular no cambia):
+   [ imagen ] [ título, precio, descripción, botón ]
+   [ imagen ] [ miniaturas, alineadas con el pie de la imagen ]
+   La columna de la imagen mide lo mismo que la tarjeta (--card-width lo pone main.js) */
+@media (min-width: 769px) {
+    .quickview-panel {
+        width: 90%;
+        justify-self: center;
+        grid-template-columns: var(--card-width, 27rem) minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+            "imagen info"
+            "imagen miniaturas";
+        column-gap: 3rem;
+        row-gap: 2.4rem;
+    }
+    /* La galería deja que sus hijos (imagen y miniaturas) se acomoden en el grid del panel */
+    .quickview-gallery {
+        display: contents;
+    }
+    .quickview-main-image {
+        grid-area: imagen;
+        z-index: 1;
+    }
+    .quickview-thumbnails {
+        grid-area: miniaturas;
+        align-self: end;
+    }
+    .quickview-info {
+        grid-area: info;
+        padding-top: 0.6rem;
+    }
+}
 
 @media (max-width: 768px) {
     .quickview-panel {
@@ -2143,6 +2187,20 @@ textarea,
 
 
 /* ==========================================================
+   ALTURA DEL BANNER EN COMPUTADORA
+   Alto de la ventana menos el header (--header-height lo calcula main.js),
+   menos el submenú (~44px) y ~90px para que se asomen los productos.
+   Para hacerlo más alto o más bajo, cambia solo el 135px.
+   ========================================================== */
+@media (min-width: 769px) {
+  .hero-section {
+    height: calc(100svh - var(--header-height, 150px) - 135px);
+    min-height: 320px;
+    max-height: 680px;
+  }
+}
+
+/* ==========================================================
    AJUSTES MÓVIL: SCROLL DEL BANNER + LOGO ENTRE CONTROLES
    ========================================================== */
 
@@ -3003,11 +3061,7 @@ body:has(.orders-section) {
 
 
 
-/* Icono de eliminar sin depender de Font Awesome */
-.cart-drawer-item-remove i {
-    display: none;
-}
-
+/* Icono de eliminar sin depender de Font Awesome (el botón no lleva <i>) */
 .cart-drawer-item-remove::before {
     width: 18px;
     height: 18px;
@@ -4298,6 +4352,15 @@ SE QUEDE FIJO
     z-index: 400;
 }
 
+/* En celular el header baja a z-index 100 y el menú de categorías vive dentro de él,
+   así que este submenú debe quedar por debajo del header (100) y del fondo oscuro (99)
+   para no tapar el menú al desplegarlo */
+@media (max-width: 768px) {
+    .secondary-nav {
+        z-index: 90;
+    }
+}
+
 
 /*PARA LOS BOTONES DE INICIAR CON GOOGLE O FACEBOOK*/
 .oauth-divider { display:flex; align-items:center; text-align:center; margin:1.2rem 0; color:#888; font-size:.85rem; }
@@ -4356,4 +4419,49 @@ PARA LOS MODALES DE LOS AVISOOOOOS
 .store-alert-btn {
     background: #111; color: #fff; border: none;
     padding: .6rem 1.6rem; border-radius: 8px; cursor: pointer; font-weight: 600;
+}
+.store-alert-icon-info { background: #111; }
+.store-alert-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+.store-alert-btn-secondary { background: #fff; color: #111; border: 1px solid #ccc; }
+.store-alert-btn-secondary:hover { background: #f3f3f3; }
+.store-alert-btn-danger { background: #EF4444; }
+
+/* Botón "Ver más" en Mis pedidos */
+.orders-load-more {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0 2rem;
+}
+.orders-load-more-btn {
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 2.4rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.orders-load-more-btn:hover:not(:disabled) {
+    background: #39FF14;
+    color: #111;
+}
+.orders-load-more-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Submenú: la sección en la que está el cliente se queda en verde (la clase la pone Blade) */
+.secondary-nav-link.active {
+    color: #39FF14;
+    font-weight: 600;
+}
+
+/* Al filtrar o cambiar de página, el scroll se detiene justo DEBAJO del header y
+   del submenú fijos, para que la primera fila de tarjetas no quede tapada */
+#products-container,
+#ofertas-container,
+#subastas-container {
+    scroll-margin-top: calc(var(--header-height, 150px) + 6rem);
 }

@@ -2,5 +2,6 @@
 namespace App\Application\Abstractions\Order;
 
 interface IListMyOrdersUseCase {
-    public function execute(int $userId): array; // OrderDTO[]
+    // ['data' => OrderDTO[], 'meta' => [current_page, last_page, per_page, total]]
+    public function execute(int $userId, int $page = 1, int $perPage = 10): array;
 }

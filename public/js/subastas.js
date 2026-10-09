@@ -7,6 +7,7 @@ let auctionGalleryImages = [];
 const PER_PAGE_SUBASTAS = 24;
 let subastasCurrentPage = 1;
 let subastasTotalPages = 1;
+let subastasCategoriaId = null; // null = todas las categorías
 
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("subastas-container");
@@ -19,11 +20,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+// La llama el menú de categorías (main.js) cuando estamos en la página de subastas
+window.filtrarSubastasPorCategoria = function(categoryId) {
+    subastasCategoriaId = categoryId;
+    cargarSubastas(1);
+    document.getElementById("subastas-container")?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 async function cargarSubastas(page = 1) {
     const container = document.getElementById("subastas-container");
 
     try {
-        const response = await fetch(`/api/products/on-auction?page=${page}&per_page=${PER_PAGE_SUBASTAS}`, { cache: 'no-store' });
+        const params = new URLSearchParams({ page, per_page: PER_PAGE_SUBASTAS });
+        if (subastasCategoriaId !== null) params.set('category_id', subastasCategoriaId);
+
+        const response = await fetch(`/api/products/on-auction?${params.toString()}`, { cache: 'no-store' });
         const data = await response.json();
 
         if (!data.success) throw new Error(data.message || 'No se pudieron cargar las subastas.');
@@ -36,7 +47,7 @@ async function cargarSubastas(page = 1) {
             container.innerHTML = `
                 <div class="loading-text" style="grid-column: 1 / -1;">
                     <i class="fas fa-gavel fa-2x" style="margin-bottom: 0.5rem; display: block; color: #ccc;"></i>
-                    No hay subastas activas en este momento.
+                    ${subastasCategoriaId !== null ? 'No hay subastas activas en esta categoría.' : 'No hay subastas activas en este momento.'}
                 </div>`;
             document.getElementById("subastasPagination").innerHTML = '';
             return;
@@ -411,7 +422,7 @@ async function cargarHistorialPujas(productId) {
 window.enviarPuja = async function() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-        alert('Debes iniciar sesión para pujar.');
+        await mostrarAviso('Debes iniciar sesión para pujar.', 'info');
         window.location.href = '/login';
         return;
     }

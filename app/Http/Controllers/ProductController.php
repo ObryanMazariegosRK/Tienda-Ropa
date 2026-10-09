@@ -218,11 +218,10 @@ class ProductController extends Controller{
     public function index(Request $request): JsonResponse
     {
         try {
-            $page = max(1, (int) $request->query('page', 1));
-            $perPage = (int) $request->query('per_page', 24);
+            [$page, $perPage, $categoryId] = $this->leerFiltrosDeCatalogo($request);
             $onOffer = filter_var($request->query('on_offer', false), FILTER_VALIDATE_BOOLEAN);
 
-            $result = $this->getPaginatedProductsUseCase->execute($page, $perPage, 'available', null, 'direct', $onOffer);
+            $result = $this->getPaginatedProductsUseCase->execute($page, $perPage, 'available', $categoryId, 'direct', $onOffer);
 
             return response()->json([
                 'success' => true,
@@ -261,10 +260,9 @@ class ProductController extends Controller{
     public function onAuction(Request $request): JsonResponse
     {
         try {
-            $page = max(1, (int) $request->query('page', 1));
-            $perPage = (int) $request->query('per_page', 24);
+            [$page, $perPage, $categoryId] = $this->leerFiltrosDeCatalogo($request);
 
-            $result = $this->getPaginatedProductsUseCase->execute($page, $perPage, 'available', null, 'auction');
+            $result = $this->getPaginatedProductsUseCase->execute($page, $perPage, 'available', $categoryId, 'auction');
 
             return response()->json([
                 'success' => true,
@@ -276,6 +274,15 @@ class ProductController extends Controller{
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-    
 
+    // Página, tamaño de página (acotado para que nadie pida el catálogo entero de golpe)
+    // y categoría opcional; la categoría incluye también sus subcategorías
+    private function leerFiltrosDeCatalogo(Request $request): array
+    {
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = min(60, max(1, (int) $request->query('per_page', 24)));
+        $categoryId = (int) $request->query('category_id', 0);
+
+        return [$page, $perPage, $categoryId > 0 ? $categoryId : null];
+    }
 }

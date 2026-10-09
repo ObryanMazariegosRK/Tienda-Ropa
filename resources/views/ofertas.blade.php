@@ -86,9 +86,10 @@
 
     <main>
         <div class="secondary-nav">
-            <a href="/" class="secondary-nav-link">Tienda Principal</a>
-            <a href="/ofertas" class="secondary-nav-link">Rebajas</a>
-            <a href="/subastas" class="secondary-nav-link">Subastas</a>
+            {{-- La clase active marca en qué sección está el cliente --}}
+            <a href="/" class="secondary-nav-link {{ request()->is('/') ? 'active' : '' }}" @if(request()->is('/')) aria-current="page" @endif>Tienda Principal</a>
+            <a href="/ofertas" class="secondary-nav-link {{ request()->is('ofertas') ? 'active' : '' }}" @if(request()->is('ofertas')) aria-current="page" @endif>Rebajas</a>
+            <a href="/subastas" class="secondary-nav-link {{ request()->is('subastas') ? 'active' : '' }}" @if(request()->is('subastas')) aria-current="page" @endif>Subastas</a>
         </div>
 
         <section class="products-section">

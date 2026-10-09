@@ -309,14 +309,14 @@ const loadCategories = async () => {
                 if (hijos.length > 0) {
                     dropdownHtml = `<ul class="dropdown-menu">`;
                     hijos.forEach(hijo => {
-                        dropdownHtml += `<li><a href="#" onclick="filtrarPorCategoria(${hijo.id}, '${hijo.name}', event)">${hijo.name}</a></li>`;
+                        dropdownHtml += `<li><a href="#" data-nombre="${escapeHtml(hijo.name)}" onclick="filtrarPorCategoria(${hijo.id}, this.dataset.nombre, event)">${escapeHtml(hijo.name)}</a></li>`;
                     });
                     dropdownHtml += `</ul>`;
                 }
 
                 const liPadreHtml = `
                     <li class="nav-item">
-                        <a href="#" onclick="filtrarPorCategoria(${padre.id}, '${padre.name}', event)">${padre.name}</a>
+                        <a href="#" data-nombre="${escapeHtml(padre.name)}" onclick="filtrarPorCategoria(${padre.id}, this.dataset.nombre, event)">${escapeHtml(padre.name)}</a>
                         ${dropdownHtml}
                     </li>
                 `;
@@ -391,11 +391,14 @@ const PER_PAGE = 24;
 let currentPage = 1;
 let totalPages = 1;
 let modoSoloOfertas = false;
+let categoriaActualId = null; // null = todas las categorías
 
 const loadFeaturedProducts = async (page = 1, hacerScroll = false) => {
     try {
         const params = new URLSearchParams({ page, per_page: PER_PAGE });
         if (modoSoloOfertas) params.set('on_offer', 'true');
+        // El backend filtra por la categoría y sus subcategorías en TODO el catálogo
+        if (categoriaActualId !== null) params.set('category_id', categoriaActualId);
 
         const response = await fetch(`/api/products?${params.toString()}`);
         const result = await response.json();
@@ -412,8 +415,17 @@ const loadFeaturedProducts = async (page = 1, hacerScroll = false) => {
                 productsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else {
-            productsContainer.innerHTML = `<p class="loading-text">No hay productos disponibles en este momento.</p>`;
+            allProducts = [];
+            if (categoriaActualId !== null) {
+                renderizarProductos([]); // "No se encontraron productos en esta categoría."
+            } else {
+                productsContainer.innerHTML = `<p class="loading-text">No hay productos disponibles en este momento.</p>`;
+            }
             document.getElementById('pagination').innerHTML = '';
+
+            if (hacerScroll) {
+                productsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
     } catch (error) {
         console.error("Error al cargar los productos:", error);
@@ -590,6 +602,8 @@ window.toggleQuickView = function(productId, event) {
     panel.className = 'quickview-panel';
     panel.id = `quickview-${productId}`;
     panel.innerHTML = construirQuickViewHtml(product);
+    // En computadora la imagen del panel mide lo mismo que la de la tarjeta
+    panel.style.setProperty('--card-width', `${card.getBoundingClientRect().width}px`);
 
     // Lo insertamos como hermano de la tarjeta: al tener grid-column:1/-1
     // en CSS, el grid lo empuja automáticamente a una fila nueva de ancho completo
@@ -713,21 +727,13 @@ window.filtrarPorCategoria = function(categoryId, categoryName, event) {
         titleElement.textContent = categoryName.toUpperCase();
     }
 
-    // Caso "TODOS"
-    if (categoryId === 'all') {
-        renderizarProductos(allProducts);
-    } else {
-        // Obtenemos los IDs del padre y todas sus subcategorías (hijas)
-        const idsFiltrables = [categoryId]; 
-        const subcategoriasHijas = globalCategories.filter(cat => cat.parentCategoryId === categoryId);
-        subcategoriasHijas.forEach(hija => idsFiltrables.push(hija.id));
-
-        const productosFiltrados = allProducts.filter(prod => {
-            const prodCatId = prod.categoryId || prod.category_id;
-            return idsFiltrables.includes(prodCatId);
-        });
-
-        renderizarProductos(productosFiltrados);
+    // Pedimos al servidor la página 1 de esa categoría (incluye sus subcategorías).
+    // Antes se filtraba solo la página cargada y se perdían productos de otras páginas.
+    categoriaActualId = categoryId === 'all' ? null : categoryId;
+    if (productsContainer) {
+        loadFeaturedProducts(1, true); // true = al terminar de cargar, sube al inicio de las tarjetas
+    } else if (typeof window.filtrarSubastasPorCategoria === 'function') {
+        window.filtrarSubastasPorCategoria(categoriaActualId);
     }
 
     // --- AUTO-CIERRE DEL MENÚ MÓVIL ---
@@ -754,15 +760,6 @@ window.filtrarPorCategoria = function(categoryId, categoryName, event) {
         document.body.classList.remove("mobile-menu-open");
     }
 
-    /* En móvil y computadora: llevar al catálogo filtrado */
-    if (productsContainer) {
-        setTimeout(() => {
-            productsContainer.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }, 150);
-    }
 
 
 };
@@ -804,7 +801,7 @@ window.agregarAlCarrito = async function(productId, event) {
 
     const token = localStorage.getItem('auth_token');
     if (!token) {
-        alert('Debes iniciar sesión para agregar productos al carrito.');
+        await mostrarAviso('Debes iniciar sesión para agregar productos al carrito.', 'info');
         window.location.href = '/login';
         return;
     }
@@ -831,7 +828,7 @@ window.agregarAlCarrito = async function(productId, event) {
         await abrirCarrito(); //antes tenías alert(), ahora abre el drawer directamente
 
     } catch (error) {
-        alert(error.message);
+        mostrarAviso(error.message, 'warning');
     }
 };
 
@@ -972,9 +969,7 @@ function renderizarCarritoDrawer(cart) {
                     ${item.originalPrice ? `<span class="price-original">Q${item.originalPrice.toFixed(2)}</span>` : ''}
                 </div>
             </div>
-            <button class="cart-drawer-item-remove" onclick="eliminarDelCarritoDrawer(${item.id})" aria-label="Eliminar producto">
-                <i class="fas fa-trash"></i>
-            </button>
+            <button class="cart-drawer-item-remove" onclick="eliminarDelCarritoDrawer(${item.id})" aria-label="Eliminar producto"></button>
         </div>
     `).join('');
 
@@ -983,7 +978,6 @@ function renderizarCarritoDrawer(cart) {
             <span>Subtotal:</span>
             <span>${cart.total.toFixed(2)} GTQ</span>
         </div>
-        <p class="cart-drawer-note">Impuesto incluido. Envío calculado en la pantalla de pago.</p>
         <button class="cart-drawer-checkout-btn" onclick="iniciarCheckout()">
             PAGAR
         </button>
@@ -1011,7 +1005,7 @@ window.eliminarDelCarritoDrawer = async function(cartItemId) {
         actualizarContadorCarrito(data.data.itemCount);
 
     } catch (error) {
-        alert(error.message);
+        mostrarAviso(error.message);
     }
 };
 
@@ -1347,7 +1341,12 @@ const ORDER_STATUS_ICONS = {
     cancelled: 'fa-circle-xmark'
 };
 
-async function cargarMisPedidos(container) {
+const PEDIDOS_POR_PAGINA = 10;
+let misPedidosPagina = 0;
+
+// Carga los pedidos por lotes: page 1 reemplaza el contenido, las siguientes
+// páginas se agregan debajo al presionar "Ver más"
+async function cargarMisPedidos(container, page = 1) {
     const token = localStorage.getItem('auth_token');
 
     if (!token) {
@@ -1360,7 +1359,7 @@ async function cargarMisPedidos(container) {
     }
 
     try {
-        const response = await fetch('/api/orders/mine', {
+        const response = await fetch(`/api/orders/mine?page=${page}&per_page=${PEDIDOS_POR_PAGINA}`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -1385,16 +1384,25 @@ async function cargarMisPedidos(container) {
             throw new Error(data.message || 'No se pudieron cargar tus pedidos.');
         }
 
-        renderizarMisPedidos(container, data.data);
+        misPedidosPagina = data.meta.current_page;
+        renderizarMisPedidos(container, data.data, data.meta);
 
     } catch (error) {
         console.error(error);
-        container.innerHTML = `<p class="loading-text">Ocurrió un error al cargar tus pedidos.</p>`;
+        if (page === 1) {
+            container.innerHTML = `<p class="loading-text">Ocurrió un error al cargar tus pedidos.</p>`;
+        } else {
+            mostrarAviso('No se pudieron cargar más pedidos. Intenta de nuevo.');
+            const btn = container.querySelector('.orders-load-more-btn');
+            if (btn) { btn.disabled = false; btn.textContent = 'Ver más'; }
+        }
     }
 }
 
-function renderizarMisPedidos(container, orders) {
-    if (orders.length === 0) {
+function renderizarMisPedidos(container, orders, meta) {
+    const esPrimeraPagina = meta.current_page === 1;
+
+    if (esPrimeraPagina && orders.length === 0) {
         container.innerHTML = `
             <div class="orders-empty">
                 <p>Aún no tienes pedidos realizados.</p>
@@ -1403,45 +1411,69 @@ function renderizarMisPedidos(container, orders) {
         return;
     }
 
-    container.innerHTML = orders.map(order => {
-        const fecha = new Date(order.createdAt).toLocaleDateString('es-GT', {
-            year: 'numeric', month: 'long', day: 'numeric'
+    if (esPrimeraPagina) {
+        container.innerHTML = `<div class="orders-list"></div><div class="orders-load-more"></div>`;
+    }
+
+    container.querySelector('.orders-list')
+        .insertAdjacentHTML('beforeend', orders.map(construirTarjetaPedido).join(''));
+
+    // Botón "Ver más" con los pedidos que faltan por cargar
+    const cargados = Math.min(meta.current_page * meta.per_page, meta.total);
+    const restantes = meta.total - cargados;
+    const loadMore = container.querySelector('.orders-load-more');
+    loadMore.innerHTML = restantes > 0
+        ? `<button type="button" class="orders-load-more-btn">Ver más (${restantes} restante${restantes === 1 ? '' : 's'})</button>`
+        : '';
+
+    const btn = loadMore.querySelector('.orders-load-more-btn');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            btn.textContent = 'Cargando...';
+            cargarMisPedidos(container, misPedidosPagina + 1);
         });
+    }
+}
 
-        const statusLabel = ORDER_STATUS_LABELS[order.status] || order.status;
-        const statusIcon = ORDER_STATUS_ICONS[order.status] || 'fa-circle-question';
-        const itemsHtml = order.items.map(item => `
-            <div class="order-item-row">
-                <img src="${item.productImage ? '/storage/' + item.productImage : '/image/ImagenNoDefinida.png'}" 
-                     alt="${item.productName}" class="order-item-image">
-                <div class="order-item-info">
-                    <p class="order-item-name">${item.productName}</p>
-                    <p class="order-item-price">${item.unitPrice.toFixed(2)} GTQ</p>
-                </div>
+function construirTarjetaPedido(order) {
+    const fecha = new Date(order.createdAt).toLocaleDateString('es-GT', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const statusLabel = ORDER_STATUS_LABELS[order.status] || order.status;
+    const statusIcon = ORDER_STATUS_ICONS[order.status] || 'fa-circle-question';
+    const itemsHtml = order.items.map(item => `
+        <div class="order-item-row">
+            <img src="${item.productImage ? '/storage/' + item.productImage : '/image/ImagenNoDefinida.png'}" 
+                 alt="${item.productName}" class="order-item-image">
+            <div class="order-item-info">
+                <p class="order-item-name">${item.productName}</p>
+                <p class="order-item-price">${item.unitPrice.toFixed(2)} GTQ</p>
             </div>
-        `).join('');
+        </div>
+    `).join('');
 
-        return `
-            <div class="order-card">
-                <div class="order-card-header">
-                    <div>
-                        <p class="order-card-id">Pedido #${order.id}</p>
-                        <p class="order-card-date">${fecha}</p>
-                    </div>
-                    ${construirBarraDeEstado(order.status)}
+    return `
+        <div class="order-card">
+            <div class="order-card-header">
+                <div>
+                    <p class="order-card-id">Pedido #${order.id}</p>
+                    <p class="order-card-date">${fecha}</p>
                 </div>
-
-                <div class="order-card-items">
-                    ${itemsHtml}
-                </div>
-
-                <div class="order-card-footer">
-                    <span>Total</span>
-                    <span class="order-card-total">${order.total.toFixed(2)} GTQ</span>
-                </div>
+                ${construirBarraDeEstado(order.status)}
             </div>
-        `;
-    }).join('');
+
+            <div class="order-card-items">
+                ${itemsHtml}
+            </div>
+
+            <div class="order-card-footer">
+                <span>Total</span>
+                <span class="order-card-total">${order.total.toFixed(2)} GTQ</span>
+            </div>
+        </div>
+    `;
 }
 
 function construirBarraDeEstado(status) {
@@ -1532,7 +1564,10 @@ function renderLoggedInUI(container, name) {
 }
 
 window.confirmarCerrarSesion = async function() {
-    if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+    const confirmado = await mostrarConfirmacion('¿Estás seguro de que quieres cerrar sesión?', {
+        tipo: 'info', textoConfirmar: 'Cerrar sesión'
+    });
+    if (!confirmado) return;
 
     const token = localStorage.getItem('auth_token');
 
@@ -1641,7 +1676,10 @@ window.cerrarModalGanador = function() {
 
 
 window.confirmarCancelarSubasta = async function(auctionId) {
-    if (!confirm('¿Seguro que no quieres este producto? Se le ofrecerá al siguiente postor.')) return;
+    const confirmado = await mostrarConfirmacion('¿Seguro que no quieres este producto? Se le ofrecerá al siguiente postor.', {
+        textoConfirmar: 'Sí, rechazarlo', peligro: true
+    });
+    if (!confirmado) return;
 
     const token = localStorage.getItem('auth_token');
     try {
@@ -1652,11 +1690,11 @@ window.confirmarCancelarSubasta = async function(auctionId) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'No se pudo procesar tu decisión.');
 
-        alert('Entendido, se le ha ofrecido el producto al siguiente postor.');
+        mostrarAviso('Entendido, se le ha ofrecido el producto al siguiente postor.', 'success');
         cerrarModalGanador();
 
     } catch (error) {
-        alert(error.message);
+        mostrarAviso(error.message);
     }
 };
 
@@ -1965,12 +2003,15 @@ window.marcarDireccionPredeterminada = async function(id) {
         if (!response.ok) throw new Error(data.message || 'No se pudo actualizar.');
         cargarDireccionesModal();
     } catch (error) {
-        alert(error.message);
+        mostrarAviso(error.message);
     }
 };
 
 window.eliminarDireccionModal = async function(id) {
-    if (!confirm('¿Eliminar esta dirección?')) return;
+    const confirmado = await mostrarConfirmacion('¿Eliminar esta dirección?', {
+        textoConfirmar: 'Eliminar', peligro: true
+    });
+    if (!confirmado) return;
 
     const token = localStorage.getItem('auth_token');
     try {
@@ -1982,7 +2023,7 @@ window.eliminarDireccionModal = async function(id) {
         if (!response.ok) throw new Error(data.message || 'No se pudo eliminar.');
         cargarDireccionesModal();
     } catch (error) {
-        alert(error.message);
+        mostrarAviso(error.message);
     }
 };
 
@@ -2044,7 +2085,7 @@ window.guardarEdicionDireccion = async function(id) {
     const addressLine = document.getElementById(`editAddrLine_${id}`).value.trim();
 
     if (!label || !addressLine) {
-        alert('Completa ambos campos.');
+        mostrarAviso('Completa ambos campos.', 'warning');
         return;
     }
 
@@ -2061,7 +2102,7 @@ window.guardarEdicionDireccion = async function(id) {
         cargarDireccionesModal();
 
     } catch (error) {
-        alert(error.message);
+        mostrarAviso(error.message);
     }
 };
 
@@ -2144,6 +2185,8 @@ async function desuscribirPush() {
 
 //PARA LOS MODALES DE AVISOSSSSSS
 //=============
+// Aviso con el estilo de la tienda (reemplaza a alert()).
+// Devuelve una promesa que se resuelve al cerrarlo, por si hay que hacer algo después.
 function mostrarAviso(mensaje, tipo = 'error') {
     let overlay = document.getElementById('store-alert-overlay');
     if (!overlay) {
@@ -2151,7 +2194,7 @@ function mostrarAviso(mensaje, tipo = 'error') {
         overlay.id = 'store-alert-overlay';
         overlay.className = 'store-alert-overlay';
         overlay.innerHTML = `
-            <div class="store-alert-box">
+            <div class="store-alert-box" role="alertdialog" aria-modal="true">
                 <div class="store-alert-icon"></div>
                 <p class="store-alert-message"></p>
                 <button type="button" class="store-alert-btn">Entendido</button>
@@ -2160,15 +2203,70 @@ function mostrarAviso(mensaje, tipo = 'error') {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay || e.target.classList.contains('store-alert-btn')) {
                 overlay.classList.remove('active');
+                if (overlay._alCerrar) overlay._alCerrar();
             }
         });
     }
 
-    const iconos = { success: '✓', error: '✕', warning: '!' };
+    const iconos = { success: '✓', error: '✕', warning: '!', info: 'i' };
     const iconEl = overlay.querySelector('.store-alert-icon');
     iconEl.textContent = iconos[tipo] || 'i';
     iconEl.className = `store-alert-icon store-alert-icon-${tipo}`;
     overlay.querySelector('.store-alert-message').textContent = mensaje;
     overlay.classList.add('active');
+    overlay.querySelector('.store-alert-btn').focus();
+
+    return new Promise(resolve => { overlay._alCerrar = resolve; });
+}
+
+// Confirmación con el estilo de la tienda (reemplaza a confirm()).
+// Uso: if (!await mostrarConfirmacion('¿Seguro?')) return;
+function mostrarConfirmacion(mensaje, opciones = {}) {
+    const {
+        tipo = 'warning',
+        textoConfirmar = 'Aceptar',
+        textoCancelar = 'Cancelar',
+        peligro = false,
+    } = opciones;
+
+    let overlay = document.getElementById('store-confirm-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'store-confirm-overlay';
+        overlay.className = 'store-alert-overlay';
+        overlay.innerHTML = `
+            <div class="store-alert-box" role="alertdialog" aria-modal="true">
+                <div class="store-alert-icon"></div>
+                <p class="store-alert-message"></p>
+                <div class="store-alert-actions">
+                    <button type="button" class="store-alert-btn store-alert-btn-secondary" data-respuesta="no"></button>
+                    <button type="button" class="store-alert-btn" data-respuesta="si"></button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => {
+            const respuesta = e.target.dataset ? e.target.dataset.respuesta : undefined;
+            if (e.target === overlay || respuesta) {
+                overlay.classList.remove('active');
+                if (overlay._responder) overlay._responder(respuesta === 'si');
+            }
+        });
+    }
+
+    const iconos = { success: '✓', error: '✕', warning: '!', info: 'i' };
+    const iconEl = overlay.querySelector('.store-alert-icon');
+    iconEl.textContent = iconos[tipo] || '?';
+    iconEl.className = `store-alert-icon store-alert-icon-${tipo}`;
+    overlay.querySelector('.store-alert-message').textContent = mensaje;
+
+    const btnSi = overlay.querySelector('[data-respuesta="si"]');
+    btnSi.textContent = textoConfirmar;
+    btnSi.classList.toggle('store-alert-btn-danger', peligro);
+    overlay.querySelector('[data-respuesta="no"]').textContent = textoCancelar;
+
+    overlay.classList.add('active');
+    btnSi.focus();
+
+    return new Promise(resolve => { overlay._responder = resolve; });
 }
 

@@ -15,14 +15,10 @@
     
     <header>
         <div class="header-top">
-            <div class="mobile-menu-btn" id="mobile-menu-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M4 6l16 0" />
-                    <path d="M4 12l16 0" />
-                    <path d="M4 18l16 0" />
-                </svg>
-            </div>
+            <!-- Esta vista no tiene menú de categorías: en lugar del botón ☰ dejamos un
+                 espacio invisible del mismo tamaño para que el logo quede centrado igual
+                 que en las demás páginas (en computadora .mobile-menu-btn ya está oculto) -->
+            <div class="mobile-menu-btn" aria-hidden="true" style="visibility: hidden; width: 28px; height: 28px;"></div>
 
             <div class="container-logo">
                 <a href="/" class="store-title" aria-label="TECPÁN — Inicio">

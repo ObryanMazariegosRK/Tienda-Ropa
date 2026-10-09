@@ -40,8 +40,11 @@ class OrderController extends Controller
 
     public function myOrders(Request $request): JsonResponse
     {
-        $orders = $this->listMyOrdersUseCase->execute($request->user()->id);
-        return response()->json(['success' => true, 'data' => $orders], 200);
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = min(30, max(1, (int) $request->query('per_page', 10)));
+
+        $result = $this->listMyOrdersUseCase->execute($request->user()->id, $page, $perPage);
+        return response()->json(['success' => true, 'data' => $result['data'], 'meta' => $result['meta']], 200);
     }
 
     // Endpoint para el panel del administrador

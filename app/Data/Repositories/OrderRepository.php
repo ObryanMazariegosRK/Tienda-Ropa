@@ -42,6 +42,22 @@ class OrderRepository implements IOrderRepository
         return $models->map(fn($m) => $this->mapToDomain($m))->toArray();
     }
 
+    public function paginateByUserId(int $userId, int $page, int $perPage): array
+    {
+        $paginator = OrderModel::where('user_id', $userId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return [
+            'items' => collect($paginator->items())->map(fn($m) => $this->mapToDomain($m))->toArray(),
+            'total' => $paginator->total(),
+            'lastPage' => $paginator->lastPage(),
+            'currentPage' => $paginator->currentPage(),
+            'perPage' => $paginator->perPage(),
+        ];
+    }
+
     private const ACTIVE_STATUSES = ['pending_payment', 'confirmed', 'preparing', 'on_route'];
     private const HISTORY_STATUSES = ['delivered', 'cancelled'];
 
