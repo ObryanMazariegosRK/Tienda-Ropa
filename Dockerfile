@@ -26,7 +26,12 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     pdo_mysql \
     zip \
     gd \
-    exif
+    exif \
+    opcache
+
+# OPcache y número de procesos de PHP (ver los comentarios dentro de cada archivo)
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/www-tienda.conf /usr/local/etc/php-fpm.d/zz-tienda.conf
     
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

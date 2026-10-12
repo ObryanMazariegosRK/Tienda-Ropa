@@ -7,6 +7,8 @@ interface IAuctionRepository
     public function create(Auction $auction): Auction;
     public function findById(int $id): ?Auction;
     public function findByProductId(int $productId): ?Auction;
+    /** @return array<int, Auction> la subasta más reciente de cada producto, indexada por product_id */
+    public function findLatestByProductIds(array $productIds): array;
     // Variantes con bloqueo de fila: llamarlas solo dentro de DB::transaction
     public function findByIdForUpdate(int $id): ?Auction;
     public function findByProductIdForUpdate(int $productId): ?Auction;

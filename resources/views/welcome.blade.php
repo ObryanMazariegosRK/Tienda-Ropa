@@ -109,7 +109,7 @@
 
         <section class="products-section">
             <div class="products-container" id="products-container">
-                <p class="loading-text" style="text-align: center; width: 100%;">Cargando catálogo...</p>
+                @include('partials.tarjetas-cargando', ['texto' => 'Cargando catálogo...'])
             </div>
 
             <nav class="pagination" id="pagination" aria-label="Paginación de productos"></nav>

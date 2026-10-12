@@ -2854,6 +2854,12 @@ body:has(.orders-section) {
     background: #FFFFFF;
     color: #111111;
     border-radius: 22px 0 0 22px;
+    /* La sombra solo con el carrito abierto: cerrado queda fuera de la pantalla
+       y su sombra se asomaba como una franja gris en el borde derecho */
+    box-shadow: none;
+}
+
+.cart-drawer.active {
     box-shadow: -12px 0 40px rgba(0, 0, 0, 0.28);
 }
 
@@ -4538,4 +4544,45 @@ PARA LOS MODALES DE LOS AVISOOOOOS
 .legal-back {
     font-size: 1.4rem;
     text-decoration: none;
+}
+
+/* Tarjetas "fantasma" mientras cargan los productos (partials/tarjetas-cargando) */
+.skeleton-card,
+.skeleton-card:hover {
+    transform: none;
+    pointer-events: none;
+}
+.skeleton-box,
+.skeleton-line {
+    background: linear-gradient(90deg, #efefef 25%, #f7f7f7 50%, #efefef 75%);
+    background-size: 200% 100%;
+    animation: skeleton-brillo 1.3s ease-in-out infinite;
+}
+.skeleton-line {
+    display: block;
+    height: 1.1rem;
+    width: 80%;
+    border-radius: 4px;
+}
+.skeleton-line-short {
+    width: 40%;
+}
+@keyframes skeleton-brillo {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .skeleton-box,
+    .skeleton-line {
+        animation: none;
+    }
+}
+/* Texto solo para lectores de pantalla (no ocupa una celda de la cuadrícula) */
+.skeleton-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }

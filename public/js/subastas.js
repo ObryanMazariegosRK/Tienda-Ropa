@@ -53,7 +53,7 @@ async function cargarSubastas(page = 1) {
             return;
         }
 
-        await Promise.all(subastasCache.map(p => actualizarEstadoSubasta(p.id)));
+        await actualizarEstadosSubastas(subastasCache.map(p => p.id));
 
         renderizarSubastas();
         renderizarPaginacionSubastas();
@@ -83,6 +83,20 @@ function renderizarPaginacionSubastas() {
             document.getElementById("subastas-container").scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
+}
+
+// Estado de todas las subastas de la página en una sola petición (antes era una por subasta)
+async function actualizarEstadosSubastas(productIds) {
+    if (productIds.length === 0) return;
+    try {
+        const response = await fetch(`/api/auctions/status?product_ids=${productIds.join(',')}`, { cache: 'no-store' });
+        const data = await response.json();
+        if (data.success && data.data) {
+            Object.values(data.data).forEach(estado => { auctionStatusById[estado.productId] = estado; });
+        }
+    } catch (error) {
+        console.error('Error al consultar el estado de las subastas:', error);
+    }
 }
 
 async function actualizarEstadoSubasta(productId) {
@@ -227,7 +241,7 @@ function actualizarValoresGrid() {
 function iniciarPollingGrid() {
     clearInterval(auctionPollTimer);
     auctionPollTimer = setInterval(async () => {
-        await Promise.all(subastasCache.map(p => actualizarEstadoSubasta(p.id)));
+        await actualizarEstadosSubastas(subastasCache.map(p => p.id));
         actualizarValoresGrid(); // 👈 ya no llama a renderizarSubastas()
     }, 4000);
 }

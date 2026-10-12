@@ -5,6 +5,7 @@ use App\Application\Abstractions\Auction\ICheckoutWonAuctionUseCase;
 use App\Application\Abstractions\Auction\IDeclineAuctionWinUseCase;
 use App\Application\Abstractions\Auction\IExtendAuctionDurationUseCase;
 use App\Application\Abstractions\Auction\IGetAuctionStatusUseCase;
+use App\Application\Abstractions\Auction\IGetAuctionStatusesUseCase;
 use App\Application\Abstractions\Auction\IGetMyActiveBidsCountUseCase;
 use App\Application\Abstractions\Auction\IGetMyAuctionBidStatusUseCase;
 use App\Application\Abstractions\Auction\IGetMyWonAuctionsUseCase;
@@ -24,7 +25,8 @@ class AuctionController extends Controller
         private IExtendAuctionDurationUseCase $extendDuration,
         private IDeclineAuctionWinUseCase $declineAuctionWin,
         private IGetMyActiveBidsCountUseCase $getMyActiveBidsCount,
-        private IGetMyAuctionBidStatusUseCase $getMyAuctionBidStatus
+        private IGetMyAuctionBidStatusUseCase $getMyAuctionBidStatus,
+        private IGetAuctionStatusesUseCase $getStatuses
 
         ) {}
 
@@ -33,6 +35,24 @@ class AuctionController extends Controller
     {
         $auction = $this->getStatus->execute($productId);
         return response()->json(['success' => true, 'data' => $auction], 200);
+    }
+
+    // Estado de varias subastas a la vez: ?product_ids=1,2,3 (máximo 60, lo que cabe en una página)
+    public function statuses(Request $request): JsonResponse
+    {
+        $ids = collect(explode(',', (string) $request->query('product_ids')))
+            ->map(fn($id) => trim($id))
+            ->filter(fn($id) => ctype_digit($id))
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty() || $ids->count() > 60) {
+            return response()->json(['success' => false, 'message' => 'Indica entre 1 y 60 productos.'], 422);
+        }
+
+        // Objeto { productId: estado }; los productos sin subasta no aparecen
+        return response()->json(['success' => true, 'data' => (object) $this->getStatuses->execute($ids->all())], 200);
     }
 
     public function bid(Request $request, int $productId): JsonResponse

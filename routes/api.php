@@ -46,6 +46,7 @@ Route::post('/resend-code', ResendVerificationCodeController::class)->middleware
 
 //Cualquiera puede ver el estado de la subasta (polling) y el historial
 Route::get('/auctions/product/{productId}/status', [AuctionController::class, 'status']);
+Route::get('/auctions/status', [AuctionController::class, 'statuses']); // varias a la vez: ?product_ids=1,2,3
 Route::get('/auctions/product/{productId}/bids', [AuctionController::class, 'bidsHistory']);
 
 //Banner publico

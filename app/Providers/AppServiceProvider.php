@@ -394,6 +394,8 @@ class AppServiceProvider extends ServiceProvider
          AuctionBidRepository::class);
         $this->app->bind(IGetAuctionStatusUseCase::class,
          GetAuctionStatusUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\Auction\IGetAuctionStatusesUseCase::class,
+         \App\Application\UseCases\Auction\GetAuctionStatusesUseCase::class);
         $this->app->bind(IPlaceBidUseCase::class,
          PlaceBidUseCase::class);
         $this->app->bind(IListAuctionBidsUseCase::class,

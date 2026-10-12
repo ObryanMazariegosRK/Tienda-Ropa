@@ -35,6 +35,17 @@ class AuctionRepository implements IAuctionRepository
         return $model ? $this->mapToDomain($model) : null;
     }
 
+    public function findLatestByProductIds(array $productIds): array
+    {
+        // Ordenadas de la más vieja a la más reciente: keyBy se queda con la última de cada producto
+        return AuctionModel::whereIn('product_id', $productIds)
+            ->orderBy('created_at')->orderBy('id')
+            ->get()
+            ->keyBy('product_id')
+            ->map(fn($model) => $this->mapToDomain($model))
+            ->all();
+    }
+
     public function findByIdForUpdate(int $id): ?Auction
     {
         $model = AuctionModel::whereKey($id)->lockForUpdate()->first();

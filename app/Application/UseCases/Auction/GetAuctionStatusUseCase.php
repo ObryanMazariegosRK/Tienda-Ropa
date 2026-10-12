@@ -12,19 +12,6 @@ class GetAuctionStatusUseCase implements IGetAuctionStatusUseCase
     public function execute(int $productId): ?AuctionDTO
     {
         $auction = $this->repo->findByProductId($productId);
-        if (!$auction) return null;
-
-        $secondsRemaining = max(0, $auction->getEndDate()->getTimestamp() - time());
-
-        return new AuctionDTO(
-            id: $auction->getId(),
-            productId: $auction->getProductId(),
-            currentPrice: $auction->getCurrentPrice(),
-            minIncrement: $auction->getMinIncrement(),
-            status: $auction->getStatus()->value,
-            endDate: $auction->getEndDate()->format('Y-m-d H:i:s'),
-            currentWinnerUserId: $auction->getCurrentWinnerUserId(),
-            secondsRemaining: $secondsRemaining
-        );
+        return $auction ? AuctionDTO::fromEntity($auction) : null;
     }
 }

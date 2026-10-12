@@ -101,7 +101,7 @@
         <section class="products-section">
             <h2>REBAJAS</h2>
             <div class="products-container" id="ofertas-container">
-                <p class="loading-text" style="text-align: center; width: 100%;">Cargando ofertas...</p>
+                @include('partials.tarjetas-cargando', ['texto' => 'Cargando ofertas...'])
             </div>
             <nav class="pagination" id="pagination" aria-label="Paginación de ofertas"></nav>
         </section>

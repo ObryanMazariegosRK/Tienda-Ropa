@@ -1,6 +1,8 @@
 <?php
 namespace App\Application\DTOs\Auction;
 
+use App\Domain\Entities\Auction;
+
 class AuctionDTO
 {
     public function __construct(
@@ -13,4 +15,18 @@ class AuctionDTO
         public readonly ?int $currentWinnerUserId,
         public readonly int $secondsRemaining
     ) {}
+
+    public static function fromEntity(Auction $auction): self
+    {
+        return new self(
+            id: $auction->getId(),
+            productId: $auction->getProductId(),
+            currentPrice: $auction->getCurrentPrice(),
+            minIncrement: $auction->getMinIncrement(),
+            status: $auction->getStatus()->value,
+            endDate: $auction->getEndDate()->format('Y-m-d H:i:s'),
+            currentWinnerUserId: $auction->getCurrentWinnerUserId(),
+            secondsRemaining: max(0, $auction->getEndDate()->getTimestamp() - time())
+        );
+    }
 }

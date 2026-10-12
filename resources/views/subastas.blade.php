@@ -85,7 +85,7 @@
         <section class="products-section">
             <h2>SUBASTAS EN VIVO</h2>
             <div class="products-container" id="subastas-container">
-                <p class="loading-text" style="text-align: center; width: 100%;">Cargando subastas...</p>
+                @include('partials.tarjetas-cargando', ['texto' => 'Cargando subastas...'])
             </div>
             <nav class="pagination" id="subastasPagination" aria-label="Paginación de subastas"></nav>
         </section>
