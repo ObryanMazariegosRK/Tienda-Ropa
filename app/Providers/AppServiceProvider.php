@@ -359,6 +359,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IListAllOrdersUseCase::class, 
         ListAllOrdersUseCase::class);
 
+        /**Cuentas de correo para enviar los códigos (se escogen desde el panel) */
+        $this->app->bind(\App\Domain\Abstractions\IMailSenderRepository::class, \App\Data\Repositories\MailSenderRepository::class);
+        $this->app->bind(\App\Application\Abstractions\Mail\IListMailSendersUseCase::class, \App\Application\UseCases\Mail\ListMailSendersUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\Mail\ISaveMailSenderUseCase::class, \App\Application\UseCases\Mail\SaveMailSenderUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\Mail\IDeleteMailSenderUseCase::class, \App\Application\UseCases\Mail\DeleteMailSenderUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\Mail\ISetActiveMailSenderUseCase::class, \App\Application\UseCases\Mail\SetActiveMailSenderUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\Mail\ISendTestMailUseCase::class, \App\Application\UseCases\Mail\SendTestMailUseCase::class);
+
         /**Para los banners */
         $this->app->bind(IBannerGroupRepository::class, 
         BannerGroupRepository::class);

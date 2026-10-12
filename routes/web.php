@@ -65,6 +65,9 @@ Route::get('/admin/banners', function () {
 Route::view('/mis-pedidos', 'orders');
 Route::view('/admin/pedidos', 'admin.pedidos.index')->name('pedidos.index');
 
+// URL: misitio.com/admin/correo (cuenta con la que se envían los códigos)
+Route::view('/admin/correo', 'admin.correo.index')->name('correo.index');
+
 //Para las subastas xd
 Route::view('/subastas', 'subastas');
 

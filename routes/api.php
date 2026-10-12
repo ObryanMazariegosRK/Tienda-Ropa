@@ -125,6 +125,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/auctions/{auctionId}/extend-duration', [AuctionController::class, 'extendDuration']);
         Route::get('/admin/products', [AdminProductController::class, 'index']);
 
+        //Cuenta de correo con la que se envían los códigos a los clientes
+        Route::get('/admin/mail-senders', [\App\Http\Controllers\AdminMailSenderController::class, 'index']);
+        Route::post('/admin/mail-senders', [\App\Http\Controllers\AdminMailSenderController::class, 'store']);
+        Route::put('/admin/mail-senders/{id}', [\App\Http\Controllers\AdminMailSenderController::class, 'update']);
+        Route::delete('/admin/mail-senders/{id}', [\App\Http\Controllers\AdminMailSenderController::class, 'destroy']);
+        Route::put('/admin/mail-senders/active', [\App\Http\Controllers\AdminMailSenderController::class, 'setActive']);
+        Route::post('/admin/mail-senders/{id}/test', [\App\Http\Controllers\AdminMailSenderController::class, 'test'])->middleware('throttle:5,1');
+
         //Ruta para el dashboard del admin
         Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
         Route::get('/dashboard/revenue', [DashboardController::class, 'revenue']);

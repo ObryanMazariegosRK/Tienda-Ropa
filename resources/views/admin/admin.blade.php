@@ -84,6 +84,13 @@
                             Pedidos
                         </a>
 
+                        <div class="sb-sidenav-menu-heading">Configuración</div>
+
+                        <a class="nav-link {{ request()->routeIs('correo.index') ? 'active' : '' }}" href="{{ route('correo.index') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-envelope"></i></div>
+                            Correo de envío
+                        </a>
+
                         
                                                 
                     </div>
