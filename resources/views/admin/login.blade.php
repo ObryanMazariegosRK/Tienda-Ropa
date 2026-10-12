@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
-  	<title>Iniciar Sesión - Panel de Administración</title>
+  	<title>Administración - Amerishop</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -15,53 +15,44 @@
 	<section class="ftco-section">
 		<div class="container">
 			<div class="row justify-content-center">
-				<div class="col-md-6 text-center mb-5">
-					<h2 class="heading-section">Panel de Administración</h2>
-				</div>
-			</div>
-			<div class="row justify-content-center">
 				<div class="col-md-12 col-lg-10">
 					<div class="wrap d-md-flex">
 
-                        <div class="img" style="background-image: url({{asset('Auth/images/bg-1.jpg') }});">
-			            </div>
+                        <div class="img" style="background-image: url({{ asset('Auth/images/bg-1.jpg') }});"></div>
 
-                        <div class="login-wrap p-4 p-md-5">
-			      	        <div class="d-flex">
-			      		        <div class="w-100">
-			      			        <h3 class="mb-4">Iniciar Sesión</h3>
-			      		        </div>
-			      	        </div>
+                        <div class="login-wrap">
+
+                            <h3>Iniciar sesión</h3>
 
                             <form id="adminLoginForm" class="signin-form">
-			      		        <div class="form-group mb-3">
-			      			        <label class="label" for="email">Correo Electrónico</label>
-                                    <input type="email" id="email" name="email" class="form-control" placeholder="admin@ejemplo.com" required>
-			      		        </div>
-		                        <div class="form-group mb-3">
-		            	            <label class="label" for="password">Contraseña</label>
-                                    <input type="password" id="password" name="password" class="form-control" placeholder="Tu contraseña" required>
-		                        </div>
-		                        <div class="form-group">
-                                    <button type="submit" id="submitBtn" class="form-control btn btn-primary rounded submit px-3">Ingresar</button>
-		                        </div>
-
-                                <div id="errorMessage" class="alert alert-danger d-none mt-3" role="alert"></div>
-
-		                        <div class="form-group d-md-flex">
-                                    <div class="w-50 text-left">
-                                        <label class="checkbox-wrap checkbox-primary mb-0">Mantener sesión iniciada
-                                            <input type="checkbox" id="rememberMe" name="remember_me" checked>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                    </div>
-                                    <div class="w-50 text-md-right">
-                                        <a href="/recuperar-password?origin=admin">¿Olvidaste tu contraseña?</a>
+                                <div class="form-group">
+                                    <label class="label" for="email">Correo electrónico</label>
+                                    <input type="email" id="email" name="email" class="form-control" placeholder="admin@ejemplo.com" autocomplete="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label" for="password">Contraseña</label>
+                                    <div class="password-field">
+                                        <input type="password" id="password" name="password" class="form-control" placeholder="Tu contraseña" autocomplete="current-password" required>
+                                        <button type="button" class="toggle-password" data-target="password" aria-label="Mostrar contraseña"><span class="fa fa-eye"></span></button>
                                     </div>
                                 </div>
-		                    </form>
-		                </div>
-		            </div>
+
+                                <div class="form-group d-md-flex">
+                                    <label class="checkbox-wrap checkbox-primary mb-0">Mantener sesión 30 días
+                                        <input type="checkbox" id="rememberMe" name="remember_me" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <a href="/recuperar-password?origin=admin">¿Olvidaste tu contraseña?</a>
+                                </div>
+
+                                <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                                <div class="form-group form-submit">
+                                    <button type="submit" id="submitBtn" class="form-control btn btn-primary">Ingresar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 				</div>
 			</div>
 		</div>

@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
-  	<title>Iniciar Sesión - Tienda de Ropa</title>
+  	<title>Iniciar sesión - Amerishop</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -14,60 +14,42 @@
 	<section class="ftco-section">
 		<div class="container">
 			<div class="row justify-content-center">
-				<div class="col-md-6 text-center mb-5">
-					<h2 class="heading-section">Bienvenido</h2>
-				</div>
-			</div>
-			<div class="row justify-content-center">
 				<div class="col-md-12 col-lg-10">
 					<div class="wrap d-md-flex">
-						
-                        <div class="img" style="background-image: url({{asset('Auth/images/bg-1.jpg') }});">
-			            </div>
-						
-                        <div class="login-wrap p-4 p-md-5">
-			      	        <div class="d-flex">
-			      		        <div class="w-100">
-			      			        <h3 class="mb-4">Iniciar Sesión</h3>
-			      		        </div>
-                                <!--
-								<div class="w-100">
-									<p class="social-media d-flex justify-content-end">
-										<a href="#" class="social-icon d-flex align-items-center justify-content-center"><span class="fa fa-facebook"></span></a>
-										<a href="#" class="social-icon d-flex align-items-center justify-content-center"><span class="fa fa-twitter"></span></a>
-									</p>
-								</div>-->
-			      	        </div>
-							
-                            <form id="loginForm" class="signin-form">
-			      		        <div class="form-group mb-3">
-			      			        <label class="label" for="email">Correo Electrónico</label>
-                                    <input type="email" id="email" name="email" class="form-control" placeholder="tucorreo@ejemplo.com" required>
-			      		        </div>
-		                        <div class="form-group mb-3">
-		            	            <label class="label" for="password">Contraseña</label>
-                                    <input type="password" id="password" name="password" class="form-control" placeholder="Tu contraseña" required>
-		                        </div>
-		                        <div class="form-group">
-                                    <button type="submit" id="submitBtn" class="form-control btn btn-primary rounded submit px-3">Ingresar</button>
-		                        </div>
-                                
-                                <div id="errorMessage" class="alert alert-danger d-none mt-3" role="alert"></div>
 
-		                        <div class="form-group d-md-flex">
-                                    <div class="w-50 text-left">
-                                        <label class="checkbox-wrap checkbox-primary mb-0">Recordarme
-                                            <input type="checkbox" name="remember_me" checked>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                    </div>
-                                    <div class="w-50 text-md-right">
-                                        <a href="/recuperar-password">¿Olvidaste tu contraseña?</a>
+                        <div class="img" style="background-image: url({{ asset('Auth/images/bg-1.jpg') }});"></div>
+
+                        <div class="login-wrap">
+
+                            <h3>Iniciar sesión</h3>
+
+                            <form id="loginForm" class="signin-form">
+                                <div class="form-group">
+                                    <label class="label" for="email">Correo electrónico</label>
+                                    <input type="email" id="email" name="email" class="form-control" placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label" for="password">Contraseña</label>
+                                    <div class="password-field">
+                                        <input type="password" id="password" name="password" class="form-control" placeholder="Tu contraseña" autocomplete="current-password" required>
+                                        <button type="button" class="toggle-password" data-target="password" aria-label="Mostrar contraseña"><span class="fa fa-eye"></span></button>
                                     </div>
                                 </div>
-		                    </form>
-                            
-		                    <p class="text-center">¿No tienes cuenta? <a href="{{ route('register') }}">Regístrate</a></p>
+
+                                <div class="form-group d-md-flex">
+                                    <label class="checkbox-wrap checkbox-primary mb-0">Recordarme 30 días
+                                        <input type="checkbox" name="remember_me" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <a href="/recuperar-password">¿Olvidaste tu contraseña?</a>
+                                </div>
+
+                                <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                                <div class="form-group form-submit">
+                                    <button type="submit" id="submitBtn" class="form-control btn btn-primary">Ingresar</button>
+                                </div>
+                            </form>
 
                             <div class="oauth-divider"><span>o continúa con</span></div>
 
@@ -79,20 +61,13 @@
                                         <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                                         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                                     </svg>
-                                    <span>Google</span>
+                                    <span>Continuar con Google</span>
                                 </a>
-                                <!--
-                                <a href="/auth/facebook/redirect" class="btn-oauth btn-oauth-facebook">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07c0 6.02 4.39 11.01 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.26h3.32l-.53 3.49h-2.79v8.44C19.61 23.08 24 18.09 24 12.07z"/>
-                                    </svg>
-                                    <span>Facebook</span>
-                                </a>
-
-                                -->
                             </div>
-		                </div>
-		            </div>
+
+                            <p class="text-center">¿No tienes cuenta? <a href="{{ route('register') }}">Regístrate</a></p>
+                        </div>
+                    </div>
 				</div>
 			</div>
 		</div>

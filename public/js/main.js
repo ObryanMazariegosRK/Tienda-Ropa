@@ -1516,10 +1516,16 @@ async function actualizarAuthUI() {
             cache: 'no-store'
         });
 
-        if (!response.ok) {
-            // Token inválido o expirado
+        if (response.status === 401) {
+            // Token inválido o expirado: aquí sí termina la sesión
             localStorage.removeItem('auth_token');
             renderLoginLink(authContainer);
+            return;
+        }
+
+        if (!response.ok) {
+            // Error temporal del servidor: la sesión sigue siendo válida, no borramos el token
+            renderLoggedInUI(authContainer, null);
             return;
         }
 
@@ -1527,8 +1533,9 @@ async function actualizarAuthUI() {
         renderLoggedInUI(authContainer, data.name); 
 
     } catch (error) {
+        // Sin conexión: conservamos la sesión y saludamos sin nombre
         console.error('Error al verificar sesión:', error);
-        renderLoginLink(authContainer);
+        renderLoggedInUI(authContainer, null);
     }
 }
 
@@ -1547,7 +1554,7 @@ function renderLoginLink(container) {
 
 function renderLoggedInUI(container, name) {
     container.innerHTML = `
-        <span class="user-greeting">Hola, ${name}</span>
+        <span class="user-greeting">${name ? `Hola, ${escapeHtml(name)}` : 'Hola'}</span>
         <button type="button" class="icon-link" id="logout-btn" title="Cerrar sesión">
             <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>

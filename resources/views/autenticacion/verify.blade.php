@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
   <head>
-  	<title>Verificar Cuenta - Tienda de Ropa</title>
+  	<title>Verificar cuenta - Amerishop</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
@@ -16,23 +16,26 @@
 					<div class="wrap d-md-flex">
 						<div class="img" style="background-image: url({{ asset('Auth/images/bg-1.jpg') }});"></div>
 						
-                        <div class="login-wrap p-4 p-md-5">
+                        <div class="login-wrap">
+                            <a href="/" class="auth-logo" aria-label="Amerishop — Ir a la tienda">
+                                <img src="{{ asset('Auth/images/LogoTiendaRopa.png') }}" alt="Amerishop">
+                            </a>
 			      	        <div class="d-flex">
 			      		        <div class="w-100">
-			      			        <h3 class="mb-3">Verifica tu Cuenta</h3>
-                                    <p class="text-muted small">Hemos enviado un código de 6 dígitos a tu correo electrónico. Es válido por 15 minutos.</p>
+			      			        <h3>Verifica tu cuenta</h3>
+                                    <p class="auth-subtitle">Hemos enviado un código de 6 dígitos a tu correo electrónico. Es válido por 15 minutos.</p>
 			      		        </div>
 			      	        </div>
 							
                             <form id="verifyForm" class="signin-form">
                                 <div class="form-group mb-3">
                                     <label class="label" for="email">Correo Electrónico</label>
-                                    <input type="email" id="email" class="form-control" readonly required style="background-color: #e9ecef; cursor: not-allowed;">
+                                    <input type="email" id="email" class="form-control" readonly required>
                                 </div>
 
                                 <div class="form-group mb-3">
 			      			        <label class="label" for="code">Código de Verificación</label>
-			      			        <input type="text" id="code" class="form-control text-center" placeholder="000000" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required style="font-size: 20px; letter-spacing: 4px; font-weight: bold;">
+			      			        <input type="text" id="code" class="form-control input-code" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
 			      		        </div>
                                 
                                 <div class="form-group">

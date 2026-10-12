@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
   <head>
-  	<title>Regístrate - Tienda de Ropa</title>
+  	<title>Regístrate - Amerishop</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
@@ -16,21 +16,27 @@
 					<div class="wrap d-md-flex">
 						<div class="img" style="background-image: url({{ asset('Auth/images/bg-1.jpg') }});"></div>
 						
-                        <div class="login-wrap p-4 p-md-5">
+                        <div class="login-wrap">
+                            <a href="/" class="auth-logo" aria-label="Amerishop — Ir a la tienda">
+                                <img src="{{ asset('Auth/images/LogoTiendaRopa.png') }}" alt="Amerishop">
+                            </a>
 			      	        <div class="d-flex">
 			      		        <div class="w-100">
-			      			        <h3 class="mb-4">Crear una Cuenta</h3>
+			      			        <h3>Crear una cuenta</h3>
+                                    <p class="auth-subtitle">Regístrate para comprar, guardar tus direcciones y participar en subastas.</p>
 			      		        </div>
 			      	        </div>
 							
                             <form id="registerForm" class="signin-form">
-                                <div class="form-group mb-3">
-                                    <label class="label" for="name">Nombre</label>
-                                    <input type="text" id="name" class="form-control" placeholder="Tu nombre" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="label" for="last_name">Apellido</label>
-                                    <input type="text" id="last_name" class="form-control" placeholder="Tu apellido" required>
+                                <div class="form-row">
+                                    <div class="form-group mb-3">
+                                        <label class="label" for="name">Nombre</label>
+                                        <input type="text" id="name" class="form-control" placeholder="Tu nombre" required>
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label class="label" for="last_name">Apellido</label>
+                                        <input type="text" id="last_name" class="form-control" placeholder="Tu apellido" required>
+                                    </div>
                                 </div>
 			      		        <div class="form-group mb-3">
 			      			        <label class="label" for="email">Correo Electrónico</label>
@@ -44,7 +50,10 @@
                                 </div>
 		                        <div class="form-group mb-3">
 		            	            <label class="label" for="password">Contraseña</label>
-		                            <input type="password" id="password" class="form-control" placeholder="Tu contraseña" required>
+		                            <div class="password-field">
+                                        <input type="password" id="password" class="form-control" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required>
+                                        <button type="button" class="toggle-password" data-target="password" aria-label="Mostrar contraseña"><span class="fa fa-eye"></span></button>
+                                    </div>
 		                        </div>
 		                        
                                 <div class="form-group">

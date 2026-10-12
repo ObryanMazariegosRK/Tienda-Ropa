@@ -6,20 +6,21 @@
    ========================================================== */
 
 :root {
-  --auth-primary: #39ff14;
-  --auth-primary-hover: #22c55e;
-  --auth-primary-dark: #15803d;
+  /* Verde tomado del logo: más suave que el neón, sigue leyéndose bien con texto negro */
+  --auth-primary: #52d62f;
+  --auth-primary-hover: #66e344;
+  --auth-primary-active: #45bd25;
+  --auth-primary-glow: rgba(82, 214, 47, 0.28);
 
-  --auth-black: #111111;
-  --auth-black-soft: #18181b;
-  --auth-panel: #161618;
+  --auth-black: #0c0c0d;
+  --auth-panel: #151517;
 
   --auth-white: #ffffff;
-  --auth-text: #f8fafc;
+  --auth-text: #f4f4f5;
   --auth-text-muted: #a1a1aa;
 
-  --auth-border: #3f3f46;
-  --auth-input: #1f1f22;
+  --auth-border: #34343a;
+  --auth-input: #1c1c1f;
 
   --auth-danger: #ef4444;
   --auth-warning: #f59e0b;
@@ -41,20 +42,32 @@ body {
   background: var(--auth-black);
   color: var(--auth-text);
   font-family: "Inter", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Layout general */
+/* Layout general: la tarjeta se centra y cabe en la pantalla */
 .ftco-section {
   display: flex;
   align-items: center;
   min-height: 100vh;
-  padding: 32px 18px;
-  background: #111111;
+  min-height: 100dvh;
+  padding: 24px 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(82, 214, 47, 0.10), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(82, 214, 47, 0.06), transparent 40%),
+    var(--auth-black);
 }
 
 .ftco-section .container {
-  width: min(100%, 1120px);
+  width: min(100%, 1000px);
   margin: 0 auto;
+}
+
+.ftco-section .row,
+.ftco-section .col-md-12,
+.ftco-section .col-lg-10,
+.ftco-section .col-md-6 {
+  width: 100%;
 }
 
 .ftco-section .row {
@@ -70,97 +83,200 @@ body {
   text-align: center;
 }
 
-/* Encabezado Bienvenido, si existe en la vista */
+.d-none {
+  display: none !important;
+}
+
+/* Encabezado fuera de la tarjeta (recuperar / restablecer contraseña) */
 .heading-section {
-  margin: 0 0 24px;
+  margin: 0 0 18px;
   color: var(--auth-white);
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(22px, 3vw, 30px);
   font-weight: 800;
   letter-spacing: -0.04em;
 }
 
-/* Contenedor principal */
-.wrap {
-  display: flex;
+/* ---------- Tarjeta ---------- */
+.wrap,
+.wrap.d-md-flex {
+  display: flex !important;
   width: 100%;
-  min-height: 620px;
   overflow: hidden;
   background: var(--auth-panel);
-  border: 1px solid #29292d;
-  border-radius: 18px;
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.45);
+  border: 1px solid #26262b;
+  border-radius: 22px;
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(82, 214, 47, 0.04);
 }
 
-/* Imagen lateral */
+/* Imagen lateral con texto editorial encima */
 .wrap .img {
   position: relative;
-  width: 43%;
-  min-height: 620px;
+  display: flex;
+  flex: 0 0 44%;
+  align-items: flex-end;
+  min-height: 560px;
   background-color: #0a0a0a;
-  background-position: center;
+  background-position: center 30%;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-/* Capa oscura sobre la imagen para mantener el estilo editorial */
 .wrap .img::after {
   position: absolute;
   inset: 0;
   content: "";
-  background: rgba(0, 0, 0, 0.22);
+  /* Solo un leve oscurecido hacia el formulario: la foto queda limpia */
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.05) 60%, rgba(21, 21, 23, 0.55) 100%);
 }
 
-/* Panel del formulario */
+.img-caption {
+  position: relative;
+  z-index: 1;
+  padding: 34px;
+}
+
+.img-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(82, 214, 47, 0.45);
+  border-radius: 999px;
+  background: rgba(12, 12, 13, 0.55);
+  color: var(--auth-primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+
+.img-kicker::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--auth-primary);
+  box-shadow: 0 0 0 0 var(--auth-primary-glow);
+  content: "";
+  animation: auth-pulso 2s infinite;
+}
+
+@keyframes auth-pulso {
+  0% { box-shadow: 0 0 0 0 rgba(82, 214, 47, 0.6); }
+  70% { box-shadow: 0 0 0 9px rgba(82, 214, 47, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(82, 214, 47, 0); }
+}
+
+.img-title {
+  margin: 14px 0 8px;
+  color: var(--auth-white);
+  font-size: clamp(26px, 2.8vw, 36px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.img-title span {
+  color: var(--auth-primary);
+}
+
+.img-text {
+  max-width: 300px;
+  margin: 0;
+  color: #d4d4d8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Panel del formulario ---------- */
 .login-wrap {
   display: flex;
   flex: 1;
   flex-direction: column;
   justify-content: center;
   min-width: 0;
-  padding: 52px !important;
+  padding: 36px 56px !important;
   background: var(--auth-panel);
 }
 
-/* Encabezados */
+.auth-logo {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 26px;
+}
+
+.auth-logo img {
+  display: block;
+  height: 34px;
+  width: auto;
+}
+
+.auth-chip {
+  display: inline-block;
+  align-self: flex-start;
+  margin: -12px 0 18px;
+  padding: 4px 10px;
+  border: 1px solid var(--auth-border);
+  border-radius: 999px;
+  color: var(--auth-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .login-wrap h3 {
-  margin: 0 0 8px;
+  margin: 0 0 24px;
   color: var(--auth-white);
-  font-size: clamp(27px, 3vw, 36px);
+  font-size: clamp(24px, 2.6vw, 30px);
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
 }
 
-.login-wrap h3::first-letter {
-  color: var(--auth-white);
+.login-wrap h3:has(+ .auth-subtitle) {
+  margin-bottom: 6px;
 }
 
-/* Texto de apoyo para vistas futuras */
 .login-wrap .auth-subtitle,
 .login-wrap .text-muted {
+  margin: 0 0 22px;
   color: var(--auth-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* Espaciado y campos */
+.login-wrap .d-flex {
+  width: 100%;
+}
+
+/* ---------- Campos ---------- */
+.signin-form,
+.form-group,
+.form-control {
+  width: 100%;
+}
+
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
   color: #d4d4d8;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.035em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .form-control {
   display: block;
-  width: 100%;
-  min-height: 48px;
+  min-height: 46px;
   border: 1px solid var(--auth-border);
-  border-radius: 10px;
+  border-radius: 12px;
   outline: none;
   background: var(--auth-input);
   color: var(--auth-white);
@@ -182,71 +298,132 @@ textarea.form-control {
 }
 
 .form-control::placeholder {
-  color: #71717a;
+  color: #6b6b74;
 }
 
 .form-control:hover {
-  border-color: #52525b;
+  border-color: #4a4a52;
 }
 
 .form-control:focus {
-  border: 1px solid var(--auth-primary);
-  background: #202024;
-  box-shadow: none;
-  outline: none;
+  border-color: var(--auth-primary);
+  background: #1f1f23;
+  box-shadow: 0 0 0 4px rgba(82, 214, 47, 0.12);
 }
 
-/* Botón principal */
-.btn,
+.form-control[readonly] {
+  border-style: dashed;
+  background: #18181b;
+  color: var(--auth-text-muted);
+  cursor: not-allowed;
+}
+
+.input-code {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  text-align: center;
+}
+
+/* Dos campos en la misma fila (nombre y apellido) */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+
+@media (max-width: 420px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Contraseña con botón para mostrarla */
+.password-field {
+  position: relative;
+}
+
+.password-field .form-control {
+  padding-right: 48px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #8b8b94;
+  font-size: 16px;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.toggle-password:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--auth-white);
+}
+
+.form-submit {
+  margin: 16px 0 0;
+}
+
+/* ---------- Botón principal ---------- */
 .btn-primary,
 .form-control.btn-primary,
 button[type="submit"] {
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 0 18px;
   border: 0;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   background: var(--auth-primary);
-  color: #111111;
+  color: #0c0c0d;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
+  letter-spacing: 0.01em;
   cursor: pointer;
+  box-shadow: 0 6px 18px rgba(82, 214, 47, 0.18);
   transition:
     background-color 0.2s ease,
-    color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
-}
-
-.form-control.btn-primary,
-button[type="submit"] {
-  min-height: 48px;
-  padding: 0 18px;
 }
 
 .btn-primary:hover,
 .form-control.btn-primary:hover,
 button[type="submit"]:hover {
   background: var(--auth-primary-hover);
-  color: #111111;
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(57, 255, 20, 0.18);
+  box-shadow: 0 10px 26px var(--auth-primary-glow);
 }
 
 .btn-primary:active,
 .form-control.btn-primary:active,
 button[type="submit"]:active {
+  background: var(--auth-primary-active);
   transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn-primary:disabled,
 button[type="submit"]:disabled {
-  background: #52525b;
+  background: #3f3f46;
   color: #d4d4d8;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
 
-/* Links */
+/* ---------- Enlaces ---------- */
 .login-wrap a {
   color: var(--auth-primary);
   font-weight: 600;
@@ -260,18 +437,35 @@ button[type="submit"]:disabled {
 }
 
 .login-wrap .text-center {
-  margin: 22px 0 0;
+  margin: 18px 0 0;
   color: var(--auth-text-muted);
   font-size: 14px;
 }
 
-/* Recordarme */
+/* ---------- Recordarme / olvidé mi contraseña ---------- */
+.form-group.d-md-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 2px 0 0;
+}
+
+.form-group .w-50 {
+  width: auto;
+}
+
+.form-group.d-md-flex a {
+  font-size: 13px;
+}
+
 .checkbox-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 20px;
-  padding-left: 27px;
+  padding-left: 28px;
   color: var(--auth-text-muted);
   font-size: 13px;
   cursor: pointer;
@@ -287,13 +481,14 @@ button[type="submit"]:disabled {
 
 .checkmark {
   position: absolute;
-  top: 1px;
+  top: 50%;
   left: 0;
   width: 18px;
   height: 18px;
   border: 1px solid #52525b;
   border-radius: 5px;
   background: var(--auth-input);
+  transform: translateY(-50%);
   transition: all 0.2s ease;
 }
 
@@ -309,7 +504,7 @@ button[type="submit"]:disabled {
   display: none;
   width: 5px;
   height: 9px;
-  border: solid #111111;
+  border: solid #0c0c0d;
   border-width: 0 2px 2px 0;
   content: "";
   transform: rotate(45deg);
@@ -319,24 +514,68 @@ button[type="submit"]:disabled {
   display: block;
 }
 
-/* Login: recordar y recuperar contraseña */
-.form-group.d-md-flex {
+.checkbox-wrap input:focus-visible ~ .checkmark {
+  outline: 2px solid var(--auth-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Login con Google ---------- */
+.oauth-divider {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-top: 18px;
+  margin: 20px 0 14px;
+  color: #71717a;
+  font-size: 12px;
+  text-align: center;
 }
 
-.form-group .w-50 {
-  width: auto;
+.oauth-divider::before,
+.oauth-divider::after {
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  content: "";
 }
 
-.text-md-right {
-  text-align: right;
+.oauth-divider span {
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
-/* Íconos sociales del login */
+.oauth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.login-wrap .btn-oauth {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--auth-border);
+  border-radius: 12px;
+  background: var(--auth-input);
+  color: var(--auth-white);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.login-wrap .btn-oauth:hover {
+  border-color: #55555e;
+  background: #232327;
+  color: var(--auth-white);
+  text-decoration: none;
+}
+
+.btn-oauth svg {
+  flex-shrink: 0;
+}
+
+/* ---------- Íconos sociales (no usados ahora) ---------- */
 .social-media {
   display: flex;
   justify-content: flex-end;
@@ -352,47 +591,35 @@ button[type="submit"]:disabled {
   height: 36px;
   border: 1px solid #303036;
   border-radius: 50%;
-  background: transparent;
   color: var(--auth-white) !important;
-  text-decoration: none !important;
 }
 
-.social-icon:hover {
-  border-color: var(--auth-primary);
-  background: #202024;
-  color: var(--auth-primary) !important;
-}
-
-/* Mensajes de error, éxito y advertencia */
+/* ---------- Mensajes ---------- */
 .alert {
-  margin-top: 16px;
+  margin: 12px 0 0;
   border: 1px solid;
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 11px 14px;
   font-size: 13px;
   line-height: 1.45;
 }
 
 .alert-danger {
   border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.13);
+  background: rgba(239, 68, 68, 0.12);
   color: #fecaca;
 }
 
 .alert-success {
   border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.13);
+  background: rgba(34, 197, 94, 0.12);
   color: #bbf7d0;
 }
 
 .alert-warning {
   border-color: rgba(245, 158, 11, 0.5);
-  background: rgba(245, 158, 11, 0.13);
+  background: rgba(245, 158, 11, 0.12);
   color: #fde68a;
-}
-
-.d-none {
-  display: none !important;
 }
 
 /* Accesibilidad */
@@ -403,300 +630,150 @@ input:focus-visible {
   outline-offset: 3px;
 }
 
-/* Tablet */
-@media (max-width: 900px) {
-  .login-wrap {
-    padding: 40px !important;
-  }
-
-  .wrap .img {
-    width: 38%;
-  }
-}
-
-/* Móvil: imagen arriba, formulario abajo */
-@media (max-width: 767px) {
-  .ftco-section {
-    align-items: flex-start;
-    padding: 16px;
-  }
-
-  .ftco-section .container {
-    max-width: 520px;
-  }
-
-  .heading-section {
-    margin-bottom: 16px;
-    font-size: 25px;
-  }
-
-  .wrap,
-  .wrap.d-md-flex {
-    display: flex !important;
-    flex-direction: column;
-    min-height: 0;
-    border-radius: 16px;
-  }
-
-  .wrap .img {
-    width: 100%;
-    min-height: 220px;
-    height: 220px;
-    background-position: center;
-  }
-
-  .login-wrap {
-    width: 100%;
-    padding: 30px 22px !important;
-  }
-
-  .login-wrap h3 {
-    font-size: 28px;
-  }
-
-  .form-group.d-md-flex {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .form-group .w-50 {
-    width: 100%;
-  }
-
-  .text-md-right {
-    text-align: left;
-  }
-}
-
-/* Móviles pequeños */
-@media (max-width: 390px) {
-  .ftco-section {
-    padding: 10px;
-  }
-
-  .wrap .img {
-    min-height: 180px;
-    height: 180px;
-  }
-
-  .login-wrap {
-    padding: 26px 18px !important;
-  }
-
-  .login-wrap h3 {
-    font-size: 25px;
+@media (prefers-reduced-motion: reduce) {
+  .img-kicker::before {
+    animation: none;
   }
 }
 
 /* ==========================================================
-   CORRECCIÓN DE ANCHO — LOGIN AMERISHOP
-   Pegar al FINAL de public/Auth/css/style.css
+   Pantallas bajas (laptops con zoom, ventanas pequeñas):
+   se compacta para que el login completo quepa sin scroll
    ========================================================== */
+@media (min-width: 768px) and (max-height: 720px) {
+  .ftco-section {
+    padding: 14px 18px;
+  }
 
-/* Fuerza el ancho de las columnas aunque Bootstrap no cargue sus estilos */
-.ftco-section .row,
-.ftco-section .col-md-12,
-.ftco-section .col-lg-10,
-.ftco-section .col-md-6 {
-  width: 100%;
-}
-
-/* El login ocupará un ancho editorial amplio en computadora */
-.ftco-section .container {
-  width: min(100%, 1140px);
-}
-
-.ftco-section .wrap,
-.ftco-section .wrap.d-md-flex {
-  display: flex !important;
-  flex-direction: row;
-  width: 100%;
-  min-height: 650px;
-}
-
-/* Imagen amplia a la izquierda */
-.ftco-section .wrap .img {
-  flex: 0 0 46%;
-  width: 46%;
-  min-height: 650px;
-  background-position: center center;
-  background-size: cover;
-}
-
-/* Panel del formulario con espacio suficiente */
-.ftco-section .login-wrap {
-  flex: 0 0 54%;
-  width: 54%;
-  min-width: 0;
-  padding: 64px !important;
-}
-
-/* Evita que el formulario e inputs se reduzcan */
-.ftco-section .signin-form,
-.ftco-section #loginForm,
-.ftco-section #registerForm,
-.ftco-section .form-group,
-.ftco-section .form-control {
-  width: 100%;
-}
-
-.ftco-section .login-wrap .d-flex {
-  width: 100%;
-}
-
-/* Teléfono: imagen arriba y formulario debajo */
-@media (max-width: 767px) {
-  .ftco-section .wrap,
-  .ftco-section .wrap.d-md-flex {
-    flex-direction: column;
+  .wrap .img {
     min-height: 0;
   }
 
-  .ftco-section .wrap .img {
+  .login-wrap {
+    padding: 24px 52px !important;
+  }
+
+  .auth-logo {
+    margin-bottom: 16px;
+  }
+
+  .auth-logo img {
+    height: 28px;
+  }
+
+  .login-wrap .auth-subtitle {
+    margin-bottom: 14px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-control,
+  .login-wrap .btn-oauth {
+    min-height: 42px;
+  }
+
+  .btn-primary,
+  .form-control.btn-primary,
+  button[type="submit"] {
+    min-height: 44px;
+  }
+
+  .oauth-divider {
+    margin: 14px 0 10px;
+  }
+
+  .login-wrap .text-center {
+    margin-top: 12px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .login-wrap {
+    padding: 32px 36px !important;
+  }
+
+  .wrap .img {
+    flex-basis: 40%;
+  }
+
+  .img-caption {
+    padding: 24px;
+  }
+}
+
+/* ==========================================================
+   Móvil: foto arriba y formulario debajo, en la misma tarjeta
+   ========================================================== */
+@media (max-width: 767px) {
+  .ftco-section {
+    padding: 16px;
+  }
+
+  .ftco-section .container {
+    max-width: 480px;
+  }
+
+  .wrap,
+  .wrap.d-md-flex {
+    flex-direction: column;
+    border-radius: 20px;
+  }
+
+  /* La foto toma el espacio que sobra sobre el formulario (entre 120 y 300 px) */
+  .wrap .img {
+    flex: 0 0 auto;
     width: 100%;
-    min-height: 280px;
-    height: clamp(280px, 62vw, 380px);
-    background-position: center 35%;
+    min-height: 0;
+    height: clamp(120px, calc(100dvh - 560px), 300px);
+    background-position: center 30%;
   }
 
-  .ftco-section .login-wrap {
+  /* Se funde con el panel del formulario en la parte de abajo */
+  .wrap .img::after {
+    background: linear-gradient(180deg, transparent 55%, rgba(21, 21, 23, 0.9) 100%);
+  }
+
+  .img-caption {
+    display: none;
+  }
+
+  .login-wrap {
     width: 100%;
-    padding: 34px 24px !important;
+    padding: 22px 22px 26px !important;
   }
 
-  .ftco-section .login-wrap h3 {
-    font-size: 30px;
+  .auth-logo {
+    align-self: center;
+    margin-bottom: 20px;
+  }
+
+  .auth-logo img {
+    height: 30px;
+  }
+
+  .login-wrap h3 {
+    margin-bottom: 18px;
+    font-size: 25px;
+  }
+
+  .login-wrap .auth-subtitle {
+    margin-bottom: 18px;
   }
 }
 
-/* Teléfonos pequeños */
-@media (max-width: 390px) {
-  .ftco-section .wrap .img {
-    min-height: 230px;
-    height: 230px;
-  }
-
-  .ftco-section .login-wrap {
-    padding: 28px 18px !important;
-  }
-}
-
-
-/* Ajuste fino del login */
-.login-wrap {
-  justify-content: flex-start;
-  padding-top: 135px !important;
-}
-
-.login-wrap h3 {
-  margin-bottom: 34px;
-}
-
-
-
-/*PARA EL LOGIN CON GOOGLE | FACEBOOK*/
-
-.oauth-divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 1.5rem 0;
-    color: #9ca3af;
-    font-size: .85rem;
-}
-.oauth-divider::before,
-.oauth-divider::after {
-    content: "";
-    flex: 1;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-.oauth-divider span {
-    padding: 0 .8rem;
-    white-space: nowrap;
-}
-
-.oauth-buttons {
-    display: flex;
-    gap: .8rem;
-}
-.btn-oauth {
-    flex: 1;                       /* cada botón ocupa la mitad */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: .5rem;
-    padding: .7rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: .95rem;
-    text-decoration: none;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: opacity .2s ease, transform .05s ease;
-}
-.btn-oauth:hover { opacity: .9; }
-.btn-oauth:active { transform: translateY(1px); }
-.btn-oauth svg { flex-shrink: 0; }   /* evita que el logo se aplaste */
-
-.btn-oauth-google {
-    background: #ffffff;
-    color: #3c4043;
-    border-color: #dadce0;
-}
-.btn-oauth-facebook {
-    background: #1877F2;
-    color: #ffffff;
-}
-
-/* En pantallas muy pequeñas, uno debajo del otro */
 @media (max-width: 380px) {
-    .oauth-buttons { flex-direction: column; }
-}
+  .ftco-section {
+    padding: 10px;
+  }
 
-.oauth-buttons {
-    display: flex;
-    justify-content: center;   /* 👈 centra el botón cuando es único */
-    gap: .8rem;
-}
-.btn-oauth {
-    flex: 0 1 auto;            /* 👈 antes: flex: 1 — ahora se ajusta a su contenido */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: .5rem;
-    padding: .7rem 1.6rem;    /* un poco más ancho para que no quede diminuto */
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: .95rem;
-    text-decoration: none;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: opacity .2s ease, transform .05s ease;
-}
+  .login-wrap {
+    padding: 22px 16px !important;
+  }
 
-.btn-oauth-google {
-    background: transparent;              /*sin fondo blanco */
-    color: #ffffff;                       /* texto claro sobre el fondo oscuro */
-    border-color: rgba(255, 255, 255, 0.25);
-}
-.btn-oauth-google:hover {
-    background: rgba(255, 255, 255, 0.08); /* leve realce al pasar el mouse */
-    opacity: 1;
-}
-
-.btn-oauth-google,
-.btn-oauth-google span {
-    color: #ffffff !important;    /*gana sobre el verde de los enlaces */
-}
-
-.btn-oauth-google {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.25);
-}
-.btn-oauth-google:hover {
-    background: rgba(255, 255, 255, 0.08);
-    opacity: 1;
-}
-.btn-oauth-google:hover span {
-    color: #ffffff !important;    /*que siga blanco al pasar el mouse */
+  .oauth-buttons {
+    flex-direction: column;
+  }
 }
