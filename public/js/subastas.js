@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// La llama el menú de categorías (main.js) cuando estamos en la página de subastas
+// La llama el menú de categorías (tienda/catalogo.js) cuando estamos en la página de subastas
 window.filtrarSubastasPorCategoria = function(categoryId) {
     subastasCategoriaId = categoryId;
     cargarSubastas(1);
@@ -156,7 +156,7 @@ function renderizarSubastas() {
             ? product.images.map(img => `/storage/${img.url}`)
             : ['/image/ImagenNoDefinida.png'];
 
-        // Poblamos productGalleries (ya declarada en main.js) para que
+        // Poblamos productGalleries (ya declarada en tienda/catalogo.js) para que
         // hoverImagen/cambiarImagen funcionen igual que en el catálogo normal.
         productGalleries[product.id] = { images: fotos, currentIndex: 0 };
 
@@ -233,7 +233,7 @@ function iniciarPollingGrid() {
 }
 
 // =========================================================================
-// INTERACTIVIDAD DEL CARRUSEL EN LA TARJETA DE SUBASTA (calcado de main.js)
+// INTERACTIVIDAD DEL CARRUSEL EN LA TARJETA DE SUBASTA (calcado de tienda/catalogo.js)
 // =========================================================================
 window.hoverImagenSubasta = function(productId, isHovering) {
     const gallery = subastaGalleries[productId];

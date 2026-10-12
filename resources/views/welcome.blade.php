@@ -9,7 +9,13 @@
     <link rel="icon" href="{{ asset('Auth/images/Prenda.png') }}" type="image/x-png">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <script src="{{ asset('js/paginacion.js') }}"></script>
-    <script src="{{ asset('js/main.js') }}"></script>
+    {{-- Tienda: un archivo por función (public/js/tienda/), en este orden --}}
+    <script src="{{ asset('js/tienda/comun.js') }}"></script>
+    <script src="{{ asset('js/tienda/sesion.js') }}"></script>
+    <script src="{{ asset('js/tienda/catalogo.js') }}"></script>
+    <script src="{{ asset('js/tienda/banner.js') }}"></script>
+    <script src="{{ asset('js/tienda/carrito.js') }}"></script>
+    <script src="{{ asset('js/tienda/subasta-ganada.js') }}"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 <body>

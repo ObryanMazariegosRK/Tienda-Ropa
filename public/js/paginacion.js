@@ -1,4 +1,4 @@
-// Paginación compartida por la tienda (main.js, subastas.js) y el panel del admin
+// Paginación compartida por la tienda (tienda/catalogo.js, subastas.js) y el panel del admin
 // (productos-catalogo.js). Se carga antes que esos archivos en sus vistas.
 
 // Arma los botones de paginación con un ancho fijo:  ‹ 1 … 4 5 [6] 7 8 … 20 ›
