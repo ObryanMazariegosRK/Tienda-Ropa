@@ -10,13 +10,15 @@ class OrderDetail
     private int $productId;
     private int $quantity;
     private float $unitPrice;
+    private ?float $unitCost; // costo del producto al momento de la venta (para la ganancia)
 
     public function __construct(
         ?int $id,
         int $orderId,
         int $productId,
         float $unitPrice,
-        int $quantity = 1 
+        int $quantity = 1,
+        ?float $unitCost = null
     ) {
         $this->validateOrderId($orderId);
         $this->validateProductId($productId);
@@ -28,6 +30,7 @@ class OrderDetail
         $this->productId = $productId;
         $this->quantity = $quantity;
         $this->unitPrice = $unitPrice;
+        $this->unitCost = $unitCost;
     }
 
     //VALIDACIONES
@@ -89,6 +92,11 @@ class OrderDetail
     public function getQuantity(): int
     {
         return $this->quantity;
+    }
+
+    public function getUnitCost(): ?float
+    {
+        return $this->unitCost;
     }
 
     public function getUnitPrice(): float

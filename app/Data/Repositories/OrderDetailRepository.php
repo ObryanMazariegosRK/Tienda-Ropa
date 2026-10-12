@@ -16,6 +16,7 @@ class OrderDetailRepository implements IOrderDetailRepository
                 'product_id' => $detail->getProductId(),
                 'quantity' => $detail->getQuantity(),
                 'unit_price' => $detail->getUnitPrice(),
+                'unit_cost' => $detail->getUnitCost(),
             ]);
         }
     }
@@ -39,7 +40,8 @@ class OrderDetailRepository implements IOrderDetailRepository
                     orderId: $model->order_id,
                     productId: $model->product_id,
                     unitPrice: (float) $model->unit_price,
-                    quantity: $model->quantity
+                    quantity: $model->quantity,
+                    unitCost: $model->unit_cost !== null ? (float) $model->unit_cost : null
                 ),
                 'productName' => $product?->name ?? 'Producto no disponible',
                 'productImage' => $imagenPrincipal,

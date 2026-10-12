@@ -10,15 +10,22 @@ use Carbon\Carbon;
 class GetRevenueReportUseCase implements IGetRevenueReportUseCase
 {
     private const ESTADOS_VALIDOS = ['confirmed', 'preparing', 'on_route', 'delivered'];
+    private const ZONA = 'America/Guatemala';
 
     public function execute(string $startDate, string $endDate): RevenueReportDTO
     {
-        $start = Carbon::parse($startDate, 'America/Guatemala')->startOfDay()->utc();
-        $end = Carbon::parse($endDate, 'America/Guatemala')->endOfDay()->utc();
+        // Las fechas se guardan en UTC; los días se cuentan en hora de Guatemala (UTC-6).
+        // Calculamos todo en hora de Guatemala y convertimos a UTC solo para consultar.
+        $inicioGt = Carbon::parse($startDate, self::ZONA)->startOfDay();
+        $finGt = Carbon::parse($endDate, self::ZONA)->endOfDay();
+        $start = $inicioGt->copy()->utc();
+        $end = $finGt->copy()->utc();
 
-        $diasDuracion = $start->diffInDays($end) + 1;
-        $prevEnd = $start->copy()->subDay()->endOfDay();
-        $prevStart = $prevEnd->copy()->subDays($diasDuracion - 1)->startOfDay();
+        // Periodo anterior de la misma duración, también en días de Guatemala
+        // (antes se calculaba sobre UTC y quedaba corrido 6 horas)
+        $diasDuracion = (int) $inicioGt->diffInDays($finGt->copy()->startOfDay()) + 1;
+        $prevEnd = $inicioGt->copy()->subDay()->endOfDay()->utc();
+        $prevStart = $inicioGt->copy()->subDays($diasDuracion)->startOfDay()->utc();
 
         $totalActual = OrderModel::whereIn('status', self::ESTADOS_VALIDOS)
             ->whereBetween('confirmed_at', [$start, $end])
@@ -32,30 +39,31 @@ class GetRevenueReportUseCase implements IGetRevenueReportUseCase
             ? round((($totalActual - $totalAnterior) / $totalAnterior) * 100, 1)
             : ($totalActual > 0 ? 100.0 : 0.0);
 
-        // Ganancia = suma de (precio de venta - costo actual del producto) * cantidad,
-        // por cada línea de producto vendido en el periodo.
+        // Ganancia = suma de (precio de venta - costo al momento de la venta) * cantidad,
+        // por cada línea de producto vendido en el periodo. El costo se guarda en order_items
+        // al vender; si una línea no lo tiene, se usa el costo actual del producto.
         $gananciaActual = (float) (OrderDetailModel::join('orders', 'orders.id', '=', 'order_items.order_id')
             ->join('products', 'products.id', '=', 'order_items.product_id')
             ->whereIn('orders.status', self::ESTADOS_VALIDOS)
             ->whereBetween('orders.confirmed_at', [$start, $end])
-            ->selectRaw('SUM((order_items.unit_price - COALESCE(products.cost, 0)) * order_items.quantity) as ganancia')
+            ->selectRaw('SUM((order_items.unit_price - COALESCE(order_items.unit_cost, products.cost, 0)) * order_items.quantity) as ganancia')
             ->value('ganancia') ?? 0);
 
+        // Ingresos por día de Guatemala. Agrupamos en PHP: DATE(confirmed_at) en SQL usaba
+        // el día UTC, y las ventas después de las 6:00 PM aparecían en el día siguiente.
         $porDia = OrderModel::whereIn('status', self::ESTADOS_VALIDOS)
             ->whereBetween('confirmed_at', [$start, $end])
-            ->selectRaw('DATE(confirmed_at) as fecha, SUM(total) as ingreso')
-            ->groupBy('fecha')
-            ->orderBy('fecha')
-            ->get();
+            ->get(['confirmed_at', 'total'])
+            ->groupBy(fn ($order) => Carbon::parse($order->confirmed_at, 'UTC')->timezone(self::ZONA)->format('Y-m-d'))
+            ->map(fn ($orders) => (float) $orders->sum('total'));
 
         $breakdown = [];
-        $cursor = $start->copy();
-        while ($cursor->lte($end)) {
+        $cursor = $inicioGt->copy();
+        while ($cursor->lte($finGt)) {
             $fechaStr = $cursor->format('Y-m-d');
-            $registro = $porDia->firstWhere('fecha', $fechaStr);
             $breakdown[] = [
                 'date' => $fechaStr,
-                'revenue' => $registro ? (float) $registro->ingreso : 0.0,
+                'revenue' => $porDia->get($fechaStr, 0.0),
             ];
             $cursor->addDay();
         }

@@ -114,6 +114,26 @@ class Order {
         $this->status = OrderStatus::CANCELLED;
     }
 
+    //Regla de cambios de estado que usa el panel del admin:
+    // - Entregado y Cancelado son finales.
+    // - Una vez confirmado (ya se recibió el pago) no se puede regresar a "Pendiente de pago":
+    //   así la fecha de confirmación de los reportes siempre corresponde a un pago real.
+    //   Si el pago resultó inválido, lo correcto es cancelar el pedido.
+    // - Entre Confirmado, En preparación y En camino se puede ir y venir para corregir errores.
+    public function ensureCanChangeTo(OrderStatus $nuevoEstado): void {
+        if ($this->status === OrderStatus::CANCELLED) {
+            throw new InvalidArgumentException('Este pedido ya está cancelado y no se puede modificar.');
+        }
+        if ($this->status === OrderStatus::DELIVERED) {
+            throw new InvalidArgumentException('Este pedido ya está entregado y no se puede modificar.');
+        }
+        if ($nuevoEstado === OrderStatus::PENDING_PAYMENT && $this->status !== OrderStatus::PENDING_PAYMENT) {
+            throw new InvalidArgumentException(
+                'Un pedido confirmado no puede regresar a "Pendiente de pago". Si el pago no fue válido, cancélalo.'
+            );
+        }
+    }
+
     //GETTERS
 
     public function getId(): ?int {

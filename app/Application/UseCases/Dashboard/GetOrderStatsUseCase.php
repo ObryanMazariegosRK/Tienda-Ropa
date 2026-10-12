@@ -24,8 +24,13 @@ class GetOrderStatsUseCase implements IGetOrderStatsUseCase
             $statusCounts[$estado] = (int) ($conteosRaw[$estado] ?? 0);
         }
 
-        $nuevosHoy = OrderModel::whereDate('created_at', Carbon::today())->count();
-        $nuevosSemana = OrderModel::where('created_at', '>=', Carbon::now()->startOfWeek())->count();
+        // "Hoy" y "esta semana" en hora de Guatemala (las fechas se guardan en UTC):
+        // con Carbon::today() en UTC, el contador de hoy se reiniciaba a las 6:00 PM
+        $inicioHoy = Carbon::now('America/Guatemala')->startOfDay()->utc();
+        $inicioSemana = Carbon::now('America/Guatemala')->startOfWeek()->utc();
+
+        $nuevosHoy = OrderModel::where('created_at', '>=', $inicioHoy)->count();
+        $nuevosSemana = OrderModel::where('created_at', '>=', $inicioSemana)->count();
 
         $totalOrdenes = array_sum($statusCounts);
         $tasaCancelacion = $totalOrdenes > 0

@@ -66,7 +66,8 @@ class CheckoutWonAuctionUseCase implements ICheckoutWonAuctionUseCase
                     orderId: $createdOrder->getId(),
                     productId: $auction->getProductId(),
                     unitPrice: $auction->getCurrentPrice(),
-                    quantity: 1
+                    quantity: 1,
+                    unitCost: $this->productRepository->findById($auction->getProductId())?->getCost()
                 )
             ]);
 

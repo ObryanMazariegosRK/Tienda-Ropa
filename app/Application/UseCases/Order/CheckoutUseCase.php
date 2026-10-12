@@ -79,6 +79,7 @@ class CheckoutUseCase implements ICheckoutUseCase
             // Cobramos el precio vigente del producto (no el que tenía al agregarlo al carrito),
             // así un cambio de precio o el fin de una oferta se respetan
             $precios = [];
+            $costos = [];
             foreach ($rowsPorId as $productId => $row) {
                 $product = $this->productRepository->findByIdForUpdate($productId);
                 if (!$product || $product->getStatus()->value !== ProductStatus::AVAILABLE->value) {
@@ -87,6 +88,7 @@ class CheckoutUseCase implements ICheckoutUseCase
                     );
                 }
                 $precios[$productId] = $product->getOfferPrice() ?? $product->getPrice();
+                $costos[$productId] = $product->getCost();
             }
             $total = array_sum($precios);
 
@@ -101,13 +103,14 @@ class CheckoutUseCase implements ICheckoutUseCase
 
             $createdOrder = $this->orderRepository->create($newOrder);
 
-            $details = array_map(function ($row) use ($createdOrder, $precios) {
+            $details = array_map(function ($row) use ($createdOrder, $precios, $costos) {
                 return new OrderDetail(
                     id: null,
                     orderId: $createdOrder->getId(),
                     productId: $row['cartItem']->getProductId(),
                     unitPrice: $precios[$row['cartItem']->getProductId()],
-                    quantity: 1
+                    quantity: 1,
+                    unitCost: $costos[$row['cartItem']->getProductId()]
                 );
             }, $cartRows);
 

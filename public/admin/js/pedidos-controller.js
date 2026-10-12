@@ -134,9 +134,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const fecha = formatearFechaHoraGT(order.createdAt);
             const rowClass = order.status === 'pending_payment' ? 'order-row-pending' : '';
 
-            const statusOptions = Object.entries(ORDER_STATUS_LABELS).map(([value, label]) =>
-                `<option value="${value}" ${order.status === value ? 'selected' : ''}>${label}</option>`
-            ).join('');
+            // Un pedido ya confirmado no puede regresar a "Pendiente de pago" (el backend también lo valida)
+            const yaConfirmado = order.status !== 'pending_payment';
+            const statusOptions = Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => {
+                const bloqueada = value === 'pending_payment' && yaConfirmado;
+                return `<option value="${value}" ${order.status === value ? 'selected' : ''} ${bloqueada ? 'disabled' : ''}>${label}</option>`;
+            }).join('');
 
             const estaBloqueada = order.status === 'cancelled' || order.status === 'delivered';
 
@@ -222,19 +225,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const confirmado = await adminConfirm(
                 `Vas a cancelar el pedido #${orderId} (${productos}). El/los producto(s) volverán a estar disponibles en la tienda de inmediato. Esta acción no se puede deshacer.`,
                 { title: 'Cancelar pedido', confirmText: 'Sí, cancelar', confirmClass: 'btn-danger', icon: 'fa-ban' }
-            );
-            if (!confirmado) {
-                if (selectElement && order) selectElement.value = order.status;
-                return;
-            }
-        }
-
-        // Retroceder a "pendiente de pago" una venta que ya estaba confirmada:
-        // el admin debe saber que esa venta saldrá del reporte.
-        if (newStatus === 'pending_payment' && order && order.confirmedAt) {
-            const confirmado = await adminConfirm(
-                `Este pedido ya estaba confirmado como venta. Si lo regresas a "Pendiente de pago", dejará de contar en el reporte de ventas mientras esté en ese estado. ¿Continuar?`,
-                { title: 'Regresar a pendiente de pago', confirmText: 'Sí, regresar', confirmClass: 'btn-warning', icon: 'fa-triangle-exclamation' }
             );
             if (!confirmado) {
                 if (selectElement && order) selectElement.value = order.status;

@@ -55,34 +55,36 @@ class UpdateOrderStatusUseCase implements IUpdateOrderStatusUseCase
             throw new Exception('Orden no encontrada.');
         }
 
-        // Estados finales: una vez aquí, el pedido no se puede mover a ningún otro lado.
-        if (in_array($currentOrder->getStatus(), [OrderStatus::CANCELLED, OrderStatus::DELIVERED], true)) {
-            $nombreEstado = $currentOrder->getStatus() === OrderStatus::CANCELLED ? 'cancelado' : 'entregado';
-            throw new Exception("Este pedido ya está {$nombreEstado} y no se puede modificar.");
-        }
-
-        $order = $this->orderRepository->updateStatus($orderId, $statusEnum->value);
+        // Reglas de transición (estados finales, no regresar a "Pendiente de pago"): viven en la entidad
+        $currentOrder->ensureCanChangeTo($statusEnum);
 
         $rows = $this->orderDetailRepository->findByOrderIdWithProductInfo($orderId);
-        $productStatus = self::PRODUCT_STATUS_MAP[$statusEnum->value];
 
-        foreach ($rows as $row) {
-            $this->productRepository->updateStatus($row['detail']->getProductId(), $productStatus->value);
+        // Si el estado no cambia no hacemos nada: antes se volvía a notificar al cliente
+        if ($statusEnum === $currentOrder->getStatus()) {
+            $order = $currentOrder;
+        } else {
+            $order = $this->orderRepository->updateStatus($orderId, $statusEnum->value);
+            $productStatus = self::PRODUCT_STATUS_MAP[$statusEnum->value];
 
-            if ($statusEnum === OrderStatus::CANCELLED) {
-                $auction = $this->auctionRepository->findByOrderId($orderId);
-                if ($auction) {
-                    $this->productRepository->updateSaleType($row['detail']->getProductId(), 'direct');
+            foreach ($rows as $row) {
+                $this->productRepository->updateStatus($row['detail']->getProductId(), $productStatus->value);
+
+                if ($statusEnum === OrderStatus::CANCELLED) {
+                    $auction = $this->auctionRepository->findByOrderId($orderId);
+                    if ($auction) {
+                        $this->productRepository->updateSaleType($row['detail']->getProductId(), 'direct');
+                    }
                 }
             }
-        }
 
-        //Avisamos al cliente dueño del pedido
-        $this->pushNotifier->notificarCambioEstado(
-            $order->getUserId(),
-            $order->getPublicCode(),
-            self::STATUS_LABELS[$statusEnum->value] ?? $statusEnum->value
-        );
+            //Avisamos al cliente dueño del pedido
+            $this->pushNotifier->notificarCambioEstado(
+                $order->getUserId(),
+                $order->getPublicCode() ?? "#{$order->getId()}",
+                self::STATUS_LABELS[$statusEnum->value] ?? $statusEnum->value
+            );
+        }
 
         $items = array_map(fn($row) => new OrderDetailDTO(
             productId: $row['detail']->getProductId(),

@@ -15,8 +15,10 @@ class GetDashboardSummaryUseCase implements IGetDashboardSummaryUseCase
         $inicioMes = Carbon::now('America/Guatemala')->startOfMonth()->utc();
         $finMes = Carbon::now('America/Guatemala')->endOfMonth()->utc();
 
+        // Mismos estados que el reporte de ingresos, para que la tarjeta y el reporte coincidan
+        // (antes solo excluía cancelados y contaba pedidos regresados a "Pendiente de pago")
         $ingresosDelMes = OrderModel::whereBetween('confirmed_at', [$inicioMes, $finMes])
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['confirmed', 'preparing', 'on_route', 'delivered'])
             ->sum('total');
 
         $pedidosPendientes = OrderModel::where('status', 'pending_payment')->count();
