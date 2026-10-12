@@ -50,7 +50,8 @@ class CloseExpiredAuctions extends Command
             }
 
             if ($auction->hasWinner()) {
-                $pushNotifier->notificarSubastaGanada($auction->getWinnerUserId());
+                $nombreProducto = $productRepo->findById($auction->getProductId())?->getName();
+                $pushNotifier->notificarSubastaGanada($auction->getWinnerUserId(), $nombreProducto);
             }
 
             $this->info("Subasta #{$auction->getId()} finalizada.");

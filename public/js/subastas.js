@@ -192,6 +192,11 @@ function renderizarSubastas() {
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     ` : ''}
+
+                    <!-- Equivalente al "Vistazo rápido" de la tienda: aparece al pasar el mouse -->
+                    <button class="product-quickview-btn" onclick="event.stopPropagation(); abrirAuctionModal(${product.id})">
+                        <i class="fas fa-gavel"></i> ${finalizada ? 'Ver resultado' : 'Pujar ahora'}
+                    </button>
                 </div>
                 <div class="product-info">
                     <h3 class="product-title" title="${product.name}">${product.name}</h3>
@@ -283,9 +288,14 @@ window.abrirAuctionModal = function(productId) {
 
     clearInterval(bidModalPollTimer);
     bidModalPollTimer = setInterval(async () => {
-        const estabaFinalizada = auctionStatusById[currentAuctionProductId]?.secondsRemaining <= 0;
-        await actualizarEstadoSubasta(currentAuctionProductId);
-        const ahoraFinalizada = auctionStatusById[currentAuctionProductId]?.secondsRemaining <= 0;
+        const estabaFinalizada = auctionStatusById[productId]?.secondsRemaining <= 0;
+        await actualizarEstadoSubasta(productId);
+
+        // Si el modal se cerró (o se abrió otra subasta) mientras esperábamos la
+        // respuesta, no tocamos nada: antes esto pedía /api/auctions/product/null/bids
+        if (currentAuctionProductId !== productId) return;
+
+        const ahoraFinalizada = auctionStatusById[productId]?.secondsRemaining <= 0;
 
         if (estabaFinalizada !== ahoraFinalizada) {
             // Cambió de "activa" a "finalizada" (o viceversa): sí hay que reconstruir el formulario
@@ -294,7 +304,7 @@ window.abrirAuctionModal = function(productId) {
             // Solo actualizamos los números, sin tocar el input ni el mensaje de error del usuario
             actualizarValoresEnVivo();
         }
-        cargarHistorialPujas(currentAuctionProductId);
+        cargarHistorialPujas(productId);
     }, 3000);
 };
 
@@ -330,7 +340,9 @@ function renderizarAuctionModalShell() {
     document.getElementById("auction-modal-content").innerHTML = `
         <div class="auction-modal-body">
             <div class="auction-modal-gallery">
-                <img src="${fotos[0]}" alt="${product.name}" class="auction-modal-image" id="auctionMainImage">
+                <div class="auction-modal-image-frame">
+                    <img src="${fotos[0]}" alt="${product.name}" class="auction-modal-image zoomable" id="auctionMainImage">
+                </div>
                 ${thumbnailsHtml}
             </div>
             <div class="auction-modal-info">
@@ -365,7 +377,12 @@ function renderizarAuctionModalShell() {
 }
 
 window.cambiarImagenAuction = function(index) {
-    document.getElementById("auctionMainImage").src = auctionGalleryImages[index];
+    const mainImg = document.getElementById("auctionMainImage");
+    mainImg.src = auctionGalleryImages[index];
+    // Igual que en la vista rápida: al cambiar de foto se quita el zoom
+    mainImg.dataset.zoom = '1';
+    mainImg.style.transform = 'scale(1)';
+    mainImg.style.transformOrigin = 'center center';
     document.querySelectorAll(".auction-thumb").forEach((thumb, i) => {
         thumb.classList.toggle("active", i === index);
     });
@@ -438,8 +455,11 @@ window.enviarPuja = async function() {
         return;
     }
 
+    // Guardamos el producto: el usuario podría cerrar el modal mientras llega la respuesta
+    const productId = currentAuctionProductId;
+
     try {
-        const response = await fetch(`/api/auctions/product/${currentAuctionProductId}/bid`, {
+        const response = await fetch(`/api/auctions/product/${productId}/bid`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -455,10 +475,12 @@ window.enviarPuja = async function() {
         const key = auctionFlagKey();
         if (key) localStorage.setItem(key, 'true');
 
-        auctionStatusById[currentAuctionProductId] = data.data;
+        auctionStatusById[productId] = data.data;
+        if (currentAuctionProductId !== productId) return; // el modal ya se cerró
+
         input.value = ""; // limpiamos el campo tras una puja exitosa
         renderizarAuctionModalShell(); // aquí sí reconstruimos: el mínimo y el precio cambiaron de verdad
-        cargarHistorialPujas(currentAuctionProductId);
+        cargarHistorialPujas(productId);
 
     } catch (error) {
         errorEl.textContent = error.message;

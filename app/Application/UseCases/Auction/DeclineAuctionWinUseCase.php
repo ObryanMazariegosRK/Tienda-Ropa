@@ -18,14 +18,15 @@ class DeclineAuctionWinUseCase implements IDeclineAuctionWinUseCase
     public function __construct(
         private IAuctionRepository $auctionRepo,
         private AuctionReassignmentService $reassignmentService,
-        private IPushNotifier $pushNotifier
+        private IPushNotifier $pushNotifier,
+        private IProductRepository $productRepo
     ) {}
 
     public function execute(int $auctionId, int $userId): void
     {
         // Validamos con la fila bloqueada para no chocar con un checkout
         // o con la expiración automática que ocurran al mismo tiempo
-        $nuevoGanadorId = DB::transaction(function () use ($auctionId, $userId) {
+        [$nuevoGanadorId, $productId] = DB::transaction(function () use ($auctionId, $userId) {
             $auction = $this->auctionRepo->findByIdForUpdate($auctionId);
             if (!$auction) throw new InvalidArgumentException('Subasta no encontrada.');
 
@@ -36,12 +37,13 @@ class DeclineAuctionWinUseCase implements IDeclineAuctionWinUseCase
                 throw new InvalidArgumentException('Ya confirmaste este pedido; no se puede cancelar desde aquí.');
             }
 
-            return $this->reassignmentService->reassignExcluding($auction, $userId);
+            return [$this->reassignmentService->reassignExcluding($auction, $userId), $auction->getProductId()];
         });
 
         // 🔔 Si hubo un siguiente postor, él es el nuevo ganador
         if ($nuevoGanadorId) {
-            $this->pushNotifier->notificarSubastaGanada($nuevoGanadorId);
+            $nombreProducto = $this->productRepo->findById($productId)?->getName();
+            $this->pushNotifier->notificarSubastaGanada($nuevoGanadorId, $nombreProducto);
         }        
 
         

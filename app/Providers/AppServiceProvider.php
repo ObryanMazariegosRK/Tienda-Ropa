@@ -41,6 +41,7 @@ use App\Application\Abstractions\Category\IGetCategoriesByParentIdUseCase;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -445,6 +446,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        //Los ids de las rutas solo aceptan números: un id inválido (ej. "null") responde
+        //404 en lugar de un error 500 al no poder convertirlo a int en el controlador
+        foreach (['id', 'productId', 'auctionId', 'cartItemId', 'categoryId', 'groupId', 'mediaId', 'parentId'] as $parametro) {
+            Route::pattern($parametro, '[0-9]+');
+        }
+
         $demasiadosIntentos = fn () => response()->json([
             'message' => 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
         ], 429);

@@ -277,6 +277,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // 1. CARGAR MENÚ DE CATEGORÍAS (Sincronizado con filtros)
 // =========================================================================
 const loadCategories = async () => {
+    // Subastas y Mis pedidos no tienen menú de categorías
+    if (!navCategoriesContainer) return;
+
     try {
         const response = await fetch('/api/categories');
         let categorias = await response.json();

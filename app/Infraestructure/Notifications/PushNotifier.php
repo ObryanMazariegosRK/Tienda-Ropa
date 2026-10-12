@@ -7,6 +7,7 @@ use App\Models\User as UserModel;
 use App\Notifications\NuevoPedidoNotification;
 use App\Notifications\CambioEstadoNotification;
 use App\Notifications\SubastaGanadaNotification;
+use App\Notifications\PujaSuperadaNotification;
 use App\Domain\Enum\RoleType; 
 
 class PushNotifier implements IPushNotifier
@@ -29,5 +30,11 @@ class PushNotifier implements IPushNotifier
     {
         $user = UserModel::find($userId);
         $user?->notify(new SubastaGanadaNotification($nombreProducto));
+    }
+
+    public function notificarPujaSuperada(int $userId, string $nombreProducto, float $nuevoPrecio): void
+    {
+        $user = UserModel::find($userId);
+        $user?->notify(new PujaSuperadaNotification($nombreProducto, $nuevoPrecio));
     }
 }
