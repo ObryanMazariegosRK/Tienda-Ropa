@@ -8,6 +8,9 @@ use InvalidArgumentException;
 
 class Product
 {
+    // Máximo de fotos por producto (más fotos = página más lenta y más disco)
+    public const MAX_IMAGES = 8;
+
     private ?int $id;
     private int $categoryId;
     private string $name;

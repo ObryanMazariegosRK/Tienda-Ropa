@@ -11,7 +11,7 @@ use App\Domain\Entities\ProductImage;
 use App\Domain\Enum\ProductSaleType;
 use App\Domain\Enum\ProductStatus;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Application\Abstractions\Product\IImageStorageService;
 use App\Domain\Exceptions\BusinessRuleException;
@@ -40,37 +40,6 @@ class UpdateProductUseCase implements IUpdateProductUseCase{
         }
 
         // ==========================================
-        //ELIMINAR IMÁGENES VIEJAS
-        // ==========================================
-        if (!empty($dto->deletedImageIds)) {
-            $imagesToDelete = $this->productRepository->findImagesByIds($dto->deletedImageIds);
-            
-            foreach ($imagesToDelete as $img) {
-                //Usamos el servicio de almacenamiento para borrar en vez de Storage directamente
-                $this->imageStorageService->delete($img['image_url']); 
-            }
-            
-            // Las borramos de la base de datos
-            $this->productRepository->deleteImages($dto->deletedImageIds);
-        }
-
-        // ==========================================
-        //SUBIR NUEVAS IMÁGENES
-        // ==========================================
-        $newDomainImages = [];
-        if (!empty($dto->newImages)) {
-            // 💡 Reutilizamos tu método seguro 'storeMultiple' que ya corregimos antes
-            $imagePaths = $this->imageStorageService->storeMultiple($dto->newImages, 'products');
-
-            foreach ($imagePaths as $path) {
-                if ($path) { // Evitamos meter paths fallidos (false)
-                    // Usamos 'null' o '0' según lo que espere tu entidad para un ID nuevo
-                    $newDomainImages[] = new ProductImage(id: null, productId: $dto->id, imageUrl: $path);
-                }
-            }
-        }
-
-        // ==========================================
         //ACTUALIZAR LOS DATOS DEL PRODUCTO
         // ==========================================
         $slugGenerado = Str::slug($dto->name);
@@ -88,17 +57,51 @@ class UpdateProductUseCase implements IUpdateProductUseCase{
             cost: $dto->cost 
         );
 
+        // ==========================================
+        //IMÁGENES: validar el total y subir las nuevas
+        // ==========================================
+        // Solo se pueden quitar imágenes de este mismo producto
+        $imagesToDelete = !empty($dto->deletedImageIds)
+            ? array_values(array_filter(
+                $this->productRepository->findImagesByIds($dto->deletedImageIds),
+                fn($img) => (int) $img['product_id'] === $dto->id
+            ))
+            : [];
+
+        $totalImagenes = count($product->getImages()) - count($imagesToDelete) + count($dto->newImages ?? []);
+        if ($totalImagenes > Product::MAX_IMAGES) {
+            throw new BusinessRuleException('Un producto admite máximo ' . Product::MAX_IMAGES . ' imágenes. Quita algunas antes de agregar más.');
+        }
+
+        // Se guardan ya optimizadas; si algo falla más abajo se borran
+        $imagePaths = !empty($dto->newImages) ? $this->imageStorageService->storeMultiple($dto->newImages, 'products') : [];
+        $newDomainImages = array_map(
+            fn($path) => new ProductImage(id: null, productId: $dto->id, imageUrl: $path),
+            $imagePaths
+        );
+
         if (!empty($newDomainImages)) {
             $productEntity->setImages($newDomainImages);
         }
 
-        // Guardamos los cambios de texto en la BD
-        $this->productRepository->update($productEntity);
-        
-        // Guardamos las nuevas imágenes en la BD
-        if (!empty($newDomainImages)) {
-            $this->productRepository->saveImagesForProduct($productEntity);
+        try {
+            DB::transaction(function () use ($productEntity, $newDomainImages, $imagesToDelete) {
+                $this->productRepository->update($productEntity);
+
+                if (!empty($imagesToDelete)) {
+                    $this->productRepository->deleteImages(array_column($imagesToDelete, 'id'));
+                }
+                if (!empty($newDomainImages)) {
+                    $this->productRepository->saveImagesForProduct($productEntity);
+                }
+            });
+        } catch (\Throwable $e) {
+            $this->imageStorageService->deleteMany($imagePaths);
+            throw $e;
         }
+
+        // Los archivos viejos se borran solo cuando la base de datos ya quedó actualizada
+        $this->imageStorageService->deleteMany(array_column($imagesToDelete, 'image_url'));
 
         // ==========================================
         //RETORNAR EL DTO ACTUALIZADO

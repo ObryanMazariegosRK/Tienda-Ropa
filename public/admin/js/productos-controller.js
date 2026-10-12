@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const imageInput = document.getElementById("images");
     const imagePreview = document.getElementById("imagePreview");
     const productForm = document.getElementById("productForm");
-    const MAX_IMAGES = 5;
+    const MAX_IMAGES = 8;            // igual que Product::MAX_IMAGES en el backend
+    const MAX_MB_POR_IMAGEN = 8;     // igual que la validación 'max:8192'
     const autoguardado = habilitarAutoguardado(productForm, 'nuevo_producto', {
         excluir: ['images']
     });
@@ -77,8 +78,15 @@ document.addEventListener("DOMContentLoaded", () => {
     //LÓGICA DE ACUMULAR IMÁGENES
     imageInput.addEventListener("change", (e) => {
         const newFiles = Array.from(e.target.files);
-        
-        //Verificamos si la suma de las fotos que ya están + las nuevas supera el límite de 5
+
+        const pesada = newFiles.find(f => f.size > MAX_MB_POR_IMAGEN * 1024 * 1024);
+        if (pesada) {
+            adminAlert(`"${pesada.name}" pesa más de ${MAX_MB_POR_IMAGEN} MB. Elige una foto más liviana.`, { type: 'error', title: 'Imagen muy pesada' });
+            e.target.value = '';
+            return;
+        }
+
+        //Verificamos si la suma de las fotos que ya están + las nuevas supera el límite
         if (selectedFiles.length + newFiles.length > MAX_IMAGES) {
             
             //Bloqueamos la acción y le avisamos al usuario el motivo exacto
@@ -86,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
         } else {
             
-            //Si la suma está dentro del límite (5 o menos), las agregamos todas
+            //Si la suma está dentro del límite, las agregamos todas
             selectedFiles = selectedFiles.concat(newFiles); 
             
             //Solo actualizamos la vista previa si realmente agregamos imágenes
@@ -206,6 +214,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         })
         .then(async res => {
+            if (res.status === 413) {
+                throw new Error("Las imágenes pesan demasiado en total. Sube menos fotos a la vez o usa fotos más livianas.");
+            }
             const respuestaTexto = await res.text();
             let data;
 

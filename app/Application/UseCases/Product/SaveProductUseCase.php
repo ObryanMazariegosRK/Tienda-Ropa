@@ -61,57 +61,69 @@ class SaveProductUseCase implements ISaveProductUseCase
             cost: $dto->cost
         );
 
-        [$savedProduct, $imagesResponse] = DB::transaction(function () use ($dto, $product, $saleTypeEnum) {
-            $savedProduct = $this->productRepository->save($product);
+        if (count($dto->images ?? []) > Product::MAX_IMAGES) {
+            throw new Exception('Un producto admite máximo ' . Product::MAX_IMAGES . ' imágenes.');
+        }
 
-            $imagesResponse = null;
-            if (!empty($dto->images)) {
-                $imagePaths = $this->imageStorageService->storeMultiple($dto->images, 'products');
+        // Las imágenes se guardan (ya optimizadas) antes de la transacción; si algo
+        // falla después, se borran para que no queden archivos huérfanos en el disco
+        $imagePaths = !empty($dto->images) ? $this->imageStorageService->storeMultiple($dto->images, 'products') : [];
 
-                $productImageEntities = [];
-                foreach ($imagePaths as $path) {
-                    $productImageEntities[] = new ProductImage(
+        try {
+            [$savedProduct, $imagesResponse] = DB::transaction(function () use ($dto, $product, $saleTypeEnum, $imagePaths) {
+                $savedProduct = $this->productRepository->save($product);
+
+                $imagesResponse = null;
+                if (!empty($imagePaths)) {
+
+                    $productImageEntities = [];
+                    foreach ($imagePaths as $path) {
+                        $productImageEntities[] = new ProductImage(
+                            id: null,
+                            productId: $savedProduct->getId(),
+                            imageUrl: $path
+                        );
+                    }
+
+                    $savedProduct->setImages($productImageEntities);
+                    $imagenesGuardadas = $this->productRepository->saveImagesForProduct($savedProduct);
+
+                    $imagesResponse = [];
+                    foreach ($imagenesGuardadas as $imgEntity) {
+                        $imagesResponse[] = [
+                            'id' => $imgEntity->getId(),
+                            'url' => $imgEntity->getImageUrl()
+                        ];
+                    }
+                }
+
+                // Si el producto es de subasta, creamos la subasta asociada en el mismo paso
+                if ($saleTypeEnum === ProductSaleType::AUCTION) {
+                    $startDate = new DateTimeImmutable();
+                    $endDate = match ($dto->auctionDurationUnit) {
+                        'hours' => $startDate->modify("+{$dto->auctionDurationAmount} hours"),
+                        'days'  => $startDate->modify("+{$dto->auctionDurationAmount} days"),
+                        'weeks' => $startDate->modify("+{$dto->auctionDurationAmount} weeks"),
+                    };
+
+                    $auction = new Auction(
                         id: null,
                         productId: $savedProduct->getId(),
-                        imageUrl: $path
+                        startingPrice: $dto->price,
+                        startDate: $startDate,
+                        endDate: $endDate,
+                        minIncrement: $dto->auctionMinIncrement ?? 10.00
                     );
+
+                    $this->auctionRepository->create($auction);
                 }
 
-                $savedProduct->setImages($productImageEntities);
-                $imagenesGuardadas = $this->productRepository->saveImagesForProduct($savedProduct);
-
-                $imagesResponse = [];
-                foreach ($imagenesGuardadas as $imgEntity) {
-                    $imagesResponse[] = [
-                        'id' => $imgEntity->getId(),
-                        'url' => $imgEntity->getImageUrl()
-                    ];
-                }
-            }
-
-            // Si el producto es de subasta, creamos la subasta asociada en el mismo paso
-            if ($saleTypeEnum === ProductSaleType::AUCTION) {
-                $startDate = new DateTimeImmutable();
-                $endDate = match ($dto->auctionDurationUnit) {
-                    'hours' => $startDate->modify("+{$dto->auctionDurationAmount} hours"),
-                    'days'  => $startDate->modify("+{$dto->auctionDurationAmount} days"),
-                    'weeks' => $startDate->modify("+{$dto->auctionDurationAmount} weeks"),
-                };
-
-                $auction = new Auction(
-                    id: null,
-                    productId: $savedProduct->getId(),
-                    startingPrice: $dto->price,
-                    startDate: $startDate,
-                    endDate: $endDate,
-                    minIncrement: $dto->auctionMinIncrement ?? 10.00
-                );
-
-                $this->auctionRepository->create($auction);
-            }
-
-            return [$savedProduct, $imagesResponse];
-        });
+                return [$savedProduct, $imagesResponse];
+            });
+        } catch (\Throwable $e) {
+            $this->imageStorageService->deleteMany($imagePaths);
+            throw $e;
+        }
 
         return new AdminProductDTO(
             id: $savedProduct->getId(),

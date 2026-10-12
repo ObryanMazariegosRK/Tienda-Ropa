@@ -126,7 +126,7 @@ function renderizarSubastas() {
         return `
             <div class="product-card" data-auction-product-id="${product.id}" onclick="abrirAuctionModal(${product.id})">
                 <div class="product-image-wrapper">
-                    <img src="${fotos[0]}" alt="${product.name}">
+                    <img src="${fotos[0]}" alt="${product.name}" loading="lazy" decoding="async">
                     <span class="discount-badge" style="background-color:#111;">
                         <i class="fas fa-gavel"></i> Subasta
                     </span>
@@ -175,7 +175,7 @@ function renderizarSubastas() {
                         <i class="fas fa-gavel"></i> Subasta
                     </span>
 
-                    <img id="img-${product.id}" src="${fotos[0]}" alt="${product.name}">
+                    <img id="img-${product.id}" src="${fotos[0]}" alt="${product.name}" loading="lazy" decoding="async">
 
                     ${fotos.length > 1 ? `
                         <button class="product-carousel-btn prev" onclick="cambiarImagen(${product.id}, -1, event)">

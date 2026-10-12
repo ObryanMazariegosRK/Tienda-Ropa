@@ -35,7 +35,7 @@ class UpdateProductRequest extends FormRequest
             'saleType'    => ['required', 'string', Rule::enum(ProductSaleType::class)],
             'status'      => ['required', 'string', Rule::enum(ProductStatus::class)],
 
-            'new_images'   => ['nullable', 'array'],
+            'new_images'   => ['nullable', 'array', 'max:' . \App\Domain\Entities\Product::MAX_IMAGES],
             'new_images.*' => [
                 'image',
                 'mimes:jpeg,png,jpg,webp',
@@ -57,6 +57,7 @@ class UpdateProductRequest extends FormRequest
             'saleType.Illuminate\Validation\Rules\Enum' => 'El tipo de venta no es válido.',
             'status.Illuminate\Validation\Rules\Enum'   => 'El estado del producto no es válido.',
             'new_images.array'     => 'El formato de las nuevas imágenes no es válido.',
+            'new_images.max'       => 'Un producto admite máximo ' . \App\Domain\Entities\Product::MAX_IMAGES . ' imágenes.',
             'new_images.*.image'   => 'Uno de los archivos subidos no es una imagen.',
             'new_images.*.mimes'   => 'Las imágenes deben ser de tipo: jpeg, png, jpg o webp.',
             'new_images.*.max'     => 'Cada imagen no debe pesar más de 8MB.',

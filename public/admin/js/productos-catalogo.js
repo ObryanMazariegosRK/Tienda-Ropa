@@ -610,6 +610,19 @@ function renderizarGrid(productos) {
     document.getElementById("edit_new_images").addEventListener("change", (e) => {
         const files = Array.from(e.target.files);
         const previewContainer = document.getElementById("edit_images_preview");
+        e.target.value = ''; // permite volver a elegir el mismo archivo después de quitarlo
+
+        // Mismos límites que el backend (Product::MAX_IMAGES y 'max:8192')
+        const pesada = files.find(f => f.size > 8 * 1024 * 1024);
+        if (pesada) {
+            adminAlert(`"${pesada.name}" pesa más de 8 MB. Elige una foto más liviana.`, { type: 'error', title: 'Imagen muy pesada' });
+            return;
+        }
+        const actuales = previewContainer.querySelectorAll('.edit-image-item').length;
+        if (actuales + files.length > 8) {
+            adminAlert(`Un producto admite máximo 8 imágenes. Ya tiene ${actuales}; quita alguna antes de agregar más.`, { type: 'error', title: 'Demasiadas imágenes' });
+            return;
+        }
 
         files.forEach((file) => {
             editSelectedFiles.push(file);
@@ -678,7 +691,12 @@ function renderizarGrid(productos) {
                 'Authorization': `Bearer ${localStorage.getItem('admin_auth_token')}`
             }
         })
-        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(response => {
+            if (response.status === 413) {
+                return { status: 413, body: { message: 'Las imágenes pesan demasiado en total. Sube menos fotos a la vez o usa fotos más livianas.' } };
+            }
+            return response.json().then(data => ({ status: response.status, body: data }));
+        })
         .then(res => {
             btnGuardar.disabled = false;
             btnGuardar.innerHTML = textoOriginal;
@@ -702,8 +720,8 @@ function renderizarGrid(productos) {
                 }
             } else {
                 if (res.status === 422) {
-                    console.log("Errores de validación:", res.body.errors);
-                    adminAlert("Error de validación. Revisa la consola.", { type: 'error' });
+                    const primerError = res.body.errors ? Object.values(res.body.errors)[0][0] : null;
+                    adminAlert(primerError || res.body.message || "Revisa los datos del producto.", { type: 'error' });
                 } else {
                     adminAlert("Error: " + (res.body.message || "Problema al guardar."), { type: 'error' });
                 }

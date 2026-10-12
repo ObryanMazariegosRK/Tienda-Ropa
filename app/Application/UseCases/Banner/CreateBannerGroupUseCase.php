@@ -4,6 +4,7 @@ namespace App\Application\UseCases\Banner;
 
 use App\Application\Abstractions\Banner\ICreateBannerGroupUseCase;
 use App\Application\DTOs\Banner\BannerGroupDTO;
+use App\Application\Abstractions\Product\IImageStorageService;
 use App\Domain\Abstractions\IBannerGroupRepository;
 use App\Domain\Entities\BannerGroup;
 use App\Domain\Enum\BannerType;
@@ -15,7 +16,10 @@ class CreateBannerGroupUseCase implements ICreateBannerGroupUseCase
     private const MAX_GROUPS = 5;
     private const MAX_MEDIA_PER_GROUP = 5;
 
-    public function __construct(private IBannerGroupRepository $repo) {}
+    public function __construct(
+        private IBannerGroupRepository $repo,
+        private IImageStorageService $imageStorage
+    ) {}
 
     public function execute(string $name, array $files): BannerGroupDTO
     {
@@ -40,16 +44,23 @@ class CreateBannerGroupUseCase implements ICreateBannerGroupUseCase
 
         $type = $firstIsVideo ? BannerType::VIDEO : BannerType::IMAGE;
 
-        return DB::transaction(function () use ($name, $type, $files) {
-            $group = new BannerGroup(id: null, name: $name, type: $type, isActive: false);
-            $created = $this->repo->create($group);
+        // Las imágenes se guardan optimizadas (los videos tal cual); si la base falla, se borran
+        $paths = $this->imageStorage->storeMultiple($files, 'banners', 1920);
 
-            foreach ($files as $index => $file) {
-                $path = $file->store('banners', 'public');
-                $this->repo->addMedia($created->getId(), $path, $index);
-            }
+        try {
+            return DB::transaction(function () use ($name, $type, $paths) {
+                $group = new BannerGroup(id: null, name: $name, type: $type, isActive: false);
+                $created = $this->repo->create($group);
 
-            return BannerGroupDTO::fromEntity($this->repo->findById($created->getId()));
-        });
+                foreach ($paths as $index => $path) {
+                    $this->repo->addMedia($created->getId(), $path, $index);
+                }
+
+                return BannerGroupDTO::fromEntity($this->repo->findById($created->getId()));
+            });
+        } catch (\Throwable $e) {
+            $this->imageStorage->deleteMany($paths);
+            throw $e;
+        }
     }
 }
