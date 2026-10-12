@@ -436,6 +436,7 @@ const loadFeaturedProducts = async (page = 1, hacerScroll = false) => {
     }
 };
 
+// construirBotonesPaginacion() vive en paginacion.js (compartido con el panel del admin)
 function renderizarPaginacion() {
     const contenedor = document.getElementById('pagination');
     if (!contenedor) return;
@@ -445,15 +446,7 @@ function renderizarPaginacion() {
         return;
     }
 
-    let html = `<button class="page-btn page-nav" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
-
-    for (let i = 1; i <= totalPages; i++) {
-        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-    }
-
-    html += `<button class="page-btn page-nav" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
-
-    contenedor.innerHTML = html;
+    contenedor.innerHTML = construirBotonesPaginacion(currentPage, totalPages);
 
     contenedor.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
         btn.addEventListener('click', () => loadFeaturedProducts(parseInt(btn.dataset.page, 10), true));

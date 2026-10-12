@@ -73,15 +73,8 @@ function renderizarPaginacionSubastas() {
         return;
     }
 
-    let html = `<button class="page-btn page-nav" data-page="${subastasCurrentPage - 1}" ${subastasCurrentPage === 1 ? 'disabled' : ''}>‹</button>`;
-
-    for (let i = 1; i <= subastasTotalPages; i++) {
-        html += `<button class="page-btn ${i === subastasCurrentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-    }
-
-    html += `<button class="page-btn page-nav" data-page="${subastasCurrentPage + 1}" ${subastasCurrentPage === subastasTotalPages ? 'disabled' : ''}>›</button>`;
-
-    contenedor.innerHTML = html;
+    // construirBotonesPaginacion vive en paginacion.js (se carga antes que este archivo)
+    contenedor.innerHTML = construirBotonesPaginacion(subastasCurrentPage, subastasTotalPages);
 
     contenedor.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
         btn.addEventListener('click', () => {

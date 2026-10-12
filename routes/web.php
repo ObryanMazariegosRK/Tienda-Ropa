@@ -52,6 +52,9 @@ Route::view('/admin/productos/crear', 'admin.productos.index')->name('productos.
 //Para la tiendaaaaaa
 Route::view('/ofertas', 'ofertas');
 
+//Política de privacidad (enlazada desde el pie de página; Google la pide para el login)
+Route::view('/politica-de-privacidad', 'politica-privacidad')->name('privacidad');
+
 
 //Para el banner
 Route::get('/admin/banners', function () {

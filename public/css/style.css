@@ -3616,6 +3616,25 @@ PARA LA PAGINACION
     opacity: 0.35;
     cursor: not-allowed;
 }
+/* Los "…" de la paginación: no son botones, solo indican páginas ocultas */
+.page-ellipsis{
+    min-width: 2rem;
+    text-align: center;
+    color: #71717A;
+    font-size: 1.3rem;
+    font-weight: 600;
+    user-select: none;
+}
+@media (max-width: 768px) {
+    .pagination{
+        gap: 0.4rem;
+    }
+    .page-btn{
+        min-width: 3.2rem;
+        height: 3.2rem;
+        padding: 0 0.6rem;
+    }
+}
 
 
 /*
@@ -4474,4 +4493,49 @@ PARA LOS MODALES DE LOS AVISOOOOOS
 #ofertas-container,
 #subastas-container {
     scroll-margin-top: calc(var(--header-height, 150px) + 6rem);
+}
+
+/* Página de política de privacidad */
+.legal-header {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #0F0F10;
+}
+.legal-page {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+    color: #27272A;
+    font-size: 1.5rem;
+    line-height: 1.7;
+}
+.legal-page h1 {
+    font-size: 3rem;
+    margin: 2rem 0 0.5rem;
+}
+.legal-page h2 {
+    font-size: 1.9rem;
+    margin: 3.2rem 0 1rem;
+}
+.legal-page p,
+.legal-page ul {
+    margin-bottom: 1.2rem;
+}
+.legal-page ul {
+    padding-left: 2.2rem;
+}
+.legal-page li {
+    margin-bottom: 0.6rem;
+}
+.legal-page a {
+    color: #15803D;
+}
+.legal-updated {
+    color: #71717A;
+    font-size: 1.3rem;
+}
+.legal-back {
+    font-size: 1.4rem;
+    text-decoration: none;
 }
