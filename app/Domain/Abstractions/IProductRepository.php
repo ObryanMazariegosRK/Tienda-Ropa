@@ -30,7 +30,9 @@ interface IProductRepository{
     public function updateStatus(int $id, string $status): void;
     public function updateSaleType(int $id, string $saleType): void;
 
-    public function paginate(int $page, int $perPage, ?string $status = null, ?int $categoryId = null, ?string $saleType = null, bool $onlyOffers = false): array;
+    // $soloCategoriasVisibles: para la tienda, excluye productos de categorías inactivas
+    // (o cuya categoría principal está inactiva). El admin lo deja en false para ver todo.
+    public function paginate(int $page, int $perPage, ?string $status = null, ?int $categoryId = null, ?string $saleType = null, bool $onlyOffers = false, bool $soloCategoriasVisibles = false): array;
     /**
      * @return Product[]
      */

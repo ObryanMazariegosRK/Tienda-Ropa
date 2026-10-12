@@ -154,6 +154,7 @@
     </script>
     
     <!-- HUECO PARA SCRIPTS DE CADA VISTA -->
+     <script src="/js/paginacion.js"></script>
      <script src="/admin/js/admin-modals.js"></script>
      <script src="/admin/js/admin-form-autosave.js"></script>
     @stack('scripts')

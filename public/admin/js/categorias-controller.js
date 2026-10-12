@@ -14,9 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(API_URL)
             .then(response => response.json())
             .then(res => {
-                //solo para prueba XD
-                console.log("Respuesta de Laravel al pedir categorías:", res);
-
                 let categoriesArray = [];
 
                 //Validamos en qué formato nos mandó Laravel los datos
@@ -55,52 +52,92 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    //Pastilla de estado y botones de acción (los usan padres y subcategorías)
+    function pildoraEstado(cat, principalInactiva = false) {
+        if (!cat.isActive) {
+            return `<span class="cat-status cat-status-inactive">Inactiva</span>`;
+        }
+        // Sigue activa, pero no se ve en la tienda porque su categoría principal está inactiva
+        if (principalInactiva) {
+            return `<span class="cat-status cat-status-hidden" title="Se mostrará de nuevo al activar la categoría principal">Oculta (principal inactiva)</span>`;
+        }
+        return `<span class="cat-status cat-status-active">Activa</span>`;
+    }
+
+    function botonesAcciones(cat) {
+        return `
+            <div class="cat-actions">
+                <button type="button" onclick="event.stopPropagation(); toggleStatus(${cat.id})"
+                        class="cat-action-btn cat-action-toggle ${cat.isActive ? 'is-active' : ''}"
+                        title="${cat.isActive ? 'Desactivar' : 'Activar'}" aria-label="${cat.isActive ? 'Desactivar' : 'Activar'}">
+                    <i class="fas ${cat.isActive ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); openEditModal(${cat.id})"
+                        class="cat-action-btn cat-action-edit" title="Editar" aria-label="Editar">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); deleteCategory(${cat.id})"
+                        class="cat-action-btn cat-action-delete" title="Eliminar" aria-label="Eliminar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>`;
+    }
+
+    //Resumen de la parte superior
+    function actualizarResumen(categories) {
+        const padres = categories.filter(c => c.parentCategoryId === null || c.parentCategoryId === undefined);
+        document.getElementById("statParents").textContent = padres.length;
+        document.getElementById("statChildren").textContent = categories.length - padres.length;
+        document.getElementById("statInactive").textContent = categories.filter(c => !c.isActive).length;
+    }
+
     //Renderizamos la tabla desplegable 
     function renderTable(categories) {
         tableBody.innerHTML = "";
+        actualizarResumen(categories);
 
         const parentCategories = categories.filter(c => c.parentCategoryId === null || c.parentCategoryId === undefined);
 
+        if (parentCategories.length === 0) {
+            tableBody.innerHTML = `
+                <tr><td colspan="2" class="cat-empty">
+                    <i class="fas fa-layer-group"></i>
+                    Aún no hay categorías. Crea la primera con el formulario.
+                </td></tr>`;
+            return;
+        }
+
         parentCategories.forEach(parent => {
+            const totalHijas = categories.filter(c => c.parentCategoryId === parent.id).length;
+
             //Fila de la Categoría Padre
             const parentRow = document.createElement("tr");
-            parentRow.style.cursor = "pointer";
-            parentRow.className = "table-info-hover";
+            parentRow.className = `cat-row ${parent.isActive ? '' : 'is-inactive'}`;
 
             parentRow.innerHTML = `
                 <td>
-                    <i class="fas fa-chevron-right me-2 text-primary transition-icon"></i>
-                    <strong>${parent.name}</strong>
-                </td>
-                <td class="text-end">
-                    <div class="btn-group shadow-sm" role="group">
-                        <button onclick="event.stopPropagation(); toggleStatus(${parent.id})" 
-                                class="btn btn-sm ${parent.isActive ? 'btn-success' : 'btn-outline-secondary'}" 
-                                title="${parent.isActive ? 'Desactivar' : 'Activar'}">
-                            <i class="fas ${parent.isActive ? 'fa-check' : 'fa-ban'}"></i>
-                        </button>
-                        <button onclick="event.stopPropagation(); openEditModal(${parent.id})" 
-                                class="btn btn-sm btn-primary" title="Editar">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button onclick="event.stopPropagation(); deleteCategory(${parent.id})" 
-                                class="btn btn-sm btn-outline-danger" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <div class="cat-main">
+                        <span class="cat-chevron"><i class="fas fa-chevron-right"></i></span>
+                        <div class="cat-text">
+                            <span class="cat-name">${escapeHtml(parent.name)}</span>
+                            <span class="cat-meta">
+                                ${pildoraEstado(parent)}
+                                <span class="cat-count">${totalHijas} ${totalHijas === 1 ? 'subcategoría' : 'subcategorías'}</span>
+                            </span>
+                        </div>
                     </div>
                 </td>
+                <td class="text-end">${botonesAcciones(parent)}</td>
             `;
 
             tableBody.appendChild(parentRow);
 
             //Fila contenedora oculta para las subcategorías
             const subRow = document.createElement("tr");
-            subRow.className = "d-none bg-light animate__animated animate__fadeIn";
+            subRow.className = "d-none cat-sub-container";
             subRow.innerHTML = `
-                <td colspan="2" class="p-0 text-center">
-                    <div class="p-3 text-muted">
-                        <i class="fas fa-spinner fa-spin me-2"></i> Buscando subcategorías...
-                    </div>
+                <td colspan="2" class="cat-sub-message">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Buscando subcategorías...
                 </td>
             `;
             tableBody.appendChild(subRow);
@@ -110,11 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
             parentRow.addEventListener("click", () => {
                 const estaOculta = subRow.classList.contains("d-none");
 
-                const icon = parentRow.querySelector(".fa-chevron-right, .fa-chevron-down");
-                if (icon) {
-                    icon.classList.toggle("fa-chevron-right");
-                    icon.classList.toggle("fa-chevron-down");
-                }
+                //La flecha gira con CSS según la clase is-open
+                parentRow.classList.toggle("is-open", estaOculta);
 
                 if (estaOculta) {
                     subRow.classList.remove("d-none");
@@ -136,38 +170,23 @@ document.addEventListener("DOMContentLoaded", () => {
                                 if (subcategoriesArray.length > 0) {
 
                                     let subListHtml = subcategoriesArray.map(sub => `
-                                        <tr class="table-light">
-                                            <td class="ps-5 text-secondary" style="width: 70%"><i class="fas fa-arrow-right me-2 small"></i>${sub.name}</td>
-                                            <td class="text-end" style="width: 30%">
-                                                <div class="btn-group shadow-sm" role="group">
-                                                    <button onclick="event.stopPropagation(); toggleStatus(${sub.id})" 
-                                                            class="btn btn-sm ${sub.isActive ? 'btn-success' : 'btn-outline-secondary'}"
-                                                            title="${sub.isActive ? 'Desactivar' : 'Activar'}">
-                                                        <i class="fas ${sub.isActive ? 'fa-check' : 'fa-ban'}"></i>
-                                                    </button>
-                                                    <button onclick="event.stopPropagation(); openEditModal(${sub.id})" 
-                                                            class="btn btn-sm btn-primary" title="Editar">
-                                                        <i class="fas fa-pencil-alt"></i>
-                                                    </button>
-                                                    <button onclick="event.stopPropagation(); deleteCategory(${sub.id})" 
-                                                            class="btn btn-sm btn-outline-danger" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <li class="cat-sub ${sub.isActive ? '' : 'is-inactive'}">
+                                            <div class="cat-sub-text">
+                                                <span class="cat-sub-name">${escapeHtml(sub.name)}</span>
+                                                ${pildoraEstado(sub, !parent.isActive)}
+                                            </div>
+                                            ${botonesAcciones(sub)}
+                                        </li>
                                     `).join('');
 
                                     subRow.innerHTML = `
-                                        <td colspan="2" class="p-0">
-                                            <table class="table table-sm m-0">
-                                                <tbody>${subListHtml}</tbody>
-                                            </table>
+                                        <td colspan="2" class="cat-sub-cell">
+                                            <ul class="cat-sub-list">${subListHtml}</ul>
                                         </td>
                                     `;
                                 } else {
                                     subRow.innerHTML = `
-                                        <td colspan="2" class="p-3 text-center text-muted">
+                                        <td colspan="2" class="cat-sub-message">
                                             <i class="fas fa-info-circle me-2"></i> Esta categoría principal aún no tiene subcategorías.
                                         </td>
                                     `;
@@ -177,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             })
                             .catch(err => {
                                 console.error("Error al cargar subcategorías:", err);
-                                subRow.innerHTML = `<td colspan="2" class="p-3 text-center text-danger">Error de conexión al cargar subcategorías.</td>`;
+                                subRow.innerHTML = `<td colspan="2" class="cat-sub-message text-danger">Error de conexión al cargar subcategorías.</td>`;
                             });
                     }
                 } else {
@@ -293,7 +312,22 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!cat) return;
 
         const actionText = !cat.isActive ? "activar" : "inactivar";
-        const confirmado = await adminConfirm(`¿Deseas ${actionText} "${cat.name}"?`, {
+
+        let mensaje = `¿Deseas ${actionText} "${cat.name}"?`;
+        const esPrincipal = cat.parentCategoryId === null || cat.parentCategoryId === undefined;
+        if (cat.isActive) {
+            mensaje += ' Sus productos dejarán de verse en la tienda mientras esté inactiva.';
+        }
+        if (cat.isActive && esPrincipal) {
+            const hijasActivas = [...memoryBank.values()]
+                .filter(c => c.parentCategoryId === cat.id && c.isActive).length;
+            if (hijasActivas > 0) {
+                mensaje += ` También se ocultarán sus ${hijasActivas} ${hijasActivas === 1 ? 'subcategoría activa' : 'subcategorías activas'}`
+                    + ' (conservan su estado y vuelven a verse al reactivarla).';
+            }
+        }
+
+        const confirmado = await adminConfirm(mensaje, {
             title: 'Cambiar estado',
             confirmText: actionText.charAt(0).toUpperCase() + actionText.slice(1),
             confirmClass: 'btn-warning',

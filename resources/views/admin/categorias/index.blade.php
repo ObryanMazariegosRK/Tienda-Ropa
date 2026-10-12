@@ -4,36 +4,17 @@
 
 @section('content')
 
-    <style>
-    @media (max-width: 767.98px) {
-        /* Le gana ancho extra a la tabla sin tocar el layout compartido del admin */
-        .table-responsive {
-            margin: 0 -0.6rem;
-            width: calc(100% + 1.2rem);
-        }
-        .card-body {
-            padding: 0.9rem 0.7rem;
-        }
-
-        /* Ocultamos Descripción (se ve completa al Editar) para que ID / Categoría / Estado quepan sin scroll */
-        #categoriesTableBody td:nth-child(3),
-        .table thead th:nth-child(3) {
-            display: none;
-        }
-
-        .table {
-            font-size: 0.82rem;
-        }
-        .table td,
-        .table th {
-            padding: 0.6rem 0.4rem;
-        }
-    }
-    </style>
     <h1 class="mt-4">Módulo de Categorías</h1>
-    <ol class="breadcrumb mb-4">
+    <ol class="breadcrumb mb-3">
         <li class="breadcrumb-item active">Organiza el catálogo de tu tienda</li>
     </ol>
+
+    {{-- Resumen rápido: lo llena categorias-controller.js --}}
+    <div class="cat-stats mb-4" id="categoryStats">
+        <div class="cat-stat"><span class="cat-stat-value" id="statParents">–</span><span class="cat-stat-label">Categorías principales</span></div>
+        <div class="cat-stat"><span class="cat-stat-value" id="statChildren">–</span><span class="cat-stat-label">Subcategorías</span></div>
+        <div class="cat-stat cat-stat-muted"><span class="cat-stat-value" id="statInactive">–</span><span class="cat-stat-label">Inactivas</span></div>
+    </div>
 
     <div class="row">
         <!-- Formulario Nueva Categoría -->
@@ -72,16 +53,17 @@
         <!-- Tabla de Categorías -->
         <div class="col-xl-8 col-md-12">
             <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-table me-1"></i> Categorías Registradas
+                <div class="card-header bg-primary d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span><i class="fas fa-layer-group me-1"></i> Categorías Registradas</span>
+                    <small class="cat-hint">Haz clic en una categoría para ver sus subcategorías</small>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
+                        <table class="table cat-table align-middle mb-0">
+                            <thead>
                                 <tr>
-                                    <th style="width: 70%">Categoría Padre</th>
-                                    <th style="width: 30%">Estado</th>
+                                    <th>Categoría</th>
+                                    <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="categoriesTableBody">

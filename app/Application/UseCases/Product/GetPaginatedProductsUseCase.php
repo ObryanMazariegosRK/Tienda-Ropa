@@ -14,7 +14,8 @@ class GetPaginatedProductsUseCase implements IGetPaginatedProductsUseCase
 
     public function execute(int $page, int $perPage, ?string $status = null, ?int $categoryId = null, ?string $saleType = null, bool $onlyOffers = false): array
     {
-        $result = $this->productRepository->paginate($page, $perPage, $status, $categoryId, $saleType, $onlyOffers);
+        // Este caso de uso es el de la tienda: no muestra productos de categorías desactivadas
+        $result = $this->productRepository->paginate($page, $perPage, $status, $categoryId, $saleType, $onlyOffers, soloCategoriasVisibles: true);
 
         $items = array_map(function ($product) {
             return new ProductDTO(

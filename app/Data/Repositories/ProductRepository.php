@@ -106,7 +106,8 @@ class ProductRepository implements IProductRepository{
         ?string $status = null,
         ?int $categoryId = null,
         ?string $saleType = null,
-        bool $onlyOffers = false
+        bool $onlyOffers = false,
+        bool $soloCategoriasVisibles = false
     ): array 
     {
         $query = ProductModel::with('images')
@@ -131,6 +132,18 @@ class ProductRepository implements IProductRepository{
 
         if ($saleType !== null) {
             $query->where('sale_type', $saleType);
+        }
+
+        if ($soloCategoriasVisibles) {
+            // Visible = activa y, si es subcategoría, con su categoría principal activa
+            $idsVisibles = Category::where('is_active', true)
+                ->where(function ($q) {
+                    $q->whereNull('parent_category_id')
+                        ->orWhereIn('parent_category_id', Category::where('is_active', true)->select('id'));
+                })
+                ->pluck('id');
+
+            $query->whereIn('category_id', $idsVisibles);
         }
 
         if ($onlyOffers) {

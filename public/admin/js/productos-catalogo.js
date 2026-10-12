@@ -331,28 +331,12 @@ function renderizarGrid(productos) {
             return;
         }
 
-        let html = `<button class="page-btn page-nav" data-page="${adminCurrentPage - 1}" ${adminCurrentPage === 1 ? 'disabled' : ''}>‹</button>`;
-
-        for (let i = 1; i <= adminTotalPages; i++) {
-            html += `<button class="page-btn ${i === adminCurrentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
-        }
-
-        html += `<button class="page-btn page-nav" data-page="${adminCurrentPage + 1}" ${adminCurrentPage === adminTotalPages ? 'disabled' : ''}>›</button>`;
-
-        contenedor.innerHTML = html;
+        // Misma paginación que la tienda: ‹ 1 … 4 5 [6] 7 8 … 20 › (vive en /js/paginacion.js)
+        contenedor.innerHTML = construirBotonesPaginacion(adminCurrentPage, adminTotalPages);
 
         contenedor.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
             btn.addEventListener('click', () => window.cargarProductos(parseInt(btn.dataset.page, 10)));
         });
-
-        // Auto-scroll: centra el botón de la página activa dentro de la barra
-        const botonActivo = contenedor.querySelector('.page-btn.active');
-        if (botonActivo) {
-            // Centramos el botón activo SOLO moviendo el scroll horizontal de la barra,
-            // sin tocar el scroll vertical de la página (scrollIntoView sí lo tocaba).
-            const offset = botonActivo.offsetLeft - (contenedor.clientWidth / 2) + (botonActivo.clientWidth / 2);
-            contenedor.scrollTo({ left: offset, behavior: 'smooth' });
-        }
     }
 
     // ==========================================
