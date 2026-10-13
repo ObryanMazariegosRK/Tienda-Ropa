@@ -17,6 +17,7 @@
     <script src="{{ asset('js/tienda/carrito.js') }}"></script>
     <script src="{{ asset('js/tienda/subasta-ganada.js') }}"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    @include('partials.pwa-head')
 </head>
 <body>
 

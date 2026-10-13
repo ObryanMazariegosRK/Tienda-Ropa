@@ -17,6 +17,7 @@
     <script src="{{ asset('js/tienda/pedidos.js') }}"></script>
     <script src="{{ asset('js/tienda/notificaciones.js') }}"></script>
     <script src="{{ asset('js/tienda/cuenta.js') }}"></script>
+    @include('partials.pwa-head')
 </head>
 <body>
 

@@ -1,0 +1,25 @@
+{
+    "id": "/",
+    "name": "Amerishop",
+    "short_name": "Amerishop",
+    "description": "Tienda de ropa en Tecpán: compra, rebajas y subastas en vivo.",
+    "lang": "es",
+    "dir": "ltr",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#111111",
+    "theme_color": "#111111",
+    "categories": ["shopping", "lifestyle"],
+    "icons": [
+        { "src": "/icons/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        { "name": "Rebajas", "short_name": "Rebajas", "url": "/ofertas", "icons": [{ "src": "/icons/acceso-96.png", "sizes": "96x96", "type": "image/png" }] },
+        { "name": "Subastas", "short_name": "Subastas", "url": "/subastas", "icons": [{ "src": "/icons/acceso-96.png", "sizes": "96x96", "type": "image/png" }] },
+        { "name": "Mis pedidos", "short_name": "Pedidos", "url": "/mis-pedidos", "icons": [{ "src": "/icons/acceso-96.png", "sizes": "96x96", "type": "image/png" }] }
+    ]
+}

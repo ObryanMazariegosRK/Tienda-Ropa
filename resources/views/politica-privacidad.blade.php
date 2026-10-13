@@ -6,6 +6,7 @@
     <title>Política de privacidad | Amerishop</title>
     <link rel="icon" href="{{ asset('Auth/images/Prenda.png') }}" type="image/x-png">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    @include('partials.pwa-head')
 </head>
 <body>
 

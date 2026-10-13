@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	
 	<link rel="stylesheet" href="{{ asset('Auth/css/style.css') }}">
+    @include('partials.pwa-head')
 	</head>
 	<body>
 	<section class="ftco-section">

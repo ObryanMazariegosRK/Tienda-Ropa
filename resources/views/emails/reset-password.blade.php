@@ -13,6 +13,7 @@
         /* Un pequeño estilo extra para que el código destaque */
         .input-code { font-size: 20px; letter-spacing: 5px; text-align: center; font-weight: bold; }
     </style>
+    @include('partials.pwa-head')
 </head>
 <body>
     <section class="ftco-section">
