@@ -1,0 +1,19 @@
+# Lo que NO se copia al construir imágenes (desarrollo y producción)
+.git
+.env
+.env.*
+!.env.example
+!.env.production.example
+node_modules
+vendor
+public/storage
+public/hot
+# storage/ entero: la imagen crea su estructura vacía y en el servidor vive en un volumen
+storage
+# Generados en local con los paquetes de desarrollo: se regeneran dentro de la imagen
+bootstrap/cache/*.php
+tests
+.phpunit.cache
+.idea
+.vscode
+CLAUDE.md
