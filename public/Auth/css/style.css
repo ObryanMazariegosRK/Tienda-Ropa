@@ -308,7 +308,7 @@ textarea.form-control {
 .form-control:focus {
   border-color: var(--auth-primary);
   background: #1f1f23;
-  box-shadow: 0 0 0 4px rgba(82, 214, 47, 0.12);
+  box-shadow: none;
 }
 
 .form-control[readonly] {
@@ -622,12 +622,16 @@ button[type="submit"]:disabled {
   color: #fde68a;
 }
 
-/* Accesibilidad */
+/* Accesibilidad: contorno al navegar con el teclado. Los campos no lo llevan:
+   ya marcan el foco con su propio borde verde (si no, se veían dos bordes) */
 a:focus-visible,
-button:focus-visible,
-input:focus-visible {
+button:focus-visible {
   outline: 2px solid var(--auth-primary);
   outline-offset: 3px;
+}
+
+.form-control:focus-visible {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

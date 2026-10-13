@@ -19,16 +19,32 @@ async function estaSuscritoPush() {
     return !!(await reg.pushManager.getSubscription());
 }
 
+const MENSAJE_NOTIFICACIONES_BLOQUEADAS =
+    'Tu navegador tiene bloqueadas las notificaciones de esta tienda. Para activarlas, toca el candado 🔒 ' +
+    'junto a la dirección de la página, cambia "Notificaciones" a "Permitir" y recarga la página.';
+
 async function suscribirPush() {
     const token = localStorage.getItem('auth_token');
     if (!token) throw new Error('Debes iniciar sesión.');
 
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        throw new Error('Tu navegador no soporta notificaciones.');
+        // En iPhone solo funcionan con la tienda agregada a la pantalla de inicio
+        const esIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        throw new Error(esIPhone
+            ? 'En iPhone, primero agrega la tienda a tu pantalla de inicio (Compartir → "Agregar a inicio") y activa las notificaciones desde ahí.'
+            : 'Tu navegador no soporta notificaciones.');
+    }
+
+    // Si ya están bloqueadas, el navegador ni siquiera vuelve a preguntar
+    if (Notification.permission === 'denied') {
+        throw new Error(MENSAJE_NOTIFICACIONES_BLOQUEADAS);
     }
 
     const permiso = await Notification.requestPermission();
-    if (permiso !== 'granted') throw new Error('No diste permiso para las notificaciones.');
+    if (permiso === 'denied') throw new Error(MENSAJE_NOTIFICACIONES_BLOQUEADAS);
+    if (permiso !== 'granted') {
+        throw new Error('Cerraste el aviso sin elegir. Vuelve a activar el interruptor y toca "Permitir".');
+    }
 
     // Registramos y ESPERAMOS a que el Service Worker esté activo
     await navigator.serviceWorker.register('/sw.js');

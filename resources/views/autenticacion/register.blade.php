@@ -17,13 +17,10 @@
 						<div class="img" style="background-image: url({{ asset('Auth/images/bg-1.jpg') }});"></div>
 						
                         <div class="login-wrap">
-                            <a href="/" class="auth-logo" aria-label="Amerishop — Ir a la tienda">
-                                <img src="{{ asset('Auth/images/LogoTiendaRopa.png') }}" alt="Amerishop">
-                            </a>
 			      	        <div class="d-flex">
 			      		        <div class="w-100">
 			      			        <h3>Crear una cuenta</h3>
-                                    <p class="auth-subtitle">Regístrate para comprar, guardar tus direcciones y participar en subastas.</p>
+                                    <p class="auth-subtitle">Compra y participa en subastas.</p>
 			      		        </div>
 			      	        </div>
 							
