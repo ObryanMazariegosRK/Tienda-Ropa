@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.amerishop.app",
+        "sha256_cert_fingerprints": ["6A:5C:DE:31:4E:9D:BA:29:7F:5F:A3:86:FB:C7:84:0B:19:A0:20:D4:09:B9:1E:30:EC:31:CC:EA:5F:A4:FA:92"]
+      }
+    }]
