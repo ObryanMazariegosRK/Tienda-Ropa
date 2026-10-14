@@ -238,11 +238,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const yaEstabaConfirmado = order && order.confirmedAt;
             const mensaje = yaEstabaConfirmado
                 ? `Este pedido ya se confirmó el ${new Date(order.confirmedAt).toLocaleDateString('es-GT')}. Esa venta ya quedó registrada — no se va a duplicar ni a mover la fecha. ¿Confirmas el estado?`
-                : '¿Confirmas que ya recibiste el pago de este pedido? Se tomará la fecha de hoy para el reporte de ventas.';
+                : 'Confírmalo solo si ya recibiste el dinero del cliente. Una vez confirmado, el pedido ya no podrá regresar a "Pendiente de pago" (si el pago no fuera válido, tendrías que cancelarlo). La fecha de hoy se usará en el reporte de ventas.';
 
             const confirmado = await adminConfirm(mensaje, {
-                title: 'Confirmar pedido',
-                confirmText: 'Sí, confirmar',
+                title: yaEstabaConfirmado ? 'Confirmar pedido' : '¿Ya recibiste el pago?',
+                confirmText: yaEstabaConfirmado ? 'Sí, confirmar' : 'Sí, ya recibí el pago',
                 confirmClass: 'btn-success',
                 icon: 'fa-check-circle'
             });

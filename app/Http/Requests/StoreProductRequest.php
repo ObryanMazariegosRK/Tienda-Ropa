@@ -32,10 +32,8 @@ class StoreProductRequest extends FormRequest
             'name' => [
                 'required', 'string', 'min:3', 'max:100',
                 // El mismo nombre puede repetirse en categorías distintas (ej. Hombre y Niños)
-                Rule::unique('products', 'name')->where(function ($query) {
-                    return $query->where('status', '!=', 'deleted')
-                                 ->where('category_id', $this->input('categoryId'));
-                }),
+                // y cuando el otro producto ya se entregó o se eliminó
+                Rule::unique('products', 'name')->where(fn($query) => $this->nombreOcupado($query)),
             ],
             'description' => ['required', 'string', 'max:2000'],
             'price'       => ['required', 'numeric', 'gt:0', 'max:10000.00'],
@@ -80,5 +78,21 @@ class StoreProductRequest extends FormRequest
             'cost.gt'       => 'El costo debe ser mayor a cero.',
             'offerPrice.gt' => 'El precio de oferta debe ser mayor a cero.',
         ];
+    }
+
+    // Productos que todavía "ocupan" un nombre en la categoría: los que están a la venta o
+    // en un pedido activo (pendiente, confirmado, en preparación, en camino). Los eliminados
+    // y los vendidos cuyo pedido ya se entregó quedan como historial y no cuentan.
+    private function nombreOcupado($query)
+    {
+        return $query->where('category_id', $this->input('categoryId'))
+            ->where('status', '!=', 'deleted')
+            ->whereNot(fn($q) => $q->where('status', 'sold')->whereExists(
+                fn($pedido) => $pedido->selectRaw('1')
+                    ->from('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('order_items.product_id', 'products.id')
+                    ->where('orders.status', 'delivered')
+            ));
     }
 }
