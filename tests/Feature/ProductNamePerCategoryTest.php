@@ -61,6 +61,46 @@ class ProductNamePerCategoryTest extends TestCase
         $this->crear('Camisa Roja', $this->camisasHombre)->assertCreated();
     }
 
+    // Crea "Camisa Roja" en la categoría y la pone en un pedido con el estado indicado
+    private function productoEnPedido(string $estadoPedido, int $categoriaId): void
+    {
+        $productoId = $this->crear('Camisa Roja', $categoriaId)->assertCreated()->json('data.id');
+        $estadoProducto = match ($estadoPedido) {
+            'pending_payment' => 'reserved',
+            'cancelled' => 'available',
+            default => 'sold',
+        };
+        DB::table('products')->where('id', $productoId)->update(['status' => $estadoProducto]);
+
+        $clienteId = DB::table('users')->insertGetId([
+            'name' => 'Cliente', 'last_name' => 'Prueba', 'email' => "cliente-$estadoPedido@test.com",
+            'password' => 'x', 'email_verified_at' => now(),
+        ]);
+        $pedidoId = DB::table('orders')->insertGetId([
+            'user_id' => $clienteId, 'shipping_address' => 'Zona 1', 'total' => 100, 'status' => $estadoPedido,
+        ]);
+        DB::table('order_items')->insert(['order_id' => $pedidoId, 'product_id' => $productoId, 'quantity' => 1, 'unit_price' => 100]);
+    }
+
+    public function test_un_producto_entregado_ya_no_bloquea_el_nombre(): void
+    {
+        $this->productoEnPedido('delivered', $this->camisasHombre);
+
+        $this->crear('Camisa Roja', $this->camisasHombre)->assertCreated();
+    }
+
+    public function test_un_pedido_activo_o_cancelado_sigue_bloqueando_el_nombre(): void
+    {
+        // Pendiente, confirmado, en preparación o en camino: el producto sigue en un pedido activo.
+        // Cancelado: el producto volvió a estar a la venta.
+        foreach (['pending_payment', 'confirmed', 'preparing', 'on_route', 'cancelled'] as $estado) {
+            $categoria = DB::table('categories')->insertGetId(['name' => "Cat $estado", 'description' => 'x', 'slug' => "cat-$estado"]);
+            $this->productoEnPedido($estado, $categoria);
+
+            $this->crear('Camisa Roja', $categoria)->assertStatus(422);
+        }
+    }
+
     public function test_editar_sin_cambiar_el_nombre_conserva_su_slug(): void
     {
         $this->crear('Camisa Roja', $this->camisasHombre)->assertCreated();
