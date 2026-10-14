@@ -31,8 +31,10 @@ class StoreProductRequest extends FormRequest
             'categoryId'  => ['required', 'integer', 'exists:categories,id'],
             'name' => [
                 'required', 'string', 'min:3', 'max:100',
+                // El mismo nombre puede repetirse en categorías distintas (ej. Hombre y Niños)
                 Rule::unique('products', 'name')->where(function ($query) {
-                    return $query->where('status', '!=', 'deleted');
+                    return $query->where('status', '!=', 'deleted')
+                                 ->where('category_id', $this->input('categoryId'));
                 }),
             ],
             'description' => ['required', 'string', 'max:2000'],
@@ -66,7 +68,7 @@ class StoreProductRequest extends FormRequest
             'images.*.image'  => 'Uno de los archivos subidos no es una imagen.',
             'images.*.mimes'  => 'Las imágenes deben ser de tipo: jpeg, png, jpg o webp.',
             'images.*.max'    => 'Cada imagen no debe pesar más de 8MB.',
-            'name.unique' => 'Ya existe un producto con este nombre. Por favor, elige otro para evitar duplicados',
+            'name.unique' => 'Ya existe un producto con este nombre en esta categoría. Elige otro nombre o una categoría distinta.',
             'auctionDurationAmount.required_if' => 'Debes indicar cuánto durará la subasta.',
             'auctionDurationUnit.required_if'   => 'Debes indicar la unidad de tiempo de la subasta (horas, días o semanas).',
             'offerPrice.prohibited_if'          => 'No puedes asignar un precio de oferta a un producto en subasta.',

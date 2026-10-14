@@ -44,5 +44,8 @@ interface IProductRepository{
 
     public function archive(int $id, string $slugActual): void;
 
+    // ¿Otro producto (incluidos los archivados) ya usa este slug?
+    public function slugExists(string $slug, ?int $exceptoProductoId = null): bool;
+
 
 }

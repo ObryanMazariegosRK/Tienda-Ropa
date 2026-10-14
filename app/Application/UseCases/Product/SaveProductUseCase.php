@@ -7,6 +7,7 @@ use App\Application\Abstractions\Product\ISaveProductUseCase;
 use App\Application\DTOs\Product\ProductDTO;
 use App\Application\DTOs\Product\AdminProductDTO;
 use App\Application\DTOs\Product\SaveProductDTO;
+use App\Application\Services\ProductSlugService;
 use App\Domain\Abstractions\IProductRepository;
 use App\Domain\Abstractions\IAuctionRepository;
 use App\Domain\Entities\Product;
@@ -15,7 +16,6 @@ use App\Domain\Entities\Auction;
 use App\Domain\Enum\ProductSaleType;
 use App\Domain\Enum\ProductStatus;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use DateTimeImmutable;
 use Exception;
 
@@ -24,7 +24,8 @@ class SaveProductUseCase implements ISaveProductUseCase
     public function __construct(
         private IProductRepository $productRepository,
         private IImageStorageService $imageStorageService,
-        private IAuctionRepository $auctionRepository 
+        private IAuctionRepository $auctionRepository,
+        private ProductSlugService $slugService
     ) {}
 
     public function execute(SaveProductDTO $dto): AdminProductDTO
@@ -46,7 +47,7 @@ class SaveProductUseCase implements ISaveProductUseCase
             }
         }
 
-        $slugGenerado = Str::slug($dto->name);
+        $slugGenerado = $this->slugService->unico($dto->name);
 
         $product = new Product(
             id: null,
