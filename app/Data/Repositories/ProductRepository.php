@@ -276,6 +276,13 @@ class ProductRepository implements IProductRepository{
         ProductModel::where('id', $id)->update(['cost' => $cost]);
     }
 
+    public function slugExists(string $slug, ?int $exceptoProductoId = null): bool
+    {
+        return ProductModel::where('slug', $slug)
+            ->when($exceptoProductoId, fn($q) => $q->where('id', '!=', $exceptoProductoId))
+            ->exists();
+    }
+
     public function archive(int $id, string $slugActual): void
     {
         ProductModel::where('id', $id)->update([

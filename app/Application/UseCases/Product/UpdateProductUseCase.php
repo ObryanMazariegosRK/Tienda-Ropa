@@ -10,10 +10,10 @@ use App\Domain\Entities\Product;
 use App\Domain\Entities\ProductImage;
 use App\Domain\Enum\ProductSaleType;
 use App\Domain\Enum\ProductStatus;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Application\Abstractions\Product\IImageStorageService;
+use App\Application\Services\ProductSlugService;
 use App\Domain\Exceptions\BusinessRuleException;
 
 class UpdateProductUseCase implements IUpdateProductUseCase{
@@ -21,7 +21,7 @@ class UpdateProductUseCase implements IUpdateProductUseCase{
     public function __construct(
         private IProductRepository $productRepository,
         private IImageStorageService $imageStorageService,
-        
+        private ProductSlugService $slugService
     )
     {}
 
@@ -42,7 +42,7 @@ class UpdateProductUseCase implements IUpdateProductUseCase{
         // ==========================================
         //ACTUALIZAR LOS DATOS DEL PRODUCTO
         // ==========================================
-        $slugGenerado = Str::slug($dto->name);
+        $slugGenerado = $this->slugService->unico($dto->name, $dto->id);
         
         $productEntity = new Product(
             id: $dto->id, 

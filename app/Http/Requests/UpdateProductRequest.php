@@ -23,10 +23,12 @@ class UpdateProductRequest extends FormRequest
             'categoryId'  => ['required', 'integer', 'exists:categories,id'],
             'name' => [
                 'required', 'string', 'min:3', 'max:100',
+                // El mismo nombre puede repetirse en categorías distintas (ej. Hombre y Niños)
                 Rule::unique('products', 'name')
                     ->ignore($productId)
                     ->where(function ($query) {
-                        return $query->where('status', '!=', 'deleted');
+                        return $query->where('status', '!=', 'deleted')
+                                     ->where('category_id', $this->input('categoryId'));
                     }),
             ],
             'description' => ['required', 'string', 'max:2000'],
@@ -52,7 +54,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'categoryId.exists' => 'La categoría seleccionada no existe en la base de datos.',
-            'name.unique'       => 'Ya existe un producto con este nombre. Por favor, elige otro para evitar duplicados.',
+            'name.unique'       => 'Ya existe un producto con este nombre en esta categoría. Elige otro nombre o una categoría distinta.',
             'offerPrice.lt'     => 'El precio de oferta debe ser estrictamente menor que el precio regular.',
             'saleType.Illuminate\Validation\Rules\Enum' => 'El tipo de venta no es válido.',
             'status.Illuminate\Validation\Rules\Enum'   => 'El estado del producto no es válido.',
