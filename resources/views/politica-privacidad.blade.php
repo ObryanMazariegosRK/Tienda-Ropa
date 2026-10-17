@@ -34,6 +34,7 @@
             <li><strong>Direcciones de envío</strong> que guardes para tus pedidos.</li>
             <li><strong>Pedidos y pujas:</strong> los productos que compras, los montos, las fechas y las pujas que haces en las subastas.</li>
             <li><strong>Notificaciones:</strong> si las activas, guardamos los datos técnicos que tu navegador genera para poder enviarte avisos (por ejemplo, cuando cambia el estado de tu pedido o ganas una subasta).</li>
+            <li><strong>Registro de actividad:</strong> para la seguridad de la tienda guardamos un registro de las acciones importantes (por ejemplo, inicios de sesión, pedidos y cambios hechos por el personal), con la fecha, la dirección IP y el tipo de navegador.</li>
         </ul>
 
         <h2>2. Para qué usamos tus datos</h2>
@@ -43,6 +44,8 @@
             <li>Gestionar las subastas: registrar tus pujas y avisarte si ganas.</li>
             <li>Enviarte notificaciones sobre tus pedidos y subastas, solo si las activaste.</li>
             <li>Enviarte correos necesarios para el servicio, como códigos de verificación o de recuperación de contraseña.</li>
+            <li>Proteger la tienda: detectar accesos indebidos y saber quién hizo cada cambio.</li>
+            <li>Elaborar estadísticas internas de ventas (por ejemplo, qué categorías se venden más). Son de uso interno y no se comparten.</li>
         </ul>
 
         <h2>3. Información visible para otros usuarios</h2>
@@ -78,7 +81,9 @@
         <h2>7. Cuánto tiempo conservamos tus datos</h2>
         <p>
             Conservamos los datos de tu cuenta mientras la tengas activa. El historial de pedidos puede
-            conservarse el tiempo necesario para fines contables y de atención de reclamos.
+            conservarse el tiempo necesario para fines contables y de atención de reclamos. El registro de
+            actividad y las estadísticas de ventas se conservan de forma permanente y no se modifican, como
+            respaldo de seguridad y del historial del negocio.
         </p>
 
         <h2>8. Tus derechos</h2>
