@@ -1260,3 +1260,143 @@ DISEÑO DE MODALES DE ADVERTENCIA
   color: var(--ad-text-muted);
   cursor: pointer;
 }
+
+/* ==========================================================
+   DATA WAREHOUSE: ANÁLISIS Y BITÁCORA (rama app-movil)
+   ========================================================== */
+
+.dw-ultima-carga {
+  font-size: 0.85rem;
+  color: var(--ad-text-muted);
+}
+.dw-vacio {
+  padding: 3rem 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px dashed var(--ad-border);
+  border-radius: 14px;
+  background-color: var(--ad-card);
+  text-align: center;
+  color: var(--ad-text-muted);
+}
+.dw-vacio i {
+  margin-bottom: 0.75rem;
+  font-size: 2.2rem;
+  color: var(--ad-inactive);
+}
+.dw-tabla {
+  --bs-table-bg: transparent;
+}
+.dw-tabla thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ad-text-muted);
+}
+.dw-barra {
+  height: 8px;
+  margin-bottom: 0.2rem;
+  border-radius: 999px;
+  background-color: var(--ad-divider);
+  overflow: hidden;
+}
+.dw-barra span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--ad-green-dark);
+}
+.dw-barra-azul span {
+  background-color: #0EA5E9;
+}
+.dw-tiempo {
+  margin-bottom: 0.85rem;
+}
+.dw-subasta-precios {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.dw-subasta-precios span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ad-text-muted);
+}
+.dw-subasta-precios strong {
+  font-size: 1.3rem;
+}
+.dw-subasta-subida {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background-color: var(--ad-green-soft);
+  color: var(--ad-green-dark);
+  font-weight: 700;
+}
+.dw-subasta-resultados {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  text-align: center;
+}
+.dw-subasta-resultados div {
+  padding: 0.6rem 0.2rem;
+  border-radius: 10px;
+  background-color: var(--ad-divider);
+}
+.dw-subasta-resultados strong {
+  display: block;
+  font-size: 1.2rem;
+}
+.dw-subasta-resultados span {
+  font-size: 0.72rem;
+  color: var(--ad-text-muted);
+}
+
+.dw-aviso-inmutable {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--ad-border);
+  border-left: 4px solid var(--ad-green-dark);
+  border-radius: 12px;
+  background-color: var(--ad-card);
+  font-size: 0.88rem;
+  color: var(--ad-text-muted);
+}
+.dw-aviso-inmutable i {
+  margin-top: 0.15rem;
+  color: var(--ad-green-dark);
+}
+.dw-accion {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dw-accion-sesion { background-color: #E0F2FE; color: #075985; }
+.dw-accion-pedido { background-color: #FEF3C7; color: #92400E; }
+.dw-accion-catalogo { background-color: var(--ad-green-soft); color: var(--ad-green-dark); }
+.dw-accion-peligro { background-color: #FEE2E2; color: #991B1B; }
+.dw-rol {
+  margin-left: 0.3rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 6px;
+  background-color: var(--ad-sidebar);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.dw-fila-rechazada td {
+  background-color: #FFF7F7;
+}
+
+@media (max-width: 575.98px) {
+  .dw-subasta-resultados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

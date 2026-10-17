@@ -16,5 +16,8 @@ Schedule::command(CloseExpiredAuctions::class)->everyMinute()->withoutOverlappin
 
 Schedule::command(\App\Console\Commands\ExpireUnclaimedAuctionWins::class)->hourly()->withoutOverlapping();
 
+//Data warehouse (rama app-movil): carga incremental de ventas y subastas cada hora
+Schedule::command('dw:cargar')->hourly()->withoutOverlapping();
+
 //Borra de la db los tokens de Sanctum que ya vencieron
 Schedule::command('sanctum:prune-expired --hours=24')->daily();

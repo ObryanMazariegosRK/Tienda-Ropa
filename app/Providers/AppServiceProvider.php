@@ -359,6 +359,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IListAllOrdersUseCase::class, 
         ListAllOrdersUseCase::class);
 
+        /**Bitácora y data warehouse (base tienda_dw, rama app-movil) */
+        $this->app->bind(\App\Domain\Abstractions\IBitacoraRepository::class, \App\Data\Repositories\BitacoraRepository::class);
+        $this->app->bind(\App\Domain\Abstractions\IOrigenDatosRepository::class, \App\Data\Repositories\OrigenDatosRepository::class);
+        $this->app->bind(\App\Domain\Abstractions\IDataWarehouseRepository::class, \App\Data\Repositories\DataWarehouseRepository::class);
+        $this->app->bind(\App\Domain\Abstractions\IAnalisisRepository::class, \App\Data\Repositories\AnalisisRepository::class);
+        $this->app->bind(\App\Application\Abstractions\Bitacora\IRegistrarEventoBitacoraUseCase::class, \App\Application\UseCases\Bitacora\RegistrarEventoBitacoraUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\Bitacora\IListarBitacoraUseCase::class, \App\Application\UseCases\Bitacora\ListarBitacoraUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\DataWarehouse\ICargarDataWarehouseUseCase::class, \App\Application\UseCases\DataWarehouse\CargarDataWarehouseUseCase::class);
+        $this->app->bind(\App\Application\Abstractions\DataWarehouse\IObtenerAnalisisUseCase::class, \App\Application\UseCases\DataWarehouse\ObtenerAnalisisUseCase::class);
+
         /**Cuentas de correo para enviar los códigos (se escogen desde el panel) */
         $this->app->bind(\App\Domain\Abstractions\IMailSenderRepository::class, \App\Data\Repositories\MailSenderRepository::class);
         $this->app->bind(\App\Application\Abstractions\Mail\IListMailSendersUseCase::class, \App\Application\UseCases\Mail\ListMailSendersUseCase::class);

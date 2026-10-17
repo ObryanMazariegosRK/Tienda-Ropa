@@ -64,6 +64,41 @@ return [
             ]) : [],
         ],
 
+        // DATA WAREHOUSE + BITÁCORA (rama app-movil): base aparte en el mismo servidor MySQL.
+        // "dw": usuario con solo SELECT e INSERT (lo usa la tienda: nada se edita ni se borra).
+        // "dw_admin": el usuario principal, solo para crear las tablas (php artisan dw:migrar).
+        'dw' => [
+            'driver' => env('DW_DB_CONNECTION', 'mysql'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DW_DB_DATABASE', 'tienda_dw'),
+            'username' => env('DW_DB_USERNAME', 'tienda_dw'),
+            'password' => env('DW_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'foreign_key_constraints' => true,
+        ],
+
+        'dw_admin' => [
+            'driver' => env('DW_DB_CONNECTION', 'mysql'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DW_DB_DATABASE', 'tienda_dw'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'foreign_key_constraints' => true,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

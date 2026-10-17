@@ -134,6 +134,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/mail-senders/active', [\App\Http\Controllers\AdminMailSenderController::class, 'setActive']);
         Route::post('/admin/mail-senders/{id}/test', [\App\Http\Controllers\AdminMailSenderController::class, 'test'])->middleware('throttle:5,1');
 
+        //Bitácora y data warehouse (rama app-movil)
+        Route::get('/admin/bitacora', [\App\Http\Controllers\AdminBitacoraController::class, 'index']);
+        Route::get('/admin/analisis', [\App\Http\Controllers\AdminAnalisisController::class, 'index']);
+        Route::post('/admin/analisis/actualizar', [\App\Http\Controllers\AdminAnalisisController::class, 'actualizar'])->middleware('throttle:6,1');
+
         //Ruta para el dashboard del admin
         Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
         Route::get('/dashboard/revenue', [DashboardController::class, 'revenue']);

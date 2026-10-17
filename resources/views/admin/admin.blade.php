@@ -55,6 +55,11 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
+
+                        <a class="nav-link {{ request()->routeIs('analisis.index') ? 'active' : '' }}" href="{{ route('analisis.index') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
+                            Análisis
+                        </a>
                         
                         
                         <div class="sb-sidenav-menu-heading">Gestión</div>
@@ -89,6 +94,11 @@
                         <a class="nav-link {{ request()->routeIs('correo.index') ? 'active' : '' }}" href="{{ route('correo.index') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-envelope"></i></div>
                             Correo de envío
+                        </a>
+
+                        <a class="nav-link {{ request()->routeIs('bitacora.index') ? 'active' : '' }}" href="{{ route('bitacora.index') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
+                            Bitácora
                         </a>
 
                         

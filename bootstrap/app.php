@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->trustProxies(at: '*');
+
+        // Bitácora (rama app-movil): registra en tienda_dw las acciones de CatalogoBitacora
+        $middleware->appendToGroup('api', \App\Http\Middleware\RegistrarBitacora::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\RegistrarBitacora::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

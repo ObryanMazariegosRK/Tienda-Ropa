@@ -45,6 +45,11 @@ x-laravel-env: &laravel-env
   VAPID_SUBJECT: ${VAPID_SUBJECT:-}
   VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
   VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+  # Data warehouse y bitácora (rama app-movil): base tienda_dw en el mismo MySQL
+  DW_HABILITADO: ${DW_HABILITADO:-true}
+  DW_DB_DATABASE: ${DW_DB_DATABASE:-tienda_dw}
+  DW_DB_USERNAME: ${DW_DB_USERNAME:-tienda_dw}
+  DW_DB_PASSWORD: ${DW_DB_PASSWORD:-}
 
 services:
   app:

@@ -29,6 +29,9 @@ if [ "${CONTAINER_ROLE:-app}" = "app" ]; then
         echo "Esperando a la base de datos... ($intentos)"
         sleep 2
     done
+
+    # Data warehouse y bitácora (base tienda_dw): si todavía no se instaló, solo avisa
+    php artisan dw:migrar
 fi
 
 exec "$@"
