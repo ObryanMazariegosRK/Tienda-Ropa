@@ -1308,6 +1308,31 @@ DISEÑO DE MODALES DE ADVERTENCIA
 .dw-barra-azul span {
   background-color: #0EA5E9;
 }
+.dw-subtitulo {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--ad-text-muted);
+}
+.dw-grafica {
+  position: relative;
+  height: 260px;
+}
+.dw-principal {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--ad-text-muted);
+}
+.dw-col-margen {
+  width: 32%;
+  min-width: 110px;
+}
+.dw-usuario-movil {
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--ad-text-muted);
+  overflow-wrap: anywhere;
+}
 .dw-tiempo {
   margin-bottom: 0.85rem;
 }
@@ -1327,6 +1352,7 @@ DISEÑO DE MODALES DE ADVERTENCIA
   font-size: 1.3rem;
 }
 .dw-subasta-subida {
+  display: inline-block;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   background-color: var(--ad-green-soft);
@@ -1349,7 +1375,15 @@ DISEÑO DE MODALES DE ADVERTENCIA
   font-size: 1.2rem;
 }
 .dw-subasta-resultados span {
-  font-size: 0.72rem;
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ad-text);
+}
+.dw-subasta-resultados small {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1.25;
   color: var(--ad-text-muted);
 }
 
@@ -1379,8 +1413,16 @@ DISEÑO DE MODALES DE ADVERTENCIA
   background-color: #FFF7F7;
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 767.98px) {
   .dw-subasta-resultados {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dw-grafica {
+    height: 220px;
+  }
+  .dw-tabla td,
+  .dw-tabla th {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
   }
 }

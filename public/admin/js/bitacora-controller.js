@@ -109,14 +109,18 @@ document.addEventListener("DOMContentLoaded", () => {
             .map(a => `<option value="${escapeHtml(a)}" ${a === elegida ? "selected" : ""}>${escapeHtml(nombreAccion(a))}</option>`).join("");
     }
 
+    function usuarioHtml(r) {
+        return (r.usuario_correo ? escapeHtml(r.usuario_correo) : '<span class="text-muted">Visitante</span>')
+            + (r.usuario_rol === "admin" ? '<span class="dw-rol">admin</span>' : "");
+    }
+
     function filaHtml(r, indice) {
         return `
             <tr class="${r.resultado === "rechazado" ? "dw-fila-rechazada" : ""}">
-                <td class="small text-nowrap">${fechaGT(r.ocurrido_en)}</td>
-                <td class="small">${r.usuario_correo ? escapeHtml(r.usuario_correo) : '<span class="text-muted">Visitante</span>'}
-                    ${r.usuario_rol === "admin" ? '<span class="dw-rol">admin</span>' : ""}</td>
-                <td><span class="dw-accion ${claseAccion(r.accion)}">${escapeHtml(nombreAccion(r.accion))}</span></td>
-                <td class="small">${escapeHtml(r.descripcion)}</td>
+                <td class="small text-nowrap d-none d-md-table-cell">${fechaGT(r.ocurrido_en)}</td>
+                <td class="small d-none d-md-table-cell">${usuarioHtml(r)}</td>
+                <td class="d-none d-md-table-cell"><span class="dw-accion ${claseAccion(r.accion)}">${escapeHtml(nombreAccion(r.accion))}</span></td>
+                <td class="small">${escapeHtml(r.descripcion)}<div class="dw-usuario-movil d-md-none">${usuarioHtml(r)}</div></td>
                 <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" data-indice="${indice}" title="Ver detalle"><i class="fas fa-eye"></i></button></td>
             </tr>`;
     }
@@ -162,9 +166,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!boton) return;
         const r = registros[Number(boton.dataset.indice)];
         document.getElementById("detalleBitacora").innerHTML = `
-            <p class="mb-1"><strong>${escapeHtml(r.descripcion)}</strong></p>
-            <p class="small text-muted mb-2">${fechaGT(r.ocurrido_en)} · ${escapeHtml(nombreAccion(r.accion))} · ${r.resultado === "exito" ? "Realizado" : "Rechazado"}</p>
+            <p class="mb-3"><strong>${escapeHtml(r.descripcion)}</strong></p>
             <table class="table table-sm mb-0">
+                <tr><th class="small fw-normal text-muted">Fecha</th><td class="small">${fechaGT(r.ocurrido_en)}</td></tr>
+                <tr><th class="small fw-normal text-muted">Acción</th><td class="small"><span class="dw-accion ${claseAccion(r.accion)}">${escapeHtml(nombreAccion(r.accion))}</span></td></tr>
+                <tr><th class="small fw-normal text-muted">Resultado</th><td class="small">${r.resultado === "exito" ? "Realizado" : "Rechazado"}</td></tr>
                 <tr><th class="small fw-normal text-muted">Usuario</th><td class="small">${escapeHtml(r.usuario_correo || "Visitante")} ${r.usuario_rol ? "(" + escapeHtml(r.usuario_rol) + ")" : ""}</td></tr>
                 <tr><th class="small fw-normal text-muted">Registro afectado</th><td class="small">${escapeHtml((r.entidad || "—") + (r.entidad_id ? " #" + r.entidad_id : ""))}</td></tr>
                 <tr><th class="small fw-normal text-muted">IP</th><td class="small">${escapeHtml(r.ip || "—")}</td></tr>

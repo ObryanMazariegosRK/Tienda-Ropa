@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
             carga.textContent = `Última carga del data warehouse: ${hace(d.ultimaCarga.terminadoEn)} (se actualiza cada hora)${error}`;
         }
 
-        const hayDatos = d.tendencia.some(m => m.ingreso !== 0 || m.ingresoAnioAnterior !== 0) || d.resumen.pedidos > 0;
+        const hayDatos = d.resumen.pedidos > 0 || d.categorias.length > 0 || d.subastas.total > 0;
         document.getElementById("analisisVacio").classList.toggle("d-none", hayDatos);
         document.getElementById("analisisContenido").classList.toggle("d-none", !hayDatos);
         if (!hayDatos) return;
@@ -55,21 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("kpiPedidos").textContent = d.resumen.pedidos;
         document.getElementById("kpiTicket").textContent = quetzales(d.resumen.ticketPromedio);
 
-        grafica("chartTendencia", {
-            type: "bar",
-            data: {
-                labels: d.tendencia.map(m => m.etiqueta),
-                datasets: [
-                    { label: "Este año", data: d.tendencia.map(m => m.ingreso), backgroundColor: "#16A34A", borderRadius: 4 },
-                    { label: "Año anterior", data: d.tendencia.map(m => m.ingresoAnioAnterior), backgroundColor: "#CBD5E1", borderRadius: 4 }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${quetzales(c.raw)}` } } },
-                scales: { y: { beginAtZero: true, ticks: { callback: v => quetzales(v) } } }
-            }
-        });
+        // Los días se calculan con el período del selector de arriba
+        document.getElementById("diasPeriodo").textContent =
+            `${selectorMeses.options[selectorMeses.selectedIndex].text} · dinero vendido cada día de la semana`;
 
         grafica("chartDias", {
             type: "bar",
@@ -79,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => quetzales(c.raw) } } },
                 scales: { y: { beginAtZero: true, ticks: { callback: v => quetzales(v) } } }
             }
@@ -93,34 +82,60 @@ document.addEventListener("DOMContentLoaded", () => {
                 labels: ["Nuevos", "Recurrentes"],
                 datasets: [{ data: [d.clientes.nuevos, d.clientes.recurrentes], backgroundColor: ["#22C55E", "#0EA5E9"] }]
             },
-            options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
         });
 
         pintarTiempoVenta(d.tiempoVenta);
     }
 
+    let categoriasActuales = [];
+
     function pintarMargen(categorias) {
+        categoriasActuales = categorias;
         const cuerpo = document.getElementById("tablaMargen");
         if (categorias.length === 0) {
-            cuerpo.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Sin ventas en este período.</td></tr>`;
+            cuerpo.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Sin ventas en este período.</td></tr>`;
             return;
         }
-        cuerpo.innerHTML = categorias.map(c => {
+        cuerpo.innerHTML = categorias.map((c, i) => {
             const margen = c.margenPct === null ? null : Math.max(0, Math.min(100, c.margenPct));
-            const nombre = c.principal === c.categoria ? escapeHtml(c.categoria) : `${escapeHtml(c.principal)} <span class="text-muted">→ ${escapeHtml(c.categoria)}</span>`;
+            // La principal arriba en pequeño y la subcategoría debajo
+            const nombre = c.principal === c.categoria
+                ? `<strong class="fw-semibold">${escapeHtml(c.categoria)}</strong>`
+                : `<span class="dw-principal">${escapeHtml(c.principal)}</span><strong class="fw-semibold">${escapeHtml(c.categoria)}</strong>`;
             return `
                 <tr>
-                    <td>${nombre}</td>
-                    <td class="text-end">${c.unidades}</td>
-                    <td class="text-end">${quetzales(c.ingreso)}</td>
-                    <td class="text-end">${c.ganancia === null ? '<span class="text-muted">—</span>' : quetzales(c.ganancia)}</td>
-                    <td>${margen === null ? '<span class="text-muted small">Sin costo registrado</span>' : `
+                    <td class="dw-col-categoria">${nombre}</td>
+                    <td class="text-end d-none d-md-table-cell">${c.unidades}</td>
+                    <td class="text-end d-none d-md-table-cell">${quetzales(c.ingreso)}</td>
+                    <td class="text-end d-none d-md-table-cell">${c.ganancia === null ? '<span class="text-muted">—</span>' : quetzales(c.ganancia)}</td>
+                    <td class="dw-col-margen">${margen === null ? '<span class="text-muted small">Sin costo</span>' : `
                         <div class="dw-barra"><span style="width:${margen}%"></span></div>
                         <small class="fw-bold">${c.margenPct}%</small>`}
                     </td>
+                    <td class="d-md-none text-end"><button type="button" class="btn btn-sm btn-outline-secondary" data-categoria="${i}" title="Ver detalle"><i class="fas fa-eye"></i></button></td>
                 </tr>`;
         }).join("");
     }
+
+    document.getElementById("tablaMargen").addEventListener("click", (e) => {
+        const boton = e.target.closest("button[data-categoria]");
+        if (!boton) return;
+        const c = categoriasActuales[Number(boton.dataset.categoria)];
+        document.getElementById("modalCategoriaTitulo").textContent = c.principal === c.categoria ? c.categoria : `${c.principal} → ${c.categoria}`;
+        const fila = (etiqueta, valor) => `<tr><th class="small fw-normal text-muted">${etiqueta}</th><td class="text-end fw-semibold">${valor}</td></tr>`;
+        document.getElementById("modalCategoriaDetalle").innerHTML = `
+            <table class="table mb-2">
+                ${fila("Unidades vendidas", c.unidades)}
+                ${fila("Ingreso", quetzales(c.ingreso))}
+                ${fila("Ganancia", c.ganancia === null ? "—" : quetzales(c.ganancia))}
+                ${fila("Margen", c.margenPct === null ? "Sin costo registrado" : c.margenPct + "%")}
+            </table>
+            <p class="small text-muted mb-0">${c.margenPct === null
+                ? "Estas prendas se vendieron sin costo registrado, por eso no se puede calcular la ganancia."
+                : `De cada Q100 vendidos en esta categoría, Q${Math.round(c.margenPct)} fueron ganancia.`}</p>`;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("modalCategoria")).show();
+    });
 
     function pintarSubastas(s) {
         const bloque = document.getElementById("bloqueSubastas");
@@ -130,18 +145,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const r = s.porResultado;
         bloque.innerHTML = `
+            ${r.vendida > 0 ? `
             <div class="dw-subasta-precios">
-                <div><span>Precio inicial</span><strong>${quetzales(s.precioInicialPromedio)}</strong></div>
+                <div><span>Empezaron en</span><strong>${quetzales(s.precioInicialPromedio)}</strong></div>
                 <i class="fas fa-arrow-right"></i>
-                <div><span>Precio final</span><strong>${quetzales(s.precioFinalPromedio)}</strong></div>
-                <div class="dw-subasta-subida">+${s.incrementoPromedioPct}%</div>
+                <div><span>Se vendieron en</span><strong>${quetzales(s.precioFinalPromedio)}</strong></div>
             </div>
-            <p class="small text-muted mb-3">Promedio de las subastas vendidas · ${s.pujasPromedio} pujas y ${s.postoresPromedio} postores por subasta</p>
+            <div class="dw-subasta-subida mb-2">+${s.incrementoPromedioPct}% gracias a las pujas</div>
+            <p class="small text-muted mb-3">
+                En promedio, cada subasta vendida terminó costando un ${s.incrementoPromedioPct}% más que su precio de salida:
+                recibió ${s.pujasPromedio} pujas de ${s.postoresPromedio} personas distintas.
+            </p>` : `<p class="small text-muted mb-3">Ninguna subasta de este período se vendió.</p>`}
             <div class="dw-subasta-resultados">
-                <div><strong>${r.vendida}</strong><span>Vendidas</span></div>
-                <div><strong>${r.sin_pujas}</strong><span>Sin pujas</span></div>
-                <div><strong>${r.no_reclamada}</strong><span>No reclamadas</span></div>
-                <div><strong>${r.cancelada}</strong><span>Canceladas</span></div>
+                <div><strong>${r.vendida}</strong><span>Vendidas</span><small>El ganador confirmó</small></div>
+                <div><strong>${r.sin_pujas}</strong><span>Sin pujas</span><small>Nadie pujó</small></div>
+                <div><strong>${r.no_reclamada}</strong><span>No reclamadas</span><small>Nadie confirmó la compra</small></div>
+                <div><strong>${r.cancelada}</strong><span>Canceladas</span><small>Se cancelaron antes</small></div>
             </div>`;
     }
 

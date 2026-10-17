@@ -42,9 +42,10 @@
                 <table class="table align-middle mb-0 dw-tabla">
                     <thead>
                         <tr>
-                            <th style="min-width: 150px;">Fecha</th>
-                            <th>Usuario</th>
-                            <th>Acción</th>
+                            {{-- En celular solo queda la descripción (con el usuario debajo); fecha y acción, en el ojito --}}
+                            <th class="d-none d-md-table-cell" style="min-width: 150px;">Fecha</th>
+                            <th class="d-none d-md-table-cell">Usuario</th>
+                            <th class="d-none d-md-table-cell">Acción</th>
                             <th>Descripción</th>
                             <th class="text-end"></th>
                         </tr>

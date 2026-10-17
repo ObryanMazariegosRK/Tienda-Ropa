@@ -62,16 +62,19 @@
         </div>
 
         <div class="row">
-            <div class="col-xl-8 mb-4">
+            <div class="col-lg-7 mb-4">
                 <div class="card shadow-sm h-100">
-                    <div class="card-header"><i class="fas fa-chart-column me-1"></i> Tendencia de 12 meses vs. año anterior</div>
-                    <div class="card-body"><canvas id="chartTendencia" height="120"></canvas></div>
+                    <div class="card-header">
+                        <i class="fas fa-calendar-week me-1"></i> ¿Qué días se vende más?
+                        <div class="dw-subtitulo" id="diasPeriodo"></div>
+                    </div>
+                    <div class="card-body"><div class="dw-grafica"><canvas id="chartDias"></canvas></div></div>
                 </div>
             </div>
-            <div class="col-xl-4 mb-4">
+            <div class="col-lg-5 mb-4">
                 <div class="card shadow-sm h-100">
-                    <div class="card-header"><i class="fas fa-calendar-week me-1"></i> ¿Qué días se vende más?</div>
-                    <div class="card-body"><canvas id="chartDias" height="220"></canvas></div>
+                    <div class="card-header"><i class="fas fa-users me-1"></i> Clientes que compraron</div>
+                    <div class="card-body"><div class="dw-grafica"><canvas id="chartClientes"></canvas></div></div>
                 </div>
             </div>
         </div>
@@ -84,10 +87,12 @@
                         <thead>
                             <tr>
                                 <th>Categoría</th>
-                                <th class="text-end">Unidades</th>
-                                <th class="text-end">Ingreso</th>
-                                <th class="text-end">Ganancia</th>
-                                <th style="min-width: 160px;">Margen</th>
+                                {{-- En celular solo se ven categoría y margen; el resto, en el ojito --}}
+                                <th class="text-end d-none d-md-table-cell">Unidades</th>
+                                <th class="text-end d-none d-md-table-cell">Ingreso</th>
+                                <th class="text-end d-none d-md-table-cell">Ganancia</th>
+                                <th class="dw-col-margen">Margen</th>
+                                <th class="d-md-none"></th>
                             </tr>
                         </thead>
                         <tbody id="tablaMargen"></tbody>
@@ -97,23 +102,30 @@
         </div>
 
         <div class="row">
-            <div class="col-xl-5 mb-4">
+            <div class="col-lg-7 mb-4">
                 <div class="card shadow-sm h-100">
                     <div class="card-header"><i class="fas fa-gavel me-1"></i> Desempeño de las subastas</div>
                     <div class="card-body" id="bloqueSubastas"></div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header"><i class="fas fa-users me-1"></i> Clientes que compraron</div>
-                    <div class="card-body"><canvas id="chartClientes" height="220"></canvas></div>
-                </div>
-            </div>
-            <div class="col-xl-4 col-md-6 mb-4">
+            <div class="col-lg-5 mb-4">
                 <div class="card shadow-sm h-100">
                     <div class="card-header"><i class="fas fa-hourglass-half me-1"></i> Días promedio hasta venderse</div>
                     <div class="card-body" id="bloqueTiempoVenta"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalle de una categoría (en celular, donde la tabla solo muestra el margen) -->
+    <div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCategoriaTitulo">Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body" id="modalCategoriaDetalle"></div>
             </div>
         </div>
     </div>
