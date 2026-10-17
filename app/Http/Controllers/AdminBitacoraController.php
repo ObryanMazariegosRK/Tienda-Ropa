@@ -13,12 +13,17 @@ class AdminBitacoraController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $hoy = now(config('dw.zona_horaria'))->format('Y-m-d');
         $request->validate([
-            'desde' => ['nullable', 'date'],
-            'hasta' => ['nullable', 'date'],
+            'desde' => ['nullable', 'date', 'before_or_equal:' . $hoy],
+            'hasta' => ['nullable', 'date', 'before_or_equal:' . $hoy, 'after_or_equal:desde'],
             'accion' => ['nullable', 'string', 'max:60'],
             'usuario' => ['nullable', 'string', 'max:150'],
             'page' => ['nullable', 'integer', 'min:1'],
+        ], [
+            'desde.before_or_equal' => 'Las fechas no pueden ser futuras.',
+            'hasta.before_or_equal' => 'Las fechas no pueden ser futuras.',
+            'hasta.after_or_equal' => 'La fecha "Desde" no puede ser posterior a la fecha "Hasta".',
         ]);
 
         try {

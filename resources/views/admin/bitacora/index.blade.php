@@ -9,15 +9,6 @@
         <li class="breadcrumb-item active">Quién hizo qué y cuándo en la tienda</li>
     </ol>
 
-    <div class="dw-aviso-inmutable mb-4">
-        <i class="fas fa-lock"></i>
-        <div>
-            <strong>Registro de solo lectura.</strong>
-            Las entradas no se pueden editar ni borrar, ni siquiera desde la base de datos: se guardan en una base aparte
-            (data warehouse) que solo permite agregar registros.
-        </div>
-    </div>
-
     <form class="card shadow-sm mb-4" id="filtrosBitacora">
         <div class="card-body row g-2 align-items-end">
             <div class="col-sm-6 col-lg-2">

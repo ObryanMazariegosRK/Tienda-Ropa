@@ -31,6 +31,28 @@ document.addEventListener("DOMContentLoaded", () => {
         : accion.endsWith("eliminado") || accion.endsWith("eliminada") || accion.endsWith("fallida") ? "dw-accion-peligro"
         : accion.startsWith("pedido.") || accion.startsWith("subasta.") ? "dw-accion-pedido" : "dw-accion-catalogo";
 
+    // Fecha de HOY según el reloj del navegador (igual que el filtro de ingresos del dashboard)
+    function fechaLocalHoy() {
+        const hoy = new Date();
+        return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
+    }
+
+    // Mismas reglas que el filtro de ingresos del dashboard
+    function rangoValido() {
+        const desde = document.getElementById("filtroDesde").value;
+        const hasta = document.getElementById("filtroHasta").value;
+
+        if ((desde && desde > fechaLocalHoy()) || (hasta && hasta > fechaLocalHoy())) {
+            adminAlert('Las fechas no pueden ser futuras.', { type: 'error', title: 'Rango inválido' });
+            return false;
+        }
+        if (desde && hasta && desde > hasta) {
+            adminAlert('La fecha "Desde" no puede ser posterior a la fecha "Hasta".', { type: 'error', title: 'Rango inválido' });
+            return false;
+        }
+        return true;
+    }
+
     function fechaGT(utc) {
         return new Date(utc.replace(" ", "T") + "Z").toLocaleString("es-GT", {
             timeZone: "America/Guatemala", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"
@@ -115,7 +137,14 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.show();
     });
 
-    document.getElementById("filtrosBitacora").addEventListener("submit", (e) => { e.preventDefault(); cargar(1); });
+    // El calendario no deja elegir días futuros
+    document.getElementById("filtroDesde").max = fechaLocalHoy();
+    document.getElementById("filtroHasta").max = fechaLocalHoy();
+
+    document.getElementById("filtrosBitacora").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (rangoValido()) cargar(1);
+    });
     document.getElementById("limpiarFiltros").addEventListener("click", () => {
         document.getElementById("filtrosBitacora").reset();
         cargar(1);

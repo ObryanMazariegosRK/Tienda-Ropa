@@ -112,6 +112,20 @@ class BitacoraTest extends TestCase
         $this->getJson('/api/admin/bitacora')->assertForbidden();
     }
 
+    public function test_valida_el_rango_de_fechas_como_el_dashboard(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $this->getJson('/api/admin/bitacora?desde=2026-10-10&hasta=2026-10-01')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['hasta' => 'La fecha "Desde" no puede ser posterior a la fecha "Hasta".']);
+
+        $manana = now('America/Guatemala')->addDays(2)->format('Y-m-d');
+        $this->getJson("/api/admin/bitacora?hasta=$manana")->assertStatus(422)->assertJsonValidationErrors(['hasta']);
+
+        $this->getJson('/api/admin/bitacora?desde=2026-10-01&hasta=2026-10-01')->assertOk();
+    }
+
     public function test_si_la_bitacora_falla_la_operacion_sigue_funcionando(): void
     {
         $pedido = $this->pedido();
