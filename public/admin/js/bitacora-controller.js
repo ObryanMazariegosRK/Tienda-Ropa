@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectorAccion = document.getElementById("filtroAccion");
     const modal = new bootstrap.Modal(document.getElementById("modalBitacora"));
     let registros = [];
+    let totalRegistros = 0;
+    let filtrosActuales = {};
     let pagina = 1;
 
     // Nombre legible de cada acción para el filtro y las etiquetas
@@ -59,18 +61,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Página 1 reemplaza la tabla; "Ver más" agrega la siguiente debajo con los mismos filtros
     async function cargar(nuevaPagina = 1) {
+        const agregar = nuevaPagina > 1;
+        if (!agregar) {
+            filtrosActuales = {
+                desde: document.getElementById("filtroDesde").value,
+                hasta: document.getElementById("filtroHasta").value,
+                accion: selectorAccion.value,
+                usuario: document.getElementById("filtroUsuario").value.trim()
+            };
+        }
         pagina = nuevaPagina;
         const params = new URLSearchParams({ page: pagina });
-        const filtros = {
-            desde: document.getElementById("filtroDesde").value,
-            hasta: document.getElementById("filtroHasta").value,
-            accion: selectorAccion.value,
-            usuario: document.getElementById("filtroUsuario").value.trim()
-        };
-        Object.entries(filtros).forEach(([k, v]) => { if (v) params.set(k, v); });
+        Object.entries(filtrosActuales).forEach(([k, v]) => { if (v) params.set(k, v); });
 
-        tabla.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Cargando…</td></tr>`;
+        const botonVerMas = paginacion.querySelector("button");
+        if (agregar && botonVerMas) {
+            botonVerMas.disabled = true;
+            botonVerMas.textContent = "Cargando…";
+        } else {
+            tabla.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Cargando…</td></tr>`;
+            paginacion.innerHTML = "";
+        }
+
         try {
             const respuesta = await fetch(`${API}?${params}`, {
                 headers: { "Accept": "application/json", "Authorization": `Bearer ${localStorage.getItem("admin_auth_token")}` }
@@ -78,10 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const datos = await respuesta.json();
             if (!respuesta.ok) throw new Error(datos.message || "No se pudo cargar la bitácora.");
             pintarAcciones(datos.acciones);
-            pintar(datos.data, datos.meta);
+            pintar(datos.data, datos.meta, agregar);
         } catch (e) {
-            tabla.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${escapeHtml(e.message)}</td></tr>`;
-            paginacion.innerHTML = "";
+            if (agregar) {
+                adminAlert(e.message, { type: "error" });
+                pintarVerMas(totalRegistros);
+            } else {
+                tabla.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${escapeHtml(e.message)}</td></tr>`;
+            }
         }
     }
 
@@ -91,26 +109,46 @@ document.addEventListener("DOMContentLoaded", () => {
             .map(a => `<option value="${escapeHtml(a)}" ${a === elegida ? "selected" : ""}>${escapeHtml(nombreAccion(a))}</option>`).join("");
     }
 
-    function pintar(filas, meta) {
-        registros = filas;
-        if (filas.length === 0) {
-            tabla.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay registros con estos filtros.</td></tr>`;
-            paginacion.innerHTML = "";
-            return;
-        }
-
-        tabla.innerHTML = filas.map((r, i) => `
+    function filaHtml(r, indice) {
+        return `
             <tr class="${r.resultado === "rechazado" ? "dw-fila-rechazada" : ""}">
                 <td class="small text-nowrap">${fechaGT(r.ocurrido_en)}</td>
                 <td class="small">${r.usuario_correo ? escapeHtml(r.usuario_correo) : '<span class="text-muted">Visitante</span>'}
                     ${r.usuario_rol === "admin" ? '<span class="dw-rol">admin</span>' : ""}</td>
                 <td><span class="dw-accion ${claseAccion(r.accion)}">${escapeHtml(nombreAccion(r.accion))}</span></td>
                 <td class="small">${escapeHtml(r.descripcion)}</td>
-                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" data-indice="${i}" title="Ver detalle"><i class="fas fa-eye"></i></button></td>
-            </tr>`).join("");
+                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary" data-indice="${indice}" title="Ver detalle"><i class="fas fa-eye"></i></button></td>
+            </tr>`;
+    }
 
-        paginacion.innerHTML = meta.last_page > 1 ? construirBotonesPaginacion(meta.current_page, meta.last_page) : "";
-        paginacion.querySelectorAll(".page-btn:not([disabled])").forEach(b => b.addEventListener("click", () => cargar(Number(b.dataset.page))));
+    function pintar(filas, meta, agregar) {
+        if (!agregar) registros = [];
+        const inicio = registros.length;
+        registros = registros.concat(filas);
+        totalRegistros = meta.total;
+
+        if (registros.length === 0) {
+            tabla.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay registros con estos filtros.</td></tr>`;
+            paginacion.innerHTML = "";
+            return;
+        }
+
+        const html = filas.map((r, i) => filaHtml(r, inicio + i)).join("");
+        if (agregar) {
+            tabla.insertAdjacentHTML("beforeend", html);
+        } else {
+            tabla.innerHTML = html;
+        }
+        pintarVerMas(meta.total);
+    }
+
+    function pintarVerMas(total) {
+        const restantes = total - registros.length;
+        paginacion.innerHTML = restantes > 0
+            ? `<button type="button" class="btn btn-outline-success">Ver más (${restantes} restante${restantes === 1 ? "" : "s"})</button>
+               <p class="small text-muted mt-2 mb-0">Mostrando ${registros.length} de ${total} registros</p>`
+            : `<p class="small text-muted mb-0">Mostrando los ${total} registro${total === 1 ? "" : "s"}</p>`;
+        paginacion.querySelector("button")?.addEventListener("click", () => cargar(pagina + 1));
     }
 
     function bloqueDatos(titulo, datos) {

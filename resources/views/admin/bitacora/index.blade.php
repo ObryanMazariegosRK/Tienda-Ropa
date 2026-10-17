@@ -56,7 +56,7 @@
             </div>
         </div>
     </div>
-    <div class="admin-pagination d-flex justify-content-center gap-1 mb-4" id="paginacionBitacora"></div>
+    <div class="text-center mb-4" id="paginacionBitacora"></div>
 
     <!-- Detalle de un registro -->
     <div class="modal fade" id="modalBitacora" tabindex="-1" aria-hidden="true">

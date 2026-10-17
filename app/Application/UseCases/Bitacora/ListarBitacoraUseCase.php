@@ -7,7 +7,7 @@ use Carbon\CarbonImmutable;
 
 class ListarBitacoraUseCase implements IListarBitacoraUseCase
 {
-    private const POR_PAGINA = 25;
+    private const POR_PAGINA = 20;
 
     public function __construct(private IBitacoraRepository $repository) {}
 
