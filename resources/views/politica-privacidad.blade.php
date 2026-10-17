@@ -15,12 +15,11 @@
         </a>
     </header>
 
-    {{-- BORRADOR: revisa este texto antes de publicarlo y ajústalo si cambia lo que la tienda recopila --}}
     <main class="legal-page">
         <a href="/" class="legal-back">← Volver a la tienda</a>
 
         <h1>Política de privacidad</h1>
-        <p class="legal-updated">Última actualización: 10 de octubre de 2026</p>
+        <p class="legal-updated">Última actualización: 16 de octubre de 2026</p>
 
         <p>
             En Amerishop (Tecpán, Chimaltenango, Guatemala) respetamos tu privacidad. Esta política explica
@@ -56,46 +55,60 @@
         <ul>
             <li><strong>Google</strong>, si inicias sesión con tu cuenta de Google.</li>
             <li><strong>El servicio de notificaciones de tu navegador</strong> (Google, Mozilla, Apple o Microsoft), que entrega los avisos que activaste.</li>
+            <li><strong>Google (Gmail)</strong>, que usamos para enviarte los correos de la tienda, como los códigos de verificación y de recuperación de contraseña.</li>
             <li><strong>WhatsApp</strong>, únicamente cuando tú decides escribirnos para confirmar un pedido.</li>
             <li>Autoridades, solo si la ley nos obliga a hacerlo.</li>
         </ul>
 
-        <h2>5. Almacenamiento en tu navegador</h2>
+        <h2>5. Dónde se guardan tus datos</h2>
+        <p>
+            La tienda funciona en servidores de un proveedor de servicios en la nube (actualmente Microsoft Azure,
+            en Estados Unidos). Por eso tus datos pueden guardarse fuera de Guatemala. La conexión con la tienda
+            siempre es cifrada (HTTPS).
+        </p>
+
+        <h2>6. Almacenamiento en tu navegador</h2>
         <p>
             Para mantener tu sesión iniciada guardamos un identificador de sesión en el almacenamiento local
             de tu navegador. No usamos cookies de publicidad ni herramientas de rastreo de terceros.
             Si cierras sesión, ese identificador se elimina.
         </p>
 
-        <h2>6. Cuánto tiempo conservamos tus datos</h2>
+        <h2>7. Cuánto tiempo conservamos tus datos</h2>
         <p>
             Conservamos los datos de tu cuenta mientras la tengas activa. El historial de pedidos puede
             conservarse el tiempo necesario para fines contables y de atención de reclamos.
         </p>
 
-        <h2>7. Tus derechos</h2>
+        <h2>8. Tus derechos</h2>
         <p>
-            Puedes pedirnos en cualquier momento que te digamos qué datos tenemos sobre ti, que los corrijamos
-            o que eliminemos tu cuenta. Escríbenos a
-            <a href="mailto:amerishop@gmail.com">amerishop@gmail.com</a> y te responderemos lo antes posible.
+            Puedes pedirnos en cualquier momento que te digamos qué datos tenemos sobre ti o que los corrijamos.
+            Escríbenos a
+            <a href="mailto:comazariegoscruz04@gmail.com">comazariegoscruz04@gmail.com</a> y te responderemos lo antes posible.
             También puedes desactivar las notificaciones desde tu cuenta o desde la configuración de tu navegador.
         </p>
 
-        <h2>8. Seguridad</h2>
+        <h2>9. Seguridad</h2>
         <p>
             Protegemos tu información con medidas como el cifrado de contraseñas y conexiones seguras.
             Aun así, ningún sistema es completamente infalible, por lo que te recomendamos no compartir tu contraseña.
         </p>
 
-        <h2>9. Cambios a esta política</h2>
+        <h2>10. Menores de edad</h2>
+        <p>
+            La tienda no está dirigida a menores de 13 años y no recopilamos a sabiendas sus datos. Si eres padre,
+            madre o tutor y crees que un menor nos dio sus datos, escríbenos y los revisaremos.
+        </p>
+
+        <h2>11. Cambios a esta política</h2>
         <p>
             Si cambiamos esta política, actualizaremos la fecha de "Última actualización" en esta página.
         </p>
 
-        <h2>10. Contacto</h2>
+        <h2>12. Contacto</h2>
         <p>
             Si tienes dudas sobre tu privacidad, escríbenos a
-            <a href="mailto:amerishop@gmail.com">amerishop@gmail.com</a>.
+            <a href="mailto:comazariegoscruz04@gmail.com">comazariegoscruz04@gmail.com</a>.
         </p>
     </main>
 
